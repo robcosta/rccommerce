@@ -1,4 +1,4 @@
-package rccommerce.controlers.handlers;
+package rccommerce.controllers.handlers;
 
 import java.time.Instant;
 
