@@ -3,6 +3,8 @@ package rccommerce.services;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -10,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import rccommerce.dto.UserDTO;
+import rccommerce.dto.UserMinDTO;
 import rccommerce.entity.Role;
 import rccommerce.entity.User;
 import rccommerce.projections.UserDetailsProjection;
@@ -48,6 +51,13 @@ public class UserService implements UserDetailsService {
 				return new UserDTO(authenticated());
 	}
 	
+	@Transactional(readOnly = true)
+	public Page<UserMinDTO> findAll(String name, Pageable pageable) {
+		Page<User> result = repository.findAll(pageable);
+		return result.map(x -> new UserMinDTO(x));
+	}
+	
+	
 	protected User authenticated() {
 		try {
 			String username = customUserUtil.getLoggerUsername();
@@ -56,5 +66,4 @@ public class UserService implements UserDetailsService {
 			throw new UsernameNotFoundException("Usuário não encontrado");
 		}
 	}
-	
 }
