@@ -1,4 +1,4 @@
-package rccommercecustomgrant;
+package rccommerce.config.customgrant;
 
 import java.util.Collection;
 

@@ -49,9 +49,9 @@ import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
 
-import rccommercecustomgrant.CustomPasswordAuthenticationConverter;
-import rccommercecustomgrant.CustomPasswordAuthenticationProvider;
-import rccommercecustomgrant.CustomUserAuthorities;
+import rccommerce.config.customgrant.CustomPasswordAuthenticationConverter;
+import rccommerce.config.customgrant.CustomPasswordAuthenticationProvider;
+import rccommerce.config.customgrant.CustomUserAuthorities;
 
 
 @Configuration

@@ -1,4 +1,4 @@
-package rccommercecustomgrant;
+package rccommerce.config.customgrant;
 
 import java.security.Principal;
 import java.util.HashSet;
