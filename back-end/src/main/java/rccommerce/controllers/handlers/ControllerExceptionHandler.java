@@ -12,9 +12,9 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import jakarta.servlet.http.HttpServletRequest;
 import rccommerce.dto.CustomError;
 import rccommerce.dto.ValidationError;
-import rccommerce.exceptions.DatabaseException;
-import rccommerce.exceptions.ForbiddenException;
-import rccommerce.exceptions.ResourceNotFoundException;
+import rccommerce.services.exceptions.DatabaseException;
+import rccommerce.services.exceptions.ForbiddenException;
+import rccommerce.services.exceptions.ResourceNotFoundException;
 
 @ControllerAdvice
 public class ControllerExceptionHandler {

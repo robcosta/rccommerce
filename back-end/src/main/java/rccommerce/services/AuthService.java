@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import rccommerce.entity.User;
-import rccommerce.exceptions.ForbiddenException;
+import rccommerce.services.exceptions.ForbiddenException;
 
 @Service
 public class AuthService {

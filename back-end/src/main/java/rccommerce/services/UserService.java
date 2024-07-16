@@ -17,6 +17,7 @@ import rccommerce.entity.Role;
 import rccommerce.entity.User;
 import rccommerce.projections.UserDetailsProjection;
 import rccommerce.repository.UserRepository;
+import rccommerce.services.exceptions.ResourceNotFoundException;
 import rccommerce.util.CustomUserUtil;
 
 @Service
@@ -57,6 +58,12 @@ public class UserService implements UserDetailsService {
 		return result.map(x -> new UserMinDTO(x));
 	}
 	
+	@Transactional(readOnly = true)
+	public UserDTO findById(Long id) {
+		User user = repository.findById(id)
+				.orElseThrow(() -> new ResourceNotFoundException("Recurso não encontrado."));
+		return new UserDTO(user);
+	}
 	
 	protected User authenticated() {
 		try {
