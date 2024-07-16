@@ -1,6 +1,5 @@
 package rccommerce.dto;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,8 +11,8 @@ public class UserDTO {
 	private Long id;
 	private String name;
 	private String email;
-	private String phone;
-	private LocalDate birthDate;
+	private Double commission;
+	private String password;
 	
 	private List<String> roles = new ArrayList<>();
 
@@ -21,8 +20,8 @@ public class UserDTO {
 		id = entity.getId();
 		name = entity.getName();
 		email = entity.getEmail();
-		phone = entity.getPhone();
-		birthDate = entity.getBirthDate();
+		commission = entity.getCommission();
+		password = entity.getPassword();
 		for(GrantedAuthority role: entity.getRoles()){
 			roles.add(role.getAuthority());
 		}
@@ -40,12 +39,12 @@ public class UserDTO {
 		return email;
 	}
 
-	public String getPhone() {
-		return phone;
+	public Double getCommission() {
+		return commission;
 	}
-
-	public LocalDate getBirthDate() {
-		return birthDate;
+	
+	public String getPassword() {
+		return password;
 	}
 
 	public List<String> getRoles() {

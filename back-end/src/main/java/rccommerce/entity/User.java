@@ -1,6 +1,5 @@
 package rccommerce.entity;
 
-import java.time.LocalDate;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Objects;
@@ -30,9 +29,8 @@ public class User implements UserDetails {
 	private String name;
 	@Column(unique = true)
 	private String email;
-	private LocalDate birthDate;
+	private Double commission;
 	private String password;
-	private String phone;
 	
     @ManyToMany
     @JoinTable(name = "tb_user_role",
@@ -43,13 +41,12 @@ public class User implements UserDetails {
 	public User() {
 	}
 
-	public User(Long id, String name, String email, LocalDate birthDate, String password, String phone) {
+	public User(Long id, String name, String email, Double commission, String password) {
 		this.id = id;
 		this.name = name;
 		this.email = email;
-		this.birthDate = birthDate;
+		this.commission = commission;
 		this.password = password;
-		this.phone = phone;
 	}
 
 	public Long getId() {
@@ -76,28 +73,20 @@ public class User implements UserDetails {
 		this.email = email;
 	}
 
-	public LocalDate getBirthDate() {
-		return birthDate;
+	public Double getCommission() {
+		return commission;
 	}
-
-	public void setBirthDate(LocalDate birthDate) {
-		this.birthDate = birthDate;
+	
+	public void setCommission(Double commission) {
+		this.commission = commission;
 	}
-
+	
 	public String getPassword() {
 		return password;
 	}
 
 	public void setPassword(String password) {
 		this.password = password;
-	}
-
-	public String getPhone() {
-		return phone;
-	}
-
-	public void setPhone(String phone) {
-		this.phone = phone;
 	}
 
 	public Set<Role> getRoles() {

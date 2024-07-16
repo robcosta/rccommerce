@@ -11,6 +11,7 @@ public class UserMinDTO {
 	private Long id;
 	private String name;
 	private String email;
+	private Double commission;
 
 	private List<String> roles = new ArrayList<>();
 
@@ -18,6 +19,7 @@ public class UserMinDTO {
 		id = entity.getId();
 		name = entity.getName();
 		email = entity.getEmail();
+		commission = entity.getCommission();
 
 		for(GrantedAuthority role: entity.getRoles()){
 			roles.add(role.getAuthority());
@@ -34,6 +36,10 @@ public class UserMinDTO {
 
 	public String getEmail() {
 		return email;
+	}
+	
+	public Double getCommission() {
+		return commission;
 	}
 
 	public List<String> getRoles() {
