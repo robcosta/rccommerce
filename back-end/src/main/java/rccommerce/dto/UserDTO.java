@@ -5,17 +5,33 @@ import java.util.List;
 
 import org.springframework.security.core.GrantedAuthority;
 
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.PositiveOrZero;
+import jakarta.validation.constraints.Size;
 import rccommerce.entity.User;
 
 public class UserDTO {
 	private Long id;
+	@NotBlank(message = "Campo requerido")
+	@Size(min = 3, max = 80, message = "Nome precisa ter de 3 a 80 caracteres")
 	private String name;
+	@NotBlank(message = "Campo requerido")
+	@Email
 	private String email;
+	@PositiveOrZero(message = "Comissão deve ter um valor zero ou positivo")
 	private Double commission;
+	@NotBlank(message = "Campo requerido")
+	@Size(min = 4, max = 8, message = "Senha deve ter de 4 a 8 dígitos")
+	@PositiveOrZero(message = "Senha composta apenas por números zeros ou positivos")
 	private String password;
 	
+	@Size(min = 1, message = "Necessário indicar pelo menos um nível de acesso")
 	private List<String> roles = new ArrayList<>();
 
+	public UserDTO() {
+	}
+	
 	public UserDTO(User entity) {
 		id = entity.getId();
 		name = entity.getName();
