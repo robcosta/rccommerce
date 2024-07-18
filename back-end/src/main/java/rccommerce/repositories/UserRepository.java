@@ -23,13 +23,13 @@ public interface UserRepository extends JpaRepository<User, Long> {
 				INNER JOIN tb_role ON tb_role.id = tb_user_role.role_id
 				WHERE tb_user.email = :email
 			""")
-	List<UserDetailsProjection> searchUserAndRolesByEmail(String email);
+	public List<UserDetailsProjection> searchUserAndRolesByEmail(String email);
 	
-	Optional<User> findByEmail(String email);
+	public Optional<User> findByEmail(String email);
 
 	@Query("SELECT obj FROM User obj "
 			+ "JOIN FETCH obj.roles "
 			+ "WHERE UPPER(obj.name) LIKE UPPER(CONCAT('%', :name,'%'))")
-	Page<User> searchByName(String name, Pageable pageable);
+	public Page<User> searchByName(String name, Pageable pageable);
 }
 
