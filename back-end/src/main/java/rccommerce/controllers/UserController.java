@@ -10,6 +10,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -58,5 +59,12 @@ public class UserController {
 		URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
 				.buildAndExpand(dto.getId()).toUri();
 		return ResponseEntity.created(uri).body(minDTO);
+	}
+	
+	@PreAuthorize("hasAnyRole('ROLE_ADMIN')")
+	@PutMapping(value = "/{id}")
+	public ResponseEntity<UserMinDTO> update(@Valid @RequestBody UserDTO dto, @PathVariable Long id) {
+		UserMinDTO minDTO = service.update(dto, id);
+		return ResponseEntity.ok(minDTO);
 	}
 }
