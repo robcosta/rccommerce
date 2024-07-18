@@ -24,6 +24,7 @@ import rccommerce.projections.UserDetailsProjection;
 import rccommerce.repository.RoleRepository;
 import rccommerce.repository.UserRepository;
 import rccommerce.services.exceptions.DatabaseException;
+import rccommerce.services.exceptions.ForbiddenException;
 import rccommerce.services.exceptions.ResourceNotFoundException;
 import rccommerce.util.CustomUserUtil;
 
@@ -103,6 +104,21 @@ public class UserService implements UserDetailsService {
 			throw new DatabaseException("Email informado já existe");
 		}
 	}
+	
+	@Transactional(propagation = Propagation.SUPPORTS)
+	public void delete(Long id) {
+		if(!repository.existsById(id)) {
+			throw new ResourceNotFoundException("Recurso não encontrado");
+		}
+		if(id == authenticated().getId()) {
+			throw new ForbiddenException("Proibida auto deleção");
+		}
+		try {
+			repository.deleteById(id);
+		} catch (DataIntegrityViolationException e) {
+			throw new DatabaseException("Falha de integridade referencial");
+		}
+	}
 
 	protected User authenticated() {
 		try {
@@ -127,5 +143,4 @@ public class UserService implements UserDetailsService {
 			entity.getRoles().add(role);
 		}
 	}
-
 }
