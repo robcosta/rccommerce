@@ -1,4 +1,4 @@
-package rccommerce.repository;
+package rccommerce.repositories;
 
 import java.util.List;
 import java.util.Optional;
@@ -9,7 +9,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import rccommerce.entity.User;
+import rccommerce.entities.User;
 import rccommerce.projections.UserDetailsProjection;
 
 

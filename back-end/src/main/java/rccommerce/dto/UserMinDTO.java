@@ -5,7 +5,7 @@ import java.util.List;
 
 import org.springframework.security.core.GrantedAuthority;
 
-import rccommerce.entity.User;
+import rccommerce.entities.User;
 
 public class UserMinDTO {
 	private Long id;

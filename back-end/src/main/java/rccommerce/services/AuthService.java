@@ -3,7 +3,7 @@ package rccommerce.services;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import rccommerce.entity.User;
+import rccommerce.entities.User;
 import rccommerce.services.exceptions.ForbiddenException;
 
 @Service

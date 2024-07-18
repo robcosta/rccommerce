@@ -15,14 +15,13 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.validation.Valid;
 import rccommerce.dto.UserDTO;
 import rccommerce.dto.UserMinDTO;
-import rccommerce.entity.Role;
-import rccommerce.entity.User;
+import rccommerce.entities.Role;
+import rccommerce.entities.User;
 import rccommerce.projections.UserDetailsProjection;
-import rccommerce.repository.RoleRepository;
-import rccommerce.repository.UserRepository;
+import rccommerce.repositories.RoleRepository;
+import rccommerce.repositories.UserRepository;
 import rccommerce.services.exceptions.DatabaseException;
 import rccommerce.services.exceptions.ForbiddenException;
 import rccommerce.services.exceptions.ResourceNotFoundException;

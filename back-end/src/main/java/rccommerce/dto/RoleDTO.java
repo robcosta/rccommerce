@@ -1,6 +1,6 @@
 package rccommerce.dto;
 
-import rccommerce.entity.Role;
+import rccommerce.entities.Role;
 
 public class RoleDTO {
 
