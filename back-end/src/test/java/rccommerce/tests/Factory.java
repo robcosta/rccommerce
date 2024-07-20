@@ -22,6 +22,10 @@ public class Factory {
 		return new UserDTO(createUser());
 	}
 	
+	public static UserDTO createUserDTO(User user) {
+		return new UserDTO(user);
+	}
+	
 	public static UserMinDTO createUserMinDTO() {
 		return new UserMinDTO(createUser());
 	}
