@@ -10,6 +10,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -20,6 +22,7 @@ import rccommerce.dto.UserMinDTO;
 import rccommerce.entities.User;
 import rccommerce.projections.UserDetailsProjection;
 import rccommerce.repositories.UserRepository;
+import rccommerce.services.exceptions.ResourceNotFoundException;
 import rccommerce.tests.Factory;
 import rccommerce.util.CustomUserUtil;
 
@@ -34,7 +37,8 @@ public class UserServiceTests {
 	
 	@Mock CustomUserUtil userUtil;
 	
-	private  String existingUsername, nonExistingUsername;
+	private  String existingUsername, nonExistingUsername, existingNameUser, nonExistingNameUser, emptyNameUser;
+	private long existingId, nonExistingId;
 	private User user;
 	Pageable pageable;
 	private List<UserDetailsProjection> userDetails;
@@ -46,6 +50,11 @@ public class UserServiceTests {
 		pageable = PageRequest.of(0, 10);
 		existingUsername = user.getEmail();
 		nonExistingUsername = "user@gmail.com";
+		existingNameUser = user.getName();
+		nonExistingNameUser = "Other User";
+		emptyNameUser = "";
+		existingId = user.getId();
+		nonExistingId = 100L;
 		userDetails = Factory.createUserDetails();
 		serviceSpy = Mockito.spy(service);
 		
@@ -54,6 +63,14 @@ public class UserServiceTests {
 		
 		Mockito.when(repository.findByEmail(existingUsername)).thenReturn(Optional.of(user));
 		Mockito.when(repository.findByEmail(nonExistingUsername)).thenReturn(Optional.empty());
+		
+		Mockito.when(repository.searchByName(existingNameUser, pageable)).thenReturn(new PageImpl<>(List.of(user)));
+		Mockito.when(repository.searchByName(emptyNameUser, pageable)).thenReturn(new PageImpl<>(List.of(user, user, user)));
+		Mockito.when(repository.searchByName(nonExistingNameUser, pageable)).thenReturn(new PageImpl<>(List.of()));
+		
+		Mockito.when(repository.findById(existingId)).thenReturn(Optional.of(user));
+		Mockito.doThrow(ResourceNotFoundException.class).when(repository).findById(nonExistingId);		
+		
 			
 	}
 	
@@ -109,5 +126,52 @@ public class UserServiceTests {
 			service.getMe();
 		});
 	}
+	
+	@Test
+	public void findAllShouldPagedUserMinDTOWhenExistsUserName() {
 
+		Page<UserMinDTO> result = service.findAll(existingNameUser, pageable);
+		
+		Assertions.assertFalse(result.isEmpty());
+		Assertions.assertEquals(result.getSize(), 1);
+		Assertions.assertEquals(result.iterator().next().getName(),existingNameUser);
+	}
+	
+	@Test
+	public void findAllShouldPagedUserMinDTOWhenUserNameIsEmpty() {
+
+		Page<UserMinDTO> result = service.findAll(emptyNameUser, pageable);
+		
+		Assertions.assertFalse(result.isEmpty());
+		Assertions.assertEquals(result.getSize(), 3);
+		Assertions.assertEquals(result.toList().get(0).getName(),existingNameUser);
+		Assertions.assertEquals(result.toList().get(1).getName(),existingNameUser);
+	}
+	
+	@Test
+	public void findAllShouldPagedUserMinDTOWhenDoesNotExistsUserName() {
+		
+		Assertions.assertThrows(ResourceNotFoundException.class, () -> {
+			 service.findAll(nonExistingNameUser, pageable);
+		});
+	}
+	
+	@Test
+	public void findByIdShouldUserMinDTOWhenExistsId() {
+		UserMinDTO result = service.findById(existingId);
+		
+		Assertions.assertEquals(result.getId(), existingId);
+		Assertions.assertEquals(result.getName(), user.getName());
+		Assertions.assertEquals(result.getEmail(), user.getEmail());
+	}
+	
+	@Test
+	public void findByIdShouldThrowResourceNotFoundExceptionWhenDoesNotExistsId() {
+		
+		Assertions.assertThrows(ResourceNotFoundException.class, () -> {
+			service.findById(nonExistingId);
+		} );
+		
+		
+	}
 }
