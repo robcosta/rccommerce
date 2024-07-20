@@ -18,6 +18,11 @@ public class Factory {
 		return user;
 	}
 	
+	public static Role createRole() {
+		Role role = new Role(1L, "ROLE_ADMIN");
+		return role;
+	}
+	
 	public static UserDTO createUserDTO() {
 		return new UserDTO(createUser());
 	}
