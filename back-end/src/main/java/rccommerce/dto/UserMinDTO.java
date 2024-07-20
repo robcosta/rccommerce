@@ -14,6 +14,13 @@ public class UserMinDTO {
 	private Double commission;
 
 	private List<String> roles = new ArrayList<>();
+	
+	public UserMinDTO(Long id, String name, String email, Double commission) {
+		this.id = id;
+		this.name = name;
+		this.email = email;
+		this.commission = commission;
+	}
 
 	public UserMinDTO(User entity) {
 		id = entity.getId();

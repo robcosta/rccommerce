@@ -42,7 +42,7 @@ public class UserRepositoryTests {
 		nonExistsName = "Richard";
 		existsEmail = "maria@gmail.com";
 		nonExistsEmail = "richard@gmail.com";
-		user = Factory.createUserAdmin();
+		user = Factory.createUser();
 	}
 	
 	@Test

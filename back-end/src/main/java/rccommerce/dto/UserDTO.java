@@ -29,7 +29,12 @@ public class UserDTO {
 	@Size(min = 1, message = "Necessário indicar pelo menos um nível de acesso")
 	private List<String> roles = new ArrayList<>();
 
-	public UserDTO() {
+	public UserDTO(Long id, String name, String email, Double commission, String password) {
+		this.id = id;
+		this.name = name;
+		this.email = email;
+		this.commission = commission;
+		this.password = password;
 	}
 	
 	public UserDTO(User entity) {
