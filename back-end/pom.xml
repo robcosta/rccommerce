@@ -97,6 +97,40 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
+
+			<plugin>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<version>0.8.7</version>
+				<configuration>
+					<excludes>
+						<exclude>rccommerce/RccommerceApplication.class</exclude>
+						<exclude>rccommerce/config/**</exclude>
+						<exclude>rccommerce/entities/**</exclude>
+						<exclude>rccommerce/dto/**</exclude>
+						<exclude>rccommerce/controllers/handlers/**</exclude>
+						<exclude>rccommerce/services/exceptions/**</exclude>
+						<exclude>rccommerce/util/**</exclude>
+					</excludes>
+				</configuration>
+				<executions>
+					<execution>
+						<goals>
+							<goal>prepare-agent</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>jacoco-report</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>report</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>target/jacoco-report</outputDirectory>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 	</build>
 
