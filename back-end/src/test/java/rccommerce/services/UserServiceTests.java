@@ -29,6 +29,8 @@ import rccommerce.projections.UserDetailsProjection;
 import rccommerce.repositories.RoleRepository;
 import rccommerce.repositories.UserRepository;
 import rccommerce.services.exceptions.DatabaseException;
+import rccommerce.services.exceptions.ForbiddenException;
+import rccommerce.services.exceptions.InvalidPasswordExecption;
 import rccommerce.services.exceptions.ResourceNotFoundException;
 import rccommerce.tests.Factory;
 import rccommerce.util.CustomUserUtil;
@@ -46,10 +48,10 @@ public class UserServiceTests {
 	private RoleRepository roleRepository;
 
 	@Mock
-	CustomUserUtil userUtil;
+	private CustomUserUtil userUtil;
 
-	private String existingUsername, nonExistingUsername, existingNameUser, nonExistingNameUser, emptyNameUser;
-	private long existingId, nonExistingId;
+	private String existingUsername, nonExistingUsername, existingNameUser, emptyNameUser,nonExistingNameUser,passwordEmpty, passwordNotEmpty;
+	private long existingId, nonExistingId, integrityViolationId;
 	private User user;
 	Pageable pageable;
 	private List<UserDetailsProjection> userDetails;
@@ -65,13 +67,18 @@ public class UserServiceTests {
 		nonExistingUsername = "user@gmail.com";
 		existingNameUser = user.getName();
 		nonExistingNameUser = "Other User";
-		emptyNameUser = "";
 		existingId = user.getId();
 		nonExistingId = 100L;
+		integrityViolationId = 2L;
 		userDetails = Factory.createUserDetails();
+		emptyNameUser = "";
+		passwordEmpty = "";
+		passwordNotEmpty = "123456";
 
 		serviceSpy = Mockito.spy(service);
 		Mockito.doNothing().when(serviceSpy).copyDtoToEntity(dto, user);
+		Mockito.when(serviceSpy.checkPassword(passwordNotEmpty)).thenReturn(true);
+		Mockito.doThrow(InvalidPasswordExecption.class).when(serviceSpy).checkPassword(passwordEmpty);
 	}
 
 	@Test
@@ -134,7 +141,7 @@ public class UserServiceTests {
 	}
 
 	@Test
-	public void findAllShouldPagedUserMinDTOWhenExistsUserName() {
+	public void findAllShouldReturnPagedUserMinDTOWhenExistsUserName() {
 		Mockito.when(repository.searchByName(existingNameUser, pageable)).thenReturn(new PageImpl<>(List.of(user)));
 
 		Page<UserMinDTO> result = service.findAll(existingNameUser, pageable);
@@ -145,7 +152,7 @@ public class UserServiceTests {
 	}
 
 	@Test
-	public void findAllShouldPagedUserMinDTOWhenUserNameIsEmpty() {
+	public void findAllShouldReturnPagedUserMinDTOWhenUserNameIsEmpty() {
 		Mockito.when(repository.searchByName(emptyNameUser, pageable))
 				.thenReturn(new PageImpl<>(List.of(user, user, user)));
 
@@ -158,7 +165,7 @@ public class UserServiceTests {
 	}
 
 	@Test
-	public void findAllShouldPagedUserMinDTOWhenDoesNotExistsUserName() {
+	public void findAllShouldReturnPagedUserMinDTOWhenDoesNotExistsUserName() {
 		Mockito.when(repository.searchByName(nonExistingNameUser, pageable)).thenReturn(new PageImpl<>(List.of()));
 
 		Assertions.assertThrows(ResourceNotFoundException.class, () -> {
@@ -167,7 +174,7 @@ public class UserServiceTests {
 	}
 
 	@Test
-	public void findByIdShouldUserMinDTOWhenExistsId() {
+	public void findByIdShouldReturnUserMinDTOWhenExistsId() {
 		Mockito.when(repository.findById(existingId)).thenReturn(Optional.of(user));
 
 		UserMinDTO result = service.findById(existingId);
@@ -209,7 +216,52 @@ public class UserServiceTests {
 	}
 
 	@Test
-	public void updateShouldReturnUserMinDTOWhenExistsIdAndEmailIsUnique() {
+	public void updateShouldReturnUserMinDTOWhenExistsId() {
+		Mockito.when(repository.getReferenceById(existingId)).thenReturn(user);
+		Mockito.when(repository.saveAndFlush(ArgumentMatchers.any())).thenReturn(user);
+
+		UserMinDTO result = serviceSpy.update(dto, existingId);
+
+		Assertions.assertNotNull(result);
+		Assertions.assertEquals(result.getId(), existingId);
+		Assertions.assertEquals(result.getName(), user.getName());
+	}
+	
+	@Test
+	public void updateShouldReturnUserMinDTOWhenExistsIdAndEmptyPassword() {
+		Mockito.when(repository.getReferenceById(existingId)).thenReturn(user);
+		Mockito.when(repository.saveAndFlush(ArgumentMatchers.any())).thenReturn(user);
+		user.setPassword("");
+		dto = Factory.createUserDTO(user);
+		
+		UserMinDTO result = serviceSpy.update(dto, existingId);
+		
+		Assertions.assertNotNull(result);
+		Assertions.assertEquals(result.getId(), existingId);
+		Assertions.assertEquals(result.getName(), user.getName());
+	}
+
+	@Test
+	public void updateShouldThrowResourceNotFoundExceptionWhenIdDoesNotExists() {
+		Mockito.doThrow(EntityNotFoundException.class).when(repository).getReferenceById(nonExistingId);
+		Assertions.assertThrows(ResourceNotFoundException.class, () -> {
+			serviceSpy.update(dto, nonExistingId);
+		});
+
+	}
+
+	@Test
+	public void updateShouldDatabaseExceptionWhenEmailAlreadyRegistered() {
+		Mockito.when(repository.getReferenceById(existingId)).thenReturn(user);
+		Mockito.doThrow(DataIntegrityViolationException.class).when(repository).saveAndFlush(user);
+
+		Assertions.assertThrows(DatabaseException.class, () -> {
+			serviceSpy.update(dto, existingId);
+		});
+	}
+
+	@Test
+	public void updateShouldVerifiPaswordWhenPassswordNotEmpty() {
 		Mockito.when(repository.getReferenceById(existingId)).thenReturn(user);
 		Mockito.when(repository.saveAndFlush(ArgumentMatchers.any())).thenReturn(user);
 
@@ -221,21 +273,82 @@ public class UserServiceTests {
 	}
 
 	@Test
-	public void updateShouldThrowResourceNotFoundExceptionWhenIdDoesNotExists() {
-		Mockito.doThrow(EntityNotFoundException.class).when(repository).getReferenceById(nonExistingId);
+	public void deleteShouldDoNothingWhenExixstsId() {
+		User userLogged = user;
+		userLogged.setId(20L);
+		Mockito.when(repository.findByEmail(existingUsername)).thenReturn(Optional.of(user));
+		Mockito.doReturn(userLogged).when(serviceSpy).authenticated();
+		Mockito.when(repository.existsById(existingId)).thenReturn(true);
+		Mockito.doNothing().when(repository).deleteById(existingId);
+
+		Assertions.assertDoesNotThrow(() -> {
+			serviceSpy.delete(existingId);
+		});
+	}
+
+	@Test
+	public void deleteShouldThrowResourceNotFoundExceptionWhenIdDoesNotExists() {
+		Mockito.when(repository.existsById(nonExistingId)).thenReturn(false);
+
 		Assertions.assertThrows(ResourceNotFoundException.class, () -> {
-			service.update(dto, nonExistingId);
+			service.delete(nonExistingId);
 		});
 
 	}
 
 	@Test
-	public void updateShouldDatabaseExceptionWhenEmailAlreadyRegistered() {
-		Mockito.when(repository.getReferenceById(existingId)).thenReturn(user);
-		Mockito.doThrow(DataIntegrityViolationException.class).when(repository).saveAndFlush(user);
+	public void deleteShoulThronForbiddenExceptionWhenTryToDeleteLoggedInUser() {
+		Mockito.when(repository.existsById(existingId)).thenReturn(true);
+		Mockito.doReturn(user).when(serviceSpy).authenticated();
+
+		Assertions.assertThrows(ForbiddenException.class, () -> {
+			serviceSpy.delete(existingId);
+		});
+	}
+
+	@Test
+	public void deleteShouldThrowDatabaseExceptionWhenBreachOfIntegrity() {
+		Mockito.when(repository.existsById(integrityViolationId)).thenReturn(true);
+		Mockito.doThrow(DataIntegrityViolationException.class).when(repository).deleteById(integrityViolationId);
+		Mockito.doReturn(user).when(serviceSpy).authenticated();
 
 		Assertions.assertThrows(DatabaseException.class, () -> {
-			service.update(dto, existingId);
+			serviceSpy.delete(integrityViolationId);
 		});
+	}
+
+	@Test
+	public void checkPassordShouldThrowInvalidPasswordExecptionWhenPasswordLessThanFuorCaracters() {
+		String password = "123";
+
+		Assertions.assertThrows(InvalidPasswordExecption.class, () -> {
+			service.checkPassword(password);
+		});
+	}
+	
+	public void checkPassordShouldThrowInvalidPasswordExecptionWhenPasswordGreaterThanEighCaracters() {
+		String password = "123456789";
+
+		Assertions.assertThrows(InvalidPasswordExecption.class, () -> {
+			service.checkPassword(password);
+		});
+	}
+	
+	@Test
+	public void checkPassordShouldThrowInvalidPasswordExecptionWhenPasswordPasswordIsNotPositiveInteger() {
+		String password = "A345-4";
+		
+		Assertions.assertThrows(InvalidPasswordExecption.class, () -> {
+			service.checkPassword(password);
+		});
+	}
+
+	@Test
+	public void checkPassordShouldTrueWithPasswordIsOk() {
+		String password = "123456";
+
+		boolean result = serviceSpy.checkPassword(password);
+
+		Assertions.assertTrue(result);
 	}
 }

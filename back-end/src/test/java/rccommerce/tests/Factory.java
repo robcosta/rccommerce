@@ -13,8 +13,6 @@ public class Factory {
 	
 	public static User createUser() {
 		User user = new User(4L, "Robert Black", "robert@gmail.com", 2.0, "123456");
-		user.addRole(new Role(1L, "ROLE_ADMIN"));
-		user.addRole(new Role(2L, "ROLE_OPERATOR"));
 		return user;
 	}
 	

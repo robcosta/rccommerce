@@ -24,6 +24,7 @@ import rccommerce.repositories.RoleRepository;
 import rccommerce.repositories.UserRepository;
 import rccommerce.services.exceptions.DatabaseException;
 import rccommerce.services.exceptions.ForbiddenException;
+import rccommerce.services.exceptions.InvalidPasswordExecption;
 import rccommerce.services.exceptions.ResourceNotFoundException;
 import rccommerce.util.CustomUserUtil;
 
@@ -66,24 +67,24 @@ public class UserService implements UserDetailsService {
 	public Page<UserMinDTO> findAll(String name, Pageable pageable) {
 		Page<User> result = repository.searchByName(name, pageable);
 		if (result.getContent().isEmpty()) {
-			throw new ResourceNotFoundException("Recurso não encontrado");
+			throw new ResourceNotFoundException("Usuário não encontrado");
 		}
 		return result.map(x -> new UserMinDTO(x));
 	}
 
 	@Transactional(readOnly = true)
 	public UserMinDTO findById(Long id) {
-		User user = repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Recurso não encontrado."));
+		User user = repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado."));
 		return new UserMinDTO(user);
 	}
 
 	@Transactional
 	public UserMinDTO insert(UserDTO dto) {
+		checkPassword(dto.getPassword());
+		User entity = new User();
+		copyDtoToEntity(dto, entity);
 		try {
-			User entity = new User();
-			copyDtoToEntity(dto, entity);
 			entity = repository.save(entity);
-			repository.flush();
 			return new UserMinDTO(entity);
 		} catch (DataIntegrityViolationException e) {
 			throw new DatabaseException("Email informado já existe");
@@ -92,6 +93,9 @@ public class UserService implements UserDetailsService {
 
 	@Transactional
 	public UserMinDTO update(UserDTO dto, Long id) {
+		if (!dto.getPassword().isEmpty()) {
+			checkPassword(dto.getPassword());
+		}
 		try {
 			User entity = repository.getReferenceById(id);
 			copyDtoToEntity(dto, entity);
@@ -103,13 +107,13 @@ public class UserService implements UserDetailsService {
 			throw new DatabaseException("Email informado já existe");
 		}
 	}
-	
+
 	@Transactional(propagation = Propagation.SUPPORTS)
 	public void delete(Long id) {
-		if(!repository.existsById(id)) {
-			throw new ResourceNotFoundException("Recurso não encontrado");
+		if (!repository.existsById(id)) {
+			throw new ResourceNotFoundException("Usuário não encontrado");
 		}
-		if(id == authenticated().getId()) {
+		if (id == authenticated().getId()) {
 			throw new ForbiddenException("Proibida auto deleção");
 		}
 		try {
@@ -132,7 +136,7 @@ public class UserService implements UserDetailsService {
 		entity.setName(dto.getName());
 		entity.setEmail(dto.getEmail());
 		entity.setCommission(dto.getCommission());
-		if (dto.getPassword().isEmpty()) {
+		if (!dto.getPassword().isEmpty()) {
 			entity.setPassword(new BCryptPasswordEncoder().encode(dto.getPassword()));
 		}
 		entity.getRoles().clear();
@@ -142,4 +146,18 @@ public class UserService implements UserDetailsService {
 			entity.getRoles().add(role);
 		}
 	}
+
+	protected boolean checkPassword(String password) {
+		if (password.length() < 4) {
+			throw new InvalidPasswordExecption("Senha tem de ter entre 4 e 8 caracteres.");
+		}
+		if(password.length() > 8) {
+			throw new InvalidPasswordExecption("Senha tem de ter entre 4 e 8 caracteres.");
+		}
+		if (!password.matches("^\\d+$")) {
+			throw new InvalidPasswordExecption("Senha deve conter apenas números.");
+		}
+		return true;
+	}
+
 }

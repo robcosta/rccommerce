@@ -37,7 +37,7 @@ public class UserController {
 		return ResponseEntity.ok(dto);
 	}
 	
-	@PreAuthorize("hasAnyRole('ROLE_ADMIN')")
+	@PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_OPERATOR', 'ROLE_SELLER', 'ROLE_USER')")
 	@GetMapping
 	public ResponseEntity<Page<UserMinDTO>> findAll(
 			@RequestParam(name = "name", defaultValue = "") String name, 
@@ -46,7 +46,7 @@ public class UserController {
 		return ResponseEntity.ok(dto);
 	}
 	
-	@PreAuthorize("hasAnyRole('ROLE_ADMIN')")
+	@PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_OPERATOR', 'ROLE_SELLER', 'ROLE_USER')")
 	@GetMapping(value = "/{id}")
 	public ResponseEntity<UserMinDTO> findById(@PathVariable Long id) {
 		UserMinDTO dto = service.findById(id);

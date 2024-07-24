@@ -20,7 +20,7 @@ public class AuthService {
 		}
 		
 		if(!me.getId().equals(userId)) {
-			throw new ForbiddenException("Access denied. Should be self or admins");
+			throw new ForbiddenException("Acesso negado. Deve ser próprio usuário ou administrador");
 		}
 	}
 }

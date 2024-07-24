@@ -108,8 +108,10 @@
 						<exclude>rccommerce/config/**</exclude>
 						<exclude>rccommerce/entities/**</exclude>
 						<exclude>rccommerce/dto/**</exclude>
-						<exclude>rccommerce/controllers/handlers/**</exclude>
 						<exclude>rccommerce/services/exceptions/**</exclude>
+						<exclude>rccommerce/services/AuthService.class</exclude>
+						<exclude>rccommerce/controllers/handlers/**</exclude>
+						<exclude>rccommerce/controllers/**</exclude>
 						<exclude>rccommerce/util/**</exclude>
 					</excludes>
 				</configuration>

@@ -4,6 +4,7 @@ import java.time.Instant;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -14,6 +15,7 @@ import rccommerce.dto.CustomError;
 import rccommerce.dto.ValidationError;
 import rccommerce.services.exceptions.DatabaseException;
 import rccommerce.services.exceptions.ForbiddenException;
+import rccommerce.services.exceptions.InvalidPasswordExecption;
 import rccommerce.services.exceptions.ResourceNotFoundException;
 
 @ControllerAdvice
@@ -48,6 +50,20 @@ public class ControllerExceptionHandler {
 		HttpStatus status = HttpStatus.FORBIDDEN;
 		CustomError err = new CustomError(Instant.now(),status.value(), e.getMessage(), request.getRequestURI());
 	    return ResponseEntity.status(status).body(err);
+	}
+	
+	@ExceptionHandler(InvalidPasswordExecption.class)
+	public ResponseEntity<CustomError> invalidPassword(InvalidPasswordExecption e, HttpServletRequest request){
+		HttpStatus status = HttpStatus.UNPROCESSABLE_ENTITY;
+		CustomError err = new CustomError(Instant.now(),status.value(), e.getMessage(), request.getRequestURI());
+	    return ResponseEntity.status(status).body(err);
+	}
+	
+	@ExceptionHandler(AccessDeniedException.class)
+	public ResponseEntity<CustomError> accessDenied(AccessDeniedException e, HttpServletRequest request){
+		HttpStatus status = HttpStatus.FORBIDDEN;
+		CustomError err = new CustomError(Instant.now(),status.value(), e.getMessage(), request.getRequestURI());
+		return ResponseEntity.status(status).body(err);
 	}
 
 }
