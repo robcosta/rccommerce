@@ -50,7 +50,9 @@ public class UserServiceTests {
 	@Mock
 	private CustomUserUtil userUtil;
 
-	private String existingUsername, nonExistingUsername, existingNameUser, emptyNameUser,nonExistingNameUser,passwordEmpty, passwordNotEmpty;
+	private String existingUsername, nonExistingUsername;
+	private String existingNameUser, emptyNameUser,nonExistingNameUser;
+	private String passwordEmpty, passwordNotEmpty;
 	private long existingId, nonExistingId, integrityViolationId;
 	private User user;
 	Pageable pageable;
