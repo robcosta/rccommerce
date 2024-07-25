@@ -37,9 +37,7 @@ public class Factory {
 		List<UserDetailsProjection> list = new ArrayList<>();		
 		list.add(new UserDetailsImpl("robert@gmail.com","$2a$10$Adpk5tdO8yFkIX.6IspH.OTF0dOxx2D9kx3drL6q4/1uLhoB/Ahze", 1L, "ROLE_CLIENT"));
 		return list;	
-		
 	}
-
 }
 
 
