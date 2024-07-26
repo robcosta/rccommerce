@@ -1,5 +1,6 @@
 package rccommerce.controllers.it;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -59,7 +60,7 @@ public class UserControllerIT {
 		operatorPasswordString = "123456";
 		emailUnique = "bob@gmail.com";
 
-		existingId = 1L;
+		existingId = 3L;
 		nonExistingId = 100L;
 
 		adminToken = tokenUtil.obtainAccessToken(mockMvc, adminUserName, adminPassword);
@@ -147,10 +148,10 @@ public class UserControllerIT {
 				.accept(MediaType.APPLICATION_JSON));
 		
 		resultActions.andExpect(status().isOk());
-		resultActions.andExpect(jsonPath("$.id").value(1L));
-		resultActions.andExpect(jsonPath("$.name").value("Maria Brown"));
-		resultActions.andExpect(jsonPath("$.email").value("maria@gmail.com"));
-		resultActions.andExpect(jsonPath("$.roles[0]").value("ROLE_ADMIN"));
+		resultActions.andExpect(jsonPath("$.id").value(existingId));
+		resultActions.andExpect(jsonPath("$.name").value("Alex Blue"));
+		resultActions.andExpect(jsonPath("$.email").value("alex@gmail.com"));
+		resultActions.andExpect(jsonPath("$.roles[0]").value("ROLE_SELLER"));
 	}
 
 	@Test
@@ -454,4 +455,60 @@ public class UserControllerIT {
 		resultActions.andExpect(status().isUnprocessableEntity());
 	}
 
+	@Test 
+	void deleteShouldNoContentWhenAdminLoggedAndDoNotDeleteYourself() throws Exception {
+				
+		ResultActions result = 
+				mockMvc.perform(delete("/users/{id}", existingId)
+						.header("Authorization", "Bearer " + adminToken)
+						.accept(MediaType.APPLICATION_JSON));
+		
+		result.andExpect(status().isNoContent());		
+	}
+	
+	@Test 
+	void deleteShouldForbiddenWhenAdminLoggedAndDeleteYourself() throws Exception {
+		existingId = 1L;
+		
+		ResultActions result = 
+				mockMvc.perform(delete("/users/{id}", existingId)
+						.header("Authorization", "Bearer " + adminToken)
+						.accept(MediaType.APPLICATION_JSON));
+		
+		result.andExpect(status().isForbidden());
+		
+	}
+	
+	@Test 
+	void deleteShouldForbiddenWhenOperatorLogged() throws Exception {
+				
+		ResultActions result = 
+				mockMvc.perform(delete("/users/{id}", existingId)
+						.header("Authorization", "Bearer " + operatorToken)
+						.accept(MediaType.APPLICATION_JSON));
+		
+		result.andExpect(status().isForbidden());		
+	}
+	
+	@Test 
+	void deleteShouldUnauthorizedWhenInvalidToken() throws Exception {
+				
+		ResultActions result = 
+				mockMvc.perform(delete("/users/{id}", existingId)
+						.header("Authorization", "Bearer " + invalidToken)
+						.accept(MediaType.APPLICATION_JSON));
+		
+		result.andExpect(status().isUnauthorized());		
+	}
+	
+	@Test 
+	void deleteShouldNotFoundWhenAdminLoggedAndDoesNotExisitsId() throws Exception {
+				
+		ResultActions result = 
+				mockMvc.perform(delete("/users/{id}", nonExistingId)
+						.header("Authorization", "Bearer " + adminToken)
+						.accept(MediaType.APPLICATION_JSON));
+		
+		result.andExpect(status().isNotFound());		
+	}
 }
