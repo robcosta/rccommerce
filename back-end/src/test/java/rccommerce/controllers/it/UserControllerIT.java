@@ -2,6 +2,7 @@ package rccommerce.controllers.it;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -41,7 +42,7 @@ public class UserControllerIT {
 	
 	private String adminToken, operatorToken, invalidToken, emptyToken;
 	private String adminUserName, adminPassword, operatorUserName, operatorPasswordString;
-	private String userName;
+	private String userName, emailUnique;
 
 	private long existingId, nonExistingId;
 	private Long countTotalUsers;
@@ -56,6 +57,7 @@ public class UserControllerIT {
 		adminPassword = "123456";
 		operatorUserName = "bob@gmail.com";
 		operatorPasswordString = "123456";
+		emailUnique = "bob@gmail.com";
 
 		existingId = 1L;
 		nonExistingId = 100L;
@@ -65,7 +67,9 @@ public class UserControllerIT {
 		invalidToken = adminToken + "xpto";
 		countTotalUsers = 3L;
 		
-		user = Factory.createUser();		
+		user = Factory.createUser();
+		user.addRole(Factory.createRole());
+		user.setId(null);
 	}
 	
 	@Test
@@ -171,9 +175,7 @@ public class UserControllerIT {
 	
 	@Test
 	public void insertShouldReturnUserMinDTOWhenAdminLoggedAndAllDataIsValid() throws Exception {
-		user.setId(null);		
-		user.addRole(Factory.createRole());
-		userDTO = new UserDTO(user);
+		userDTO = Factory.createUserDTO(user);
 		String jsonBody = objectMapper.writeValueAsString(userDTO);
 		
 		String expectedName =  user.getName();
@@ -194,9 +196,7 @@ public class UserControllerIT {
 	
 	@Test
 	public void insertShouldReturnForbiddenWhenOperatorLoggedAndAllDataIsValid() throws Exception {
-		user.setId(null);		
-		user.addRole(Factory.createRole());
-		userDTO = new UserDTO(user);
+		userDTO = Factory.createUserDTO(user);
 		String jsonBody = objectMapper.writeValueAsString(userDTO);
 
 		ResultActions resultActions = mockMvc.perform(post("/users")
@@ -210,9 +210,7 @@ public class UserControllerIT {
 	
 	@Test
 	public void insertShouldReturnUnauthorizedWhenOperatorLoggedAndAllDataIsValid() throws Exception {
-		user.setId(null);		
-		user.addRole(Factory.createRole());
-		userDTO = new UserDTO(user);
+		userDTO = Factory.createUserDTO(user);
 		String jsonBody = objectMapper.writeValueAsString(userDTO);
 		
 		ResultActions resultActions = mockMvc.perform(post("/users")
@@ -225,11 +223,24 @@ public class UserControllerIT {
 	}
 	
 	@Test
+	public void insertShouldReturnBadRequestWhenOperatorLoggedAndAllDataIsValidAndEmailDoesNotUnique() throws Exception {
+		user.setEmail(emailUnique);
+		userDTO = Factory.createUserDTO(user);
+		String jsonBody = objectMapper.writeValueAsString(userDTO);
+		
+		ResultActions resultActions = mockMvc.perform(post("/users")
+				.header("Authorization", "Bearer " + adminToken)
+				.content(jsonBody)
+				.contentType(MediaType.APPLICATION_JSON)
+				.accept(MediaType.APPLICATION_JSON));
+		
+		resultActions.andExpect(status().isBadRequest());
+	}
+	
+	@Test
 	public void insertShouldReturnUnprocessableEntityWhenAdminLoggedAndInvalidName() throws Exception {
-		user.setId(null);
 		user.setName("Ro");
-		user.addRole(Factory.createRole());
-		userDTO = new UserDTO(user);
+		userDTO = Factory.createUserDTO(user);
 		String jsonBody = objectMapper.writeValueAsString(userDTO);
 		
 		ResultActions resultActions = mockMvc.perform(post("/users")
@@ -243,10 +254,9 @@ public class UserControllerIT {
 	
 	@Test
 	public void insertShouldReturnUnprocessableEntityWhenAdminLoggedAndInvalidEmail() throws Exception {
-		user.setId(null);
 		user.setEmail("roberto.com");
 		user.addRole(Factory.createRole());
-		userDTO = new UserDTO(user);
+		userDTO = Factory.createUserDTO(user);
 		String jsonBody = objectMapper.writeValueAsString(userDTO);
 		
 		ResultActions resultActions = mockMvc.perform(post("/users")
@@ -260,10 +270,9 @@ public class UserControllerIT {
 	
 	@Test
 	public void insertShouldReturnUnprocessableEntityWhenAdminLoggedAndInvalidCommission() throws Exception {
-		user.setId(null);
 		user.setCommission(-1.0);
 		user.addRole(Factory.createRole());
-		userDTO = new UserDTO(user);
+		userDTO = Factory.createUserDTO(user);
 		String jsonBody = objectMapper.writeValueAsString(userDTO);
 		
 		ResultActions resultActions = mockMvc.perform(post("/users")
@@ -277,10 +286,9 @@ public class UserControllerIT {
 	
 	@Test
 	public void insertShouldReturnUnprocessableEntityWhenAdminLoggedAndInvalidPassword() throws Exception {
-		user.setId(null);
 		user.setPassword("12A34B");;
 		user.addRole(Factory.createRole());
-		userDTO = new UserDTO(user);
+		userDTO = Factory.createUserDTO(user);
 		String jsonBody = objectMapper.writeValueAsString(userDTO);
 		
 		ResultActions resultActions = mockMvc.perform(post("/users")
@@ -294,9 +302,8 @@ public class UserControllerIT {
 	
 	@Test
 	public void insertShouldReturnUnprocessableEntityWhenAdminLoggedAndInvalidRoles() throws Exception {
-		user.setId(null);
 		user.getRoles().clear();
-		userDTO = new UserDTO(user);
+		userDTO = Factory.createUserDTO(user);
 		String jsonBody = objectMapper.writeValueAsString(userDTO);
 		
 		ResultActions resultActions = mockMvc.perform(post("/users")
@@ -307,4 +314,144 @@ public class UserControllerIT {
 		
 		resultActions.andExpect(status().isUnprocessableEntity());
 	}
+	
+	@Test
+	public void updateShouldReturnUserMinDTOWhenAdminLoggedAndAllDataIsValid() throws Exception {
+		userDTO = Factory.createUserDTO(user);
+		String jsonBody = objectMapper.writeValueAsString(userDTO);
+		
+		String expectedName =  user.getName();
+		String expectedEmail = user.getEmail();
+		
+		ResultActions resultActions = mockMvc.perform(put("/users/{id}", existingId)
+				.header("Authorization", "Bearer " + adminToken)
+				.content(jsonBody)
+				.contentType(MediaType.APPLICATION_JSON)
+				.accept(MediaType.APPLICATION_JSON));
+		
+		resultActions.andExpect(status().isOk());
+		resultActions.andExpect(jsonPath("$.id").value(existingId));
+		resultActions.andExpect(jsonPath("$.name").value(expectedName));
+		resultActions.andExpect(jsonPath("$.email").value(expectedEmail));
+		resultActions.andExpect(jsonPath("$.roles[0]").value("ROLE_ADMIN"));
+	}
+	
+	@Test
+	public void updateShouldReturnForbiddenWhenOperatorLoggedAndAllDataIsValid() throws Exception {
+		userDTO = Factory.createUserDTO(user);
+		String jsonBody = objectMapper.writeValueAsString(userDTO);
+		
+		ResultActions resultActions = mockMvc.perform(put("/users/{id}", existingId)
+				.header("Authorization", "Bearer " + operatorToken)
+				.content(jsonBody)
+				.contentType(MediaType.APPLICATION_JSON)
+				.accept(MediaType.APPLICATION_JSON));
+		
+		resultActions.andExpect(status().isForbidden());
+	}
+	
+	@Test
+	public void updateShouldReturnUnauthorizedWhenInvalidTokenAndAllDataIsValid() throws Exception {
+		userDTO = Factory.createUserDTO(user);
+		String jsonBody = objectMapper.writeValueAsString(userDTO);
+		
+		ResultActions resultActions = mockMvc.perform(put("/users/{id}", existingId)
+				.header("Authorization", "Bearer " + invalidToken)
+				.content(jsonBody)
+				.contentType(MediaType.APPLICATION_JSON)
+				.accept(MediaType.APPLICATION_JSON));
+		
+		resultActions.andExpect(status().isUnauthorized());
+	}
+	
+	@Test
+	public void updateShouldReturnBadRequestWhenOperatorLoggedAndAllDataIsValidAndEmailDoesNotUnique() throws Exception {
+		user.setEmail(emailUnique);
+		userDTO = Factory.createUserDTO(user);
+		String jsonBody = objectMapper.writeValueAsString(userDTO);
+		
+		ResultActions resultActions = mockMvc.perform(put("/users/{id}", existingId)
+				.header("Authorization", "Bearer " + adminToken)
+				.content(jsonBody)
+				.contentType(MediaType.APPLICATION_JSON)
+				.accept(MediaType.APPLICATION_JSON));
+		
+		resultActions.andExpect(status().isBadRequest());
+	}
+	
+	@Test
+	public void updateShouldReturnUnprocessableEntityWhenAdminLoggedAndInvalidName() throws Exception {
+		user.setName("");
+		userDTO = Factory.createUserDTO(user);
+		String jsonBody = objectMapper.writeValueAsString(userDTO);
+		
+		ResultActions resultActions = mockMvc.perform(put("/users/{id}", existingId)
+				.header("Authorization", "Bearer " + adminToken)
+				.content(jsonBody)
+				.contentType(MediaType.APPLICATION_JSON)
+				.accept(MediaType.APPLICATION_JSON));
+		
+		resultActions.andExpect(status().isUnprocessableEntity());
+	}
+	
+	@Test
+	public void updateShouldReturnUnprocessableEntityWhenAdminLoggedAndInvalidEmail() throws Exception {
+		user.setEmail("roberto@");
+		userDTO = Factory.createUserDTO(user);
+		String jsonBody = objectMapper.writeValueAsString(userDTO);
+		
+		ResultActions resultActions = mockMvc.perform(put("/users/{id}", existingId)
+				.header("Authorization", "Bearer " + adminToken)
+				.content(jsonBody)
+				.contentType(MediaType.APPLICATION_JSON)
+				.accept(MediaType.APPLICATION_JSON));
+		
+		resultActions.andExpect(status().isUnprocessableEntity());
+	}
+	
+	@Test
+	public void updateShouldReturnUnprocessableEntityWhenAdminLoggedAndInvalidComission() throws Exception {
+		user.setCommission(-0.15);
+		userDTO = Factory.createUserDTO(user);
+		String jsonBody = objectMapper.writeValueAsString(userDTO);
+		
+		ResultActions resultActions = mockMvc.perform(put("/users/{id}", existingId)
+				.header("Authorization", "Bearer " + adminToken)
+				.content(jsonBody)
+				.contentType(MediaType.APPLICATION_JSON)
+				.accept(MediaType.APPLICATION_JSON));
+		
+		resultActions.andExpect(status().isUnprocessableEntity());
+	}
+	
+	@Test
+	public void updatetShouldReturnUnprocessableEntityWhenAdminLoggedAndInvalidPasswor() throws Exception {
+		user.setPassword("95-1");
+		userDTO = Factory.createUserDTO(user);
+		String jsonBody = objectMapper.writeValueAsString(userDTO);
+		
+		ResultActions resultActions = mockMvc.perform(put("/users/{id}", existingId)
+				.header("Authorization", "Bearer " + adminToken)
+				.content(jsonBody)
+				.contentType(MediaType.APPLICATION_JSON)
+				.accept(MediaType.APPLICATION_JSON));
+		
+		resultActions.andExpect(status().isUnprocessableEntity());
+	}
+	
+	@Test
+	public void updateShouldReturnUnprocessableEntityWhenAdminLoggedAndInvalidRoles() throws Exception {
+		user.getRoles().clear();
+		userDTO = Factory.createUserDTO(user);
+		String jsonBody = objectMapper.writeValueAsString(userDTO);
+		
+		ResultActions resultActions = mockMvc.perform(put("/users/{id}", existingId)
+				.header("Authorization", "Bearer " + adminToken)
+				.content(jsonBody)
+				.contentType(MediaType.APPLICATION_JSON)
+				.accept(MediaType.APPLICATION_JSON));
+		
+		resultActions.andExpect(status().isUnprocessableEntity());
+	}
+
 }
