@@ -21,9 +21,8 @@ public class UserDTO {
 	private String email;
 	@PositiveOrZero(message = "Comissão deve ter um valor zero ou positivo")
 	private Double commission;
-//	@NotBlank(message = "Campo requerido")
-//	@Size(min = 4, max = 8, message = "Senha deve ter de 4 a 8 dígitos")
-//	@PositiveOrZero(message = "Senha composta apenas por números zeros ou positivos")
+	
+	//Validation performed in the UserService
 	private String password;
 	
 	@Size(min = 1, message = "Necessário indicar pelo menos um nível de acesso")
