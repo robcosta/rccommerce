@@ -15,7 +15,7 @@ import rccommerce.dto.CustomError;
 import rccommerce.dto.ValidationError;
 import rccommerce.services.exceptions.DatabaseException;
 import rccommerce.services.exceptions.ForbiddenException;
-import rccommerce.services.exceptions.InvalidPasswordExecption;
+import rccommerce.services.exceptions.InvalidArgumentExecption;
 import rccommerce.services.exceptions.ResourceNotFoundException;
 
 @ControllerAdvice
@@ -52,8 +52,8 @@ public class ControllerExceptionHandler {
 	    return ResponseEntity.status(status).body(err);
 	}
 	
-	@ExceptionHandler(InvalidPasswordExecption.class)
-	public ResponseEntity<CustomError> invalidPassword(InvalidPasswordExecption e, HttpServletRequest request){
+	@ExceptionHandler(InvalidArgumentExecption.class)
+	public ResponseEntity<CustomError> invalidPassword(InvalidArgumentExecption e, HttpServletRequest request){
 		HttpStatus status = HttpStatus.UNPROCESSABLE_ENTITY;
 		CustomError err = new CustomError(Instant.now(),status.value(), e.getMessage(), request.getRequestURI());
 	    return ResponseEntity.status(status).body(err);

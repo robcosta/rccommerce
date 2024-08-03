@@ -13,6 +13,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Inheritance;
+import jakarta.persistence.InheritanceType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
@@ -21,6 +23,7 @@ import jakarta.persistence.Table;
 @SuppressWarnings("serial")
 @Entity
 @Table(name="tb_user")
+@Inheritance(strategy = InheritanceType.JOINED)
 public class User implements UserDetails {
 	
 	@Id
@@ -29,7 +32,6 @@ public class User implements UserDetails {
 	private String name;
 	@Column(unique = true)
 	private String email;
-	private Double commission;
 	private String password;
 	
     @ManyToMany
@@ -41,11 +43,10 @@ public class User implements UserDetails {
 	public User() {
 	}
 
-	public User(Long id, String name, String email, Double commission, String password) {
+	public User(Long id, String name, String email, String password) {
 		this.id = id;
 		this.name = name;
 		this.email = email;
-		this.commission = commission;
 		this.password = password;
 	}
 
@@ -71,14 +72,6 @@ public class User implements UserDetails {
 
 	public void setEmail(String email) {
 		this.email = email;
-	}
-
-	public Double getCommission() {
-		return commission;
-	}
-	
-	public void setCommission(Double commission) {
-		this.commission = commission;
 	}
 	
 	public String getPassword() {
