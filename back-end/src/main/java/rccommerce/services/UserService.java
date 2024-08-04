@@ -106,17 +106,4 @@ public class UserService implements UserDetailsService {
 			entity.getRoles().add(role);
 		}
 	}
-
-	protected boolean checkPassword(String password) {
-		if (password.length() < 4) {
-			throw new InvalidArgumentExecption("Senha tem de ter entre 4 e 8 caracteres.");
-		}
-		if(password.length() > 8) {
-			throw new InvalidArgumentExecption("Senha tem de ter entre 4 e 8 caracteres.");
-		}
-		if (!password.matches("^\\d+$")) {
-			throw new InvalidArgumentExecption("Senha deve conter apenas números.");
-		}
-		return true;
-	}
 }

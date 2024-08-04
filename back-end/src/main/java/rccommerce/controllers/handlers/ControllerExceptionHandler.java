@@ -53,7 +53,7 @@ public class ControllerExceptionHandler {
 	}
 	
 	@ExceptionHandler(InvalidArgumentExecption.class)
-	public ResponseEntity<CustomError> invalidPassword(InvalidArgumentExecption e, HttpServletRequest request){
+	public ResponseEntity<CustomError> invalidArgument(InvalidArgumentExecption e, HttpServletRequest request){
 		HttpStatus status = HttpStatus.UNPROCESSABLE_ENTITY;
 		CustomError err = new CustomError(Instant.now(),status.value(), e.getMessage(), request.getRequestURI());
 	    return ResponseEntity.status(status).body(err);

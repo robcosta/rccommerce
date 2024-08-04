@@ -5,24 +5,27 @@ import java.util.List;
 
 import org.springframework.security.core.GrantedAuthority;
 
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import rccommerce.controllers.validators.EmailCustom;
+import rccommerce.controllers.validators.Password;
 import rccommerce.entities.User;
 
 public class UserDTO {
 	private Long id;
 	@NotBlank(message = "Campo requerido")
-	@Size(min = 3, max = 80, message = "Nome precisa ter de 3 a 80 caracteres")
+	@Size(min = 3, max = 80, message = "Nome precisa ter de 3 a 80 caracteres.")
 	private String name;
+	
 	@NotBlank(message = "Campo requerido")
-	@Email
+	@EmailCustom
 	private String email;
 	
-	//Validation performed in the UserService
-	private String password;
+	@Size(min = 4, max = 8, message = "Senha: mínimo de 4 e máximo de 8 caracteres." )
+	@Password(message = "Senha deve conter apenas números.")
+	private String password;	
 	
-	@Size(min = 1, message = "Necessário indicar pelo menos um nível de acesso")
+	@Size(min = 1, message = "Necessário indicar pelo menos um nível de acesso.")
 	private List<String> roles = new ArrayList<>();
 
 	public UserDTO(Long id, String name, String email, String password) {

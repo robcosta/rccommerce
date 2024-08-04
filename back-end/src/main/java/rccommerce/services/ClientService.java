@@ -44,7 +44,6 @@ public class ClientService {
 
 	@Transactional
 	public ClientMinDTO insert(ClientDTO dto) {
-		userService.checkPassword(dto.getPassword());
 		Client entity = new Client();
 		copyDtoToEntity(dto, entity);
 		try {
@@ -60,9 +59,6 @@ public class ClientService {
 
 	@Transactional
 	public ClientMinDTO update(ClientDTO dto, Long id) {
-		if (!dto.getPassword().isEmpty()) {
-			userService.checkPassword(dto.getPassword());
-		}
 		try {
 			Client entity = repository.getReferenceById(id);
 			copyDtoToEntity(dto, entity);

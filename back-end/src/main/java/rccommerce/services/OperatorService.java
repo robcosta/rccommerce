@@ -44,7 +44,6 @@ public class OperatorService {
 
 	@Transactional
 	public OperatorMinDTO insert(OperatorDTO dto) {
-		userService.checkPassword(dto.getPassword());
 		Operator entity = new Operator();
 		copyDtoToEntity(dto, entity);
 		try {
@@ -57,9 +56,6 @@ public class OperatorService {
 
 	@Transactional
 	public OperatorMinDTO update(OperatorDTO dto, Long id) {
-		if (!dto.getPassword().isEmpty()) {
-			userService.checkPassword(dto.getPassword());
-		}
 		try {
 			Operator entity = repository.getReferenceById(id);
 			copyDtoToEntity(dto, entity);

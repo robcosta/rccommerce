@@ -1,11 +1,12 @@
 package rccommerce.dto;
 
-import jakarta.validation.constraints.Size;
+import org.hibernate.validator.constraints.br.CPF;
+
 import rccommerce.entities.Client;
 
 public class ClientDTO extends UserDTO {
 
-	@Size(min = 11, max = 14, message = "CPF precisa ter de 3 a 80 caracteres")
+	@CPF
 	private String cpf;
 
 	public ClientDTO(Long id, String name, String email, String password, String cpf) {
