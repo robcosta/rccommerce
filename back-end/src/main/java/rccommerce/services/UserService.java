@@ -3,6 +3,8 @@ package rccommerce.services;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -18,6 +20,7 @@ import rccommerce.projections.UserDetailsProjection;
 import rccommerce.repositories.RoleRepository;
 import rccommerce.repositories.UserRepository;
 import rccommerce.services.exceptions.InvalidArgumentExecption;
+import rccommerce.services.exceptions.ResourceNotFoundException;
 import rccommerce.util.CustomUserUtil;
 
 @Service
@@ -54,6 +57,29 @@ public class UserService implements UserDetailsService {
 	public UserMinDTO getMe() {
 		return new UserMinDTO(authenticated());
 	}
+	
+	@Transactional(readOnly = true)
+	public Page<UserMinDTO> findAll(String name, Pageable pageable) {
+		Page<User> result = repository.searchByName(name, pageable);
+		if (result.getContent().isEmpty()) {
+			throw new ResourceNotFoundException("Usuário não encontrado");
+		}
+		return result.map(x -> new UserMinDTO(x));
+	}
+
+	@Transactional(readOnly = true)
+	public UserMinDTO findById(Long id) {
+		User result = repository.findById(id)
+				.orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado."));
+		return new UserMinDTO(result);
+	}
+	
+//	@Transactional(readOnly = true)
+//	public UserMinDTO findByEmail(String email) {
+//		User result = repository.findByEmail(email)
+//				.orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado."));
+//		return new UserMinDTO(result);
+//	}
 
 	@Transactional(readOnly = true)
 	protected User authenticated() {

@@ -12,3 +12,17 @@ INSERT INTO tb_user_role(user_id, role_id) VALUES(1,2)
 INSERT INTO tb_user_role(user_id, role_id) VALUES(1,3)
 INSERT INTO tb_user_role(user_id, role_id) VALUES(2,2)
 INSERT INTO tb_user_role(user_id, role_id) VALUES(3,3)
+
+INSERT INTO tb_operator(id, commission) VALUES (1, 2.0);
+INSERT INTO tb_operator(id, commission) VALUES (2, 1.0);
+INSERT INTO tb_operator(id, commission) VALUES (3, 0.0);
+
+INSERT INTO tb_user (name, email, password) VALUES ('John Red', 'john@gmail.com', '$2a$10$efAKHcdzfnBwg5yCvuiOMeiu8pB6TuvNayPjVAZpopc1Ijx95Wyu2');
+INSERT INTO tb_user (name, email, password) VALUES ('Peter Yellow', 'peter@gmail.com','$2a$10$bPi3ofxG3lv/.M4WnzHnR.qj7S2c7sKVRINI7fteO0GYz0e/9YrZ6');
+
+INSERT INTO tb_user_role(user_id, role_id) VALUES(4,4)
+INSERT INTO tb_user_role(user_id, role_id) VALUES(5,4)
+
+INSERT INTO tb_client(id, cpf) VALUES (4, '73995808042');
+INSERT INTO tb_client(id, cpf) VALUES (5, '46311990083');
+

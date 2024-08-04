@@ -9,73 +9,79 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.persistence.EntityNotFoundException;
-import rccommerce.dto.OperatorDTO;
-import rccommerce.dto.OperatorMinDTO;
-import rccommerce.entities.Operator;
-import rccommerce.repositories.OperatorRepository;
+import rccommerce.dto.ClientDTO;
+import rccommerce.dto.ClientMinDTO;
+import rccommerce.entities.Client;
+import rccommerce.repositories.ClientRepository;
 import rccommerce.services.exceptions.DatabaseException;
 import rccommerce.services.exceptions.ForbiddenException;
 import rccommerce.services.exceptions.ResourceNotFoundException;
 
 @Service
-public class OperatorService {
+public class ClientService {
 
 	@Autowired
-	private OperatorRepository repository;
-	
+	private ClientRepository repository;
+
 	@Autowired
 	private UserService userService;
 
 	@Transactional(readOnly = true)
-	public Page<OperatorMinDTO> findAll(String name, Pageable pageable) {
-		Page<Operator> result = repository.searchByName(name, pageable);
+	public Page<ClientMinDTO> findAll(String name, Pageable pageable) {
+		Page<Client> result = repository.searchByName(name, pageable);
 		if (result.getContent().isEmpty()) {
-			throw new ResourceNotFoundException("Operador não encontrado");
+			throw new ResourceNotFoundException("Cliente não encontrado");
 		}
-		return result.map(x -> new OperatorMinDTO(x));
+		return result.map(x -> new ClientMinDTO(x));
 	}
 
 	@Transactional(readOnly = true)
-	public OperatorMinDTO findById(Long id) {
-		Operator result = repository.findById(id)
-				.orElseThrow(() -> new ResourceNotFoundException("Operador não encontrado."));
-		return new OperatorMinDTO(result);
+	public ClientMinDTO findById(Long id) {
+		Client result = repository.findById(id)
+				.orElseThrow(() -> new ResourceNotFoundException("Cliente não encontrado."));
+		return new ClientMinDTO(result);
 	}
 
 	@Transactional
-	public OperatorMinDTO insert(OperatorDTO dto) {
+	public ClientMinDTO insert(ClientDTO dto) {
 		userService.checkPassword(dto.getPassword());
-		Operator entity = new Operator();
+		Client entity = new Client();
 		copyDtoToEntity(dto, entity);
 		try {
-			entity = repository.save(entity);
-			return new OperatorMinDTO(entity);
+			entity = repository.saveAndFlush(entity);
+			return new ClientMinDTO(entity);
 		} catch (DataIntegrityViolationException e) {
-			throw new DatabaseException("Email informado já existe");
+			if (e.toString().contains("EMAIL NULLS FIRST")) {
+				throw new DatabaseException("Email informado já existe");
+			}
+			throw new DatabaseException("CPF informado já existe");
 		}
 	}
 
 	@Transactional
-	public OperatorMinDTO update(OperatorDTO dto, Long id) {
+	public ClientMinDTO update(ClientDTO dto, Long id) {
 		if (!dto.getPassword().isEmpty()) {
 			userService.checkPassword(dto.getPassword());
 		}
 		try {
-			Operator entity = repository.getReferenceById(id);
+			Client entity = repository.getReferenceById(id);
 			copyDtoToEntity(dto, entity);
 			entity = repository.saveAndFlush(entity);
-			return new OperatorMinDTO(entity);
+			return new ClientMinDTO(entity);
 		} catch (EntityNotFoundException e) {
-			throw new ResourceNotFoundException("Operador não encontrado");
+			throw new ResourceNotFoundException("Cliente não encontrado");
 		} catch (DataIntegrityViolationException e) {
-			throw new DatabaseException("Email informado já existe");			
+			if(e.toString().contains("EMAIL NULLS FIRST")) {
+				throw new DatabaseException("Email informado já existe");
+			}
+			throw new DatabaseException("CPF informado já existe");			
 		}
 	}
 
 	@Transactional(propagation = Propagation.SUPPORTS)
 	public void delete(Long id) {
 		if (!repository.existsById(id)) {
-			throw new ResourceNotFoundException("Operador não encontrado");
+			throw new ResourceNotFoundException("Cliente não encontrado");
 		}
 		if (id == userService.authenticated().getId()) {
 			throw new ForbiddenException("Proibida auto deleção");
@@ -86,9 +92,9 @@ public class OperatorService {
 			throw new DatabaseException("Falha de integridade referencial");
 		}
 	}
-		
-	private void copyDtoToEntity(OperatorDTO dto, Operator entity) {
+
+	private void copyDtoToEntity(ClientDTO dto, Client entity) {
 		userService.copyDtoToEntity(dto, entity);
-		entity.setCommission(dto.getCommission());
+		entity.setCpf(dto.getCpf());
 	}
 }
