@@ -5,6 +5,8 @@ import java.util.List;
 
 import rccommerce.dto.UserDTO;
 import rccommerce.dto.UserMinDTO;
+import rccommerce.entities.Client;
+import rccommerce.entities.Operator;
 import rccommerce.entities.Role;
 import rccommerce.entities.User;
 import rccommerce.projections.UserDetailsProjection;
@@ -12,7 +14,7 @@ import rccommerce.projections.UserDetailsProjection;
 public class Factory {
 	
 	public static User createUser() {
-		User user = new User(4L, "Robert Black", "robert@gmail.com", 2.0, "123456");
+		User user = new User(6L, "Robert Black", "robert@gmail.com", "123456");
 		return user;
 	}
 	
@@ -37,6 +39,16 @@ public class Factory {
 		List<UserDetailsProjection> list = new ArrayList<>();		
 		list.add(new UserDetailsImpl("robert@gmail.com","$2a$10$Adpk5tdO8yFkIX.6IspH.OTF0dOxx2D9kx3drL6q4/1uLhoB/Ahze", 1L, "ROLE_CLIENT"));
 		return list;	
+	}
+
+	public static Operator createOperator() {
+		Operator operator = new Operator(7L, "Ana Pink", "ana@gmail.com", "123456", 1.5);
+		return operator;
+	}
+	
+	public static Client createClient() {
+		Client client = new Client(7L, "Ana Pink", "ana@gmail.com", "123456", "11111111111");
+		return client;
 	}
 }
 
