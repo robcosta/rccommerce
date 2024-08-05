@@ -33,9 +33,11 @@ public class ClientController {
 	@PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_OPERATOR', 'ROLE_SELLER', 'ROLE_CLIENT')")
 	@GetMapping
 	public ResponseEntity<Page<ClientMinDTO>> findAll(
-			@RequestParam(name = "name", defaultValue = "") String name, 
+			@RequestParam(name = "name", defaultValue = "") String name,
+			@RequestParam(name = "email", defaultValue = "") String email,
+			@RequestParam(name = "cpf", defaultValue = "") String cpf,
 			Pageable pageable) {
-		Page<ClientMinDTO> dto = service.findAll(name, pageable);
+		Page<ClientMinDTO> dto = service.findAll(name, email, cpf, pageable);
 		return ResponseEntity.ok(dto);
 	}
 	

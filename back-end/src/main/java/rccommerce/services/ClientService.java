@@ -27,8 +27,9 @@ public class ClientService {
 	private UserService userService;
 
 	@Transactional(readOnly = true)
-	public Page<ClientMinDTO> findAll(String name, Pageable pageable) {
-		Page<Client> result = repository.searchByName(name, pageable);
+	public Page<ClientMinDTO> findAll(String name, String email, String cpf, Pageable pageable) {
+		cpf =  cpf.replaceAll("[^0-9]", "");
+		Page<Client> result = repository.searchAll(name, email, cpf, pageable);
 		if (result.getContent().isEmpty()) {
 			throw new ResourceNotFoundException("Cliente não encontrado");
 		}
@@ -45,7 +46,7 @@ public class ClientService {
 	@Transactional
 	public ClientMinDTO insert(ClientDTO dto) {
 		Client entity = new Client();
-		copyDtoToEntity(dto, entity);
+		copyDtoToEntity(dto, entity);	
 		try {
 			entity = repository.saveAndFlush(entity);
 			return new ClientMinDTO(entity);
