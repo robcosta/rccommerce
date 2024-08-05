@@ -1,5 +1,7 @@
 package rccommerce.dto;
 
+import org.springframework.security.core.GrantedAuthority;
+
 import rccommerce.entities.Client;
 
 public class ClientMinDTO extends UserMinDTO {
@@ -14,7 +16,9 @@ public class ClientMinDTO extends UserMinDTO {
 	public ClientMinDTO(Client entity) {
 		super(entity.getId(), entity.getName(), entity.getEmail());
 		cpf = entity.getCpf();
-		super.getRoles().add("ROLE_CLIENT");
+		for(GrantedAuthority role: entity.getRoles()){
+			super.getRoles().add(role.getAuthority());
+		}
 	}
 
 	public String getCpf() {

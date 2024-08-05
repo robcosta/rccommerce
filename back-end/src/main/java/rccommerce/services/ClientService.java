@@ -13,6 +13,7 @@ import rccommerce.dto.ClientDTO;
 import rccommerce.dto.ClientMinDTO;
 import rccommerce.entities.Client;
 import rccommerce.repositories.ClientRepository;
+import rccommerce.repositories.RoleRepository;
 import rccommerce.services.exceptions.DatabaseException;
 import rccommerce.services.exceptions.ForbiddenException;
 import rccommerce.services.exceptions.ResourceNotFoundException;
@@ -25,6 +26,9 @@ public class ClientService {
 
 	@Autowired
 	private UserService userService;
+	
+	@Autowired
+	private RoleRepository roleRepository;
 
 	@Transactional(readOnly = true)
 	public Page<ClientMinDTO> findAll(String name, String email, String cpf, Pageable pageable) {
@@ -92,6 +96,8 @@ public class ClientService {
 
 	private void copyDtoToEntity(ClientDTO dto, Client entity) {
 		userService.copyDtoToEntity(dto, entity);
+		entity.getRoles().clear();
+		entity.addRole(roleRepository.findByAuthority("ROLE_CLIENT"));
 		entity.setCpf(dto.getCpf());
 	}
 }
