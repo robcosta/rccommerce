@@ -30,16 +30,17 @@ public class OperatorController {
 	@Autowired
 	private OperatorService service;
 	
-	@PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_OPERATOR', 'ROLE_SELLER', 'ROLE_USER')")
+	@PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_OPERATOR', 'ROLE_SELLER')")
 	@GetMapping
 	public ResponseEntity<Page<OperatorMinDTO>> findAll(
-			@RequestParam(name = "name", defaultValue = "") String name, 
+			@RequestParam(name = "name", defaultValue = "") String name,
+			@RequestParam(name = "email", defaultValue = "") String email,
 			Pageable pageable) {
-		Page<OperatorMinDTO> dto = service.findAll(name, pageable);
+		Page<OperatorMinDTO> dto = service.findAll(name, email, pageable);
 		return ResponseEntity.ok(dto);
 	}
 	
-	@PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_OPERATOR', 'ROLE_SELLER', 'ROLE_USER')")
+	@PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_OPERATOR', 'ROLE_SELLER')")
 	@GetMapping(value = "/{id}")
 	public ResponseEntity<OperatorMinDTO> findById(@PathVariable Long id) {
 		OperatorMinDTO dto = service.findById(id);

@@ -14,7 +14,8 @@ public interface OperatorRepository extends JpaRepository<Operator, Long> {
 
 	@Query("SELECT obj FROM Operator obj "
 			+ "JOIN FETCH obj.roles "
-			+ "WHERE UPPER(obj.name) LIKE UPPER(CONCAT('%', :name,'%'))")
-	public Page<Operator> searchByName(String name, Pageable pageable);
+			+ "WHERE UPPER(obj.name) LIKE UPPER(CONCAT('%', :name,'%')) "
+			+ "AND UPPER(obj.email) LIKE UPPER(CONCAT('%', :email,'%'))")
+	public Page<Operator> searchAll(String name, String email, Pageable pageable);
 }
 

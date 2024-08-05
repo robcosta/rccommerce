@@ -29,7 +29,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
 	
 	@Query("SELECT obj FROM User obj "
 			+ "JOIN FETCH obj.roles "
-			+ "WHERE UPPER(obj.name) LIKE UPPER(CONCAT('%', :name,'%'))")
-	public Page<User> searchByName(String name, Pageable pageable);
+			+ "WHERE UPPER(obj.name) LIKE UPPER(CONCAT('%', :name,'%')) "
+			+ "AND UPPER(obj.email) LIKE UPPER(CONCAT('%', :email,'%'))")
+	public Page<User> searchByName(String name, String email, Pageable pageable);
 }
 

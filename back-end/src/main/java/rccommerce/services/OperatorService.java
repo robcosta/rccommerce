@@ -27,8 +27,8 @@ public class OperatorService {
 	private UserService userService;
 
 	@Transactional(readOnly = true)
-	public Page<OperatorMinDTO> findAll(String name, Pageable pageable) {
-		Page<Operator> result = repository.searchByName(name, pageable);
+	public Page<OperatorMinDTO> findAll(String name, String email, Pageable pageable) {
+		Page<Operator> result = repository.searchAll(name, email, pageable);
 		if (result.getContent().isEmpty()) {
 			throw new ResourceNotFoundException("Operador não encontrado");
 		}

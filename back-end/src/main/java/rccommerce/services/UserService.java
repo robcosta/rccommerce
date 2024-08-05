@@ -59,8 +59,8 @@ public class UserService implements UserDetailsService {
 	}
 	
 	@Transactional(readOnly = true)
-	public Page<UserMinDTO> findAll(String name, Pageable pageable) {
-		Page<User> result = repository.searchByName(name, pageable);
+	public Page<UserMinDTO> findAll(String name, String email, Pageable pageable) {
+		Page<User> result = repository.searchByName(name, email, pageable);
 		if (result.getContent().isEmpty()) {
 			throw new ResourceNotFoundException("Usuário não encontrado");
 		}
@@ -74,12 +74,12 @@ public class UserService implements UserDetailsService {
 		return new UserMinDTO(result);
 	}
 	
-//	@Transactional(readOnly = true)
-//	public UserMinDTO findByEmail(String email) {
-//		User result = repository.findByEmail(email)
-//				.orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado."));
-//		return new UserMinDTO(result);
-//	}
+	
+	public UserMinDTO findByEmail(String email) {
+		User result = repository.findByEmail(email)
+				.orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado."));
+		return new UserMinDTO(result);
+	}
 
 	@Transactional(readOnly = true)
 	protected User authenticated() {
