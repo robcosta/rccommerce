@@ -3,6 +3,7 @@ package rccommerce.tests;
 import java.util.ArrayList;
 import java.util.List;
 
+import rccommerce.dto.OperatorDTO;
 import rccommerce.dto.UserDTO;
 import rccommerce.dto.UserMinDTO;
 import rccommerce.entities.Client;
@@ -42,14 +43,21 @@ public class Factory {
 	}
 
 	public static Operator createOperator() {
-		Operator operator = new Operator(7L, "Ana Pink", "ana@gmail.com", "123456", 1.5);
+		Operator operator = new Operator(7L, "Ana Pink", "ana@gmail.com", "123456", 1.5);	
+		operator.getRoles().add(createRole());
 		return operator;
+	}
+	
+	public static OperatorDTO createOperatorDTO(Operator operator) {
+		OperatorDTO operatorDto = new OperatorDTO(operator);
+		return operatorDto;
 	}
 	
 	public static Client createClient() {
 		Client client = new Client(7L, "Ana Pink", "ana@gmail.com", "123456", "11111111111");
 		return client;
 	}
+
 }
 
 
