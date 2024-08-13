@@ -8,18 +8,14 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import rccommerce.dto.UserDTO;
 import rccommerce.dto.UserMinDTO;
 import rccommerce.entities.Role;
 import rccommerce.entities.User;
 import rccommerce.projections.UserDetailsProjection;
-import rccommerce.repositories.RoleRepository;
 import rccommerce.repositories.UserRepository;
-import rccommerce.services.exceptions.InvalidArgumentExecption;
 import rccommerce.services.exceptions.ResourceNotFoundException;
 import rccommerce.util.CustomUserUtil;
 
@@ -28,9 +24,6 @@ public class UserService implements UserDetailsService {
 
 	@Autowired
 	private UserRepository repository;
-	
-	@Autowired
-	private RoleRepository roleRepository;
 
 	@Autowired
 	private CustomUserUtil customUserUtil;
@@ -57,7 +50,7 @@ public class UserService implements UserDetailsService {
 	public UserMinDTO getMe() {
 		return new UserMinDTO(authenticated());
 	}
-	
+
 	@Transactional(readOnly = true)
 	public Page<UserMinDTO> findAll(String name, String email, Pageable pageable) {
 		Page<User> result = repository.searchAll(name, email, pageable);
@@ -73,8 +66,7 @@ public class UserService implements UserDetailsService {
 				.orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado."));
 		return new UserMinDTO(result);
 	}
-	
-	
+
 	public UserMinDTO findByEmail(String email) {
 		User result = repository.findByEmail(email)
 				.orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado."));
@@ -88,22 +80,6 @@ public class UserService implements UserDetailsService {
 			return repository.findByEmail(username).get();
 		} catch (Exception e) {
 			throw new UsernameNotFoundException("Usuário não encontrado");
-		}
-	}
-
-	protected void copyDtoToEntity(UserDTO dto, User entity) {
-		entity.setName(dto.getName());
-		entity.setEmail(dto.getEmail());
-		if (!dto.getPassword().isEmpty()) {
-			entity.setPassword(new BCryptPasswordEncoder().encode(dto.getPassword()));
-		}
-		entity.getRoles().clear();
-		for (String authority : dto.getRoles()) {
-			Role role = roleRepository.findByAuthority(authority);
-			if(role == null) {
-				throw new InvalidArgumentExecption("roles inexistente");
-			}
-			entity.getRoles().add(role);
 		}
 	}
 }

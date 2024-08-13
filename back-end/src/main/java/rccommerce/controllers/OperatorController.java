@@ -56,14 +56,14 @@ public class OperatorController {
 		return ResponseEntity.created(uri).body(minDTO);
 	}
 	
-	@PreAuthorize("hasAnyRole('ROLE_ADMIN')")
+	@PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_OPERATOR', 'ROLE_SELLER')")
 	@PutMapping(value = "/{id}")
 	public ResponseEntity<OperatorMinDTO> update(@Valid @RequestBody OperatorDTO dto, @PathVariable Long id) {
 		OperatorMinDTO minDTO = service.update(dto, id);
 		return ResponseEntity.ok(minDTO);
 	}
 	
-	@PreAuthorize("hasAnyRole('ROLE_ADMIN')")
+	@PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_OPERATOR', 'ROLE_SELLER')")
 	@DeleteMapping(value = "/{id}")
 	public ResponseEntity<Void> delete(@PathVariable Long id) {
 		service.delete(id);

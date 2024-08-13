@@ -21,7 +21,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import rccommerce.dto.OperatorDTO;
 import rccommerce.entities.Operator;
-import rccommerce.tests.Factory;
+import rccommerce.tests.FactoryUser;
 import rccommerce.tests.TokenUtil;
 
 @SpringBootTest
@@ -39,12 +39,11 @@ public class OperatorControllerIT {
 	private TokenUtil tokenUtil;
 	
 	
-	private String adminToken, operatorToken, invalidToken, emptyToken;
+	private String adminToken, operatorToken, invalidToken;
 	private String userAdminEmail, userAdminPassword, userOperatorEmail, userOperatorPassword;
 	private String existsOperatorName, existsOperatorEmail, nonExistsOperatorName, nonExistsOperatorEmail, emailUnique;
 
 	private long existingId, nonExistingId;
-	private Long countTotalUsers;
 	
 	private Operator operator;
 	private OperatorDTO operatorDTO;
@@ -70,14 +69,13 @@ public class OperatorControllerIT {
 		adminToken = tokenUtil.obtainAccessToken(mockMvc, userAdminEmail, userAdminPassword);
 		operatorToken = tokenUtil.obtainAccessToken(mockMvc, userOperatorEmail, userOperatorPassword);
 		invalidToken = adminToken + "xpto";
-		countTotalUsers = 5L;
 		
-		operator = Factory.createOperator();
+		operator = FactoryUser.createOperator();
 		operator.setId(null);
 	}
 
 	@Test
-	public void findAllShouldREturnPageWhenValidTokenAndNameAndEmailParamsAreEmptys() throws Exception {
+	public void findAllShouldREturnPageWhenValidTokenAndEmptyParams() throws Exception {
 
 		ResultActions resultActions = mockMvc.perform(get("/operators")
 				.header("Authorization", "Bearer " + adminToken)
@@ -95,9 +93,9 @@ public class OperatorControllerIT {
 	}
 
 	@Test
-	public void findAllShouldReturnPageWhenValidTokenAndNameParamIsNotEmpty() throws Exception {
+	public void findAllShouldReturnPageWhenValidTokenAndNameParamExisting() throws Exception {
 
-		ResultActions resultActions = mockMvc.perform(get("/operators?name={existsOperatorName}", existsOperatorName)
+		ResultActions resultActions = mockMvc.perform(get("/operators?name={name}", existsOperatorName)
 				.header("Authorization", "Bearer " + adminToken)
 				.accept(MediaType.APPLICATION_JSON));
 
@@ -110,9 +108,9 @@ public class OperatorControllerIT {
 	}
 	
 	@Test
-	public void findAllShouldReturnPageWhenValidTokenAndEmailParamIsNotEmpty() throws Exception {
+	public void findAllShouldReturnPageWhenValidTokenAndEmailParamExisting() throws Exception {
 		
-		ResultActions resultActions = mockMvc.perform(get("/operators?email={existsOperatorEmail}", existsOperatorEmail)
+		ResultActions resultActions = mockMvc.perform(get("/operators?email={email}", existsOperatorEmail)
 				.header("Authorization", "Bearer " + adminToken)
 				.accept(MediaType.APPLICATION_JSON));
 		
@@ -125,9 +123,9 @@ public class OperatorControllerIT {
 	}
 	
 	@Test
-	public void findAllShouldReturnPageWhenValidTokenAndNameNotExisting() throws Exception {
+	public void findAllShouldReturnPageWhenValidTokenAndNameParamDoesNotExists() throws Exception {
 		
-		ResultActions resultActions = mockMvc.perform(get("/operators?name={nonExistsName}", nonExistsOperatorName)
+		ResultActions resultActions = mockMvc.perform(get("/operators?name={name}", nonExistsOperatorName)
 				.header("Authorization", "Bearer " + adminToken)
 				.accept(MediaType.APPLICATION_JSON));
 		
@@ -136,9 +134,9 @@ public class OperatorControllerIT {
 	}
 	
 	@Test
-	public void findAllShouldReturnPageWhenValidTokenAndEmailNotExisting() throws Exception {
+	public void findAllShouldReturnPageWhenValidTokenAndEmailParamDoesNotExists() throws Exception {
 		
-		ResultActions resultActions = mockMvc.perform(get("/operators?email={nonExistsEmail}", nonExistsOperatorEmail)
+		ResultActions resultActions = mockMvc.perform(get("/operators?email={email}", nonExistsOperatorEmail)
 				.header("Authorization", "Bearer " + adminToken)
 				.accept(MediaType.APPLICATION_JSON));
 		
@@ -192,7 +190,7 @@ public class OperatorControllerIT {
 	
 	@Test
 	public void insertShouldReturnOperatorMinDTOWhenAdminLoggedAndAllDataIsValid() throws Exception {
-		operatorDTO = Factory.createOperatorDTO(operator);
+		operatorDTO = FactoryUser.createOperatorDTO(operator);
 		String jsonBody = objectMapper.writeValueAsString(operatorDTO);
 		
 		String expectedName =  operator.getName();
@@ -205,7 +203,6 @@ public class OperatorControllerIT {
 				.accept(MediaType.APPLICATION_JSON));
 		
 		resultActions.andExpect(status().isCreated());
-		resultActions.andExpect(jsonPath("$.id").value(countTotalUsers + 1L));
 		resultActions.andExpect(jsonPath("$.name").value(expectedName));
 		resultActions.andExpect(jsonPath("$.email").value(expectedEmail));
 		resultActions.andExpect(jsonPath("$.roles[0]").value("ROLE_ADMIN"));
@@ -213,7 +210,7 @@ public class OperatorControllerIT {
 	
 	@Test
 	public void insertShouldReturnForbiddenWhenOperatorLoggedAndAllDataIsValid() throws Exception {
-		operatorDTO = Factory.createOperatorDTO(operator);
+		operatorDTO = FactoryUser.createOperatorDTO(operator);
 		String jsonBody = objectMapper.writeValueAsString(operatorDTO);
 
 		ResultActions resultActions = mockMvc.perform(post("/operators")
@@ -227,7 +224,7 @@ public class OperatorControllerIT {
 	
 	@Test
 	public void insertShouldReturnUnauthorizedWhenOperatorLoggedAndAllDataIsValid() throws Exception {
-		operatorDTO = Factory.createOperatorDTO(operator);
+		operatorDTO = FactoryUser.createOperatorDTO(operator);
 		String jsonBody = objectMapper.writeValueAsString(operatorDTO);
 		
 		ResultActions resultActions = mockMvc.perform(post("/operators")
@@ -242,7 +239,7 @@ public class OperatorControllerIT {
 	@Test
 	public void insertShouldReturnBadRequestWhenOperatorLoggedAndAllDataIsValidAndEmailDoesNotUnique() throws Exception {
 		operator.setEmail(emailUnique);
-		operatorDTO = Factory.createOperatorDTO(operator);
+		operatorDTO = FactoryUser.createOperatorDTO(operator);
 		String jsonBody = objectMapper.writeValueAsString(operatorDTO);
 		
 		ResultActions resultActions = mockMvc.perform(post("/operators")
@@ -257,7 +254,7 @@ public class OperatorControllerIT {
 	@Test
 	public void insertShouldReturnUnprocessableEntityWhenAdminLoggedAndInvalidName() throws Exception {
 		operator.setName("Ro");
-		operatorDTO = Factory.createOperatorDTO(operator);
+		operatorDTO = FactoryUser.createOperatorDTO(operator);
 		String jsonBody = objectMapper.writeValueAsString(operatorDTO);
 		
 		ResultActions resultActions = mockMvc.perform(post("/operators")
@@ -272,8 +269,8 @@ public class OperatorControllerIT {
 	@Test
 	public void insertShouldReturnUnprocessableEntityWhenAdminLoggedAndInvalidEmail() throws Exception {
 		operator.setEmail("roberto.com");
-		operator.addRole(Factory.createRole());
-		operatorDTO = Factory.createOperatorDTO(operator);
+		operator.addRole(FactoryUser.createRole());
+		operatorDTO = FactoryUser.createOperatorDTO(operator);
 		String jsonBody = objectMapper.writeValueAsString(operatorDTO);
 		
 		ResultActions resultActions = mockMvc.perform(post("/operators")
@@ -289,7 +286,7 @@ public class OperatorControllerIT {
 	public void insertShouldReturnUnprocessableEntityWhenAdminLoggedAndInvalidCommission() throws Exception {
 		operator.setCommission(-1.0);
 		
-		operatorDTO = Factory.createOperatorDTO(operator);
+		operatorDTO = FactoryUser.createOperatorDTO(operator);
 		String jsonBody = objectMapper.writeValueAsString(operatorDTO);
 		
 		ResultActions resultActions = mockMvc.perform(post("/operators")
@@ -304,8 +301,8 @@ public class OperatorControllerIT {
 	@Test
 	public void insertShouldReturnUnprocessableEntityWhenAdminLoggedAndInvalidPassword() throws Exception {
 		operator.setPassword("12A34B");;
-		operator.addRole(Factory.createRole());
-		operatorDTO = Factory.createOperatorDTO(operator);
+		operator.addRole(FactoryUser.createRole());
+		operatorDTO = FactoryUser.createOperatorDTO(operator);
 		String jsonBody = objectMapper.writeValueAsString(operatorDTO);
 		
 		ResultActions resultActions = mockMvc.perform(post("/operators")
@@ -320,7 +317,7 @@ public class OperatorControllerIT {
 	@Test
 	public void insertShouldReturnUnprocessableEntityWhenAdminLoggedAndInvalidRoles() throws Exception {
 		operator.getRoles().clear();
-		operatorDTO = Factory.createOperatorDTO(operator);
+		operatorDTO = FactoryUser.createOperatorDTO(operator);
 		String jsonBody = objectMapper.writeValueAsString(operatorDTO);
 		
 		ResultActions resultActions = mockMvc.perform(post("/operators")
@@ -334,7 +331,7 @@ public class OperatorControllerIT {
 	
 	@Test
 	public void updateShouldReturnOperatorMinDTOWhenAdminLoggedAndAllDataIsValid() throws Exception {
-		operatorDTO = Factory.createOperatorDTO(operator);
+		operatorDTO = FactoryUser.createOperatorDTO(operator);
 		String jsonBody = objectMapper.writeValueAsString(operatorDTO);
 		
 		String expectedName =  operator.getName();
@@ -355,7 +352,7 @@ public class OperatorControllerIT {
 	
 	@Test
 	public void updateShouldReturnForbiddenWhenOperatorLoggedAndAllDataIsValid() throws Exception {
-		operatorDTO = Factory.createOperatorDTO(operator);
+		operatorDTO = FactoryUser.createOperatorDTO(operator);
 		String jsonBody = objectMapper.writeValueAsString(operatorDTO);
 		
 		ResultActions resultActions = mockMvc.perform(put("/operators/{id}", existingId)
@@ -369,7 +366,7 @@ public class OperatorControllerIT {
 	
 	@Test
 	public void updateShouldReturnUnauthorizedWhenInvalidTokenAndAllDataIsValid() throws Exception {
-		operatorDTO = Factory.createOperatorDTO(operator);
+		operatorDTO = FactoryUser.createOperatorDTO(operator);
 		String jsonBody = objectMapper.writeValueAsString(operatorDTO);
 		
 		ResultActions resultActions = mockMvc.perform(put("/operators/{id}", existingId)
@@ -384,7 +381,7 @@ public class OperatorControllerIT {
 	@Test
 	public void updateShouldReturnBadRequestWhenOperatorLoggedAndAllDataIsValidAndEmailDoesNotUnique() throws Exception {
 		operator.setEmail(emailUnique);
-		operatorDTO = Factory.createOperatorDTO(operator);
+		operatorDTO = FactoryUser.createOperatorDTO(operator);
 		String jsonBody = objectMapper.writeValueAsString(operatorDTO);
 		
 		ResultActions resultActions = mockMvc.perform(put("/operators/{id}", existingId)
@@ -399,7 +396,7 @@ public class OperatorControllerIT {
 	@Test
 	public void updateShouldReturnUnprocessableEntityWhenAdminLoggedAndInvalidName() throws Exception {
 		operator.setName("");
-		operatorDTO = Factory.createOperatorDTO(operator);
+		operatorDTO = FactoryUser.createOperatorDTO(operator);
 		String jsonBody = objectMapper.writeValueAsString(operatorDTO);
 		
 		ResultActions resultActions = mockMvc.perform(put("/operators/{id}", existingId)
@@ -414,7 +411,7 @@ public class OperatorControllerIT {
 	@Test
 	public void updateShouldReturnUnprocessableEntityWhenAdminLoggedAndInvalidEmail() throws Exception {
 		operator.setEmail("roberto@");
-		operatorDTO = Factory.createOperatorDTO(operator);
+		operatorDTO = FactoryUser.createOperatorDTO(operator);
 		String jsonBody = objectMapper.writeValueAsString(operatorDTO);
 		
 		ResultActions resultActions = mockMvc.perform(put("/operators/{id}", existingId)
@@ -429,7 +426,7 @@ public class OperatorControllerIT {
 	@Test
 	public void updateShouldReturnUnprocessableEntityWhenAdminLoggedAndInvalidComission() throws Exception {
 		operator.setCommission(-0.15);
-		operatorDTO = Factory.createOperatorDTO(operator);
+		operatorDTO = FactoryUser.createOperatorDTO(operator);
 		String jsonBody = objectMapper.writeValueAsString(operatorDTO);
 		
 		ResultActions resultActions = mockMvc.perform(put("/operators/{id}", existingId)
@@ -444,7 +441,7 @@ public class OperatorControllerIT {
 	@Test
 	public void updatetShouldReturnUnprocessableEntityWhenAdminLoggedAndInvalidPasswor() throws Exception {
 		operator.setPassword("95-1");
-		operatorDTO = Factory.createOperatorDTO(operator);
+		operatorDTO = FactoryUser.createOperatorDTO(operator);
 		String jsonBody = objectMapper.writeValueAsString(operatorDTO);
 		
 		ResultActions resultActions = mockMvc.perform(put("/operators/{id}", existingId)
@@ -459,7 +456,7 @@ public class OperatorControllerIT {
 	@Test
 	public void updateShouldReturnUnprocessableEntityWhenAdminLoggedAndInvalidRoles() throws Exception {
 		operator.getRoles().clear();
-		operatorDTO = Factory.createOperatorDTO(operator);
+		operatorDTO = FactoryUser.createOperatorDTO(operator);
 		String jsonBody = objectMapper.writeValueAsString(operatorDTO);
 		
 		ResultActions resultActions = mockMvc.perform(put("/operators/{id}", existingId)

@@ -1,7 +1,5 @@
 package rccommerce.dto;
 
-import org.springframework.security.core.GrantedAuthority;
-
 import rccommerce.entities.Operator;
 
 public class OperatorMinDTO extends UserMinDTO {
@@ -14,11 +12,8 @@ public class OperatorMinDTO extends UserMinDTO {
 	}
 
 	public OperatorMinDTO(Operator entity) {
-		super(entity.getId(), entity.getName(), entity.getEmail());
+		super(entity);
 		commission = entity.getCommission();
-		for(GrantedAuthority role: entity.getRoles()){
-			super.getRoles().add(role.getAuthority());
-		}
 	}
 
 	public Double getCommission() {

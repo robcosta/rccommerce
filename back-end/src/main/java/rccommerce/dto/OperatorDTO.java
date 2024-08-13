@@ -1,7 +1,5 @@
 package rccommerce.dto;
 
-import org.springframework.security.core.GrantedAuthority;
-
 import jakarta.validation.constraints.PositiveOrZero;
 import rccommerce.entities.Operator;
 
@@ -15,11 +13,8 @@ public class OperatorDTO extends UserDTO{
 	}
 
 	public OperatorDTO(Operator entity) {
-		super(entity.getId(), entity.getName(), entity.getEmail(), entity.getPassword());
+		super(entity);
 		commission = entity.getCommission();
-		for(GrantedAuthority role: entity.getRoles()){
-			super.getRoles().add(role.getAuthority());
-		}
 	}
 
 	public Double getCommission() {

@@ -15,7 +15,7 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
 
 import rccommerce.entities.User;
-import rccommerce.tests.Factory;
+import rccommerce.tests.FactoryUser;
 import rccommerce.tests.TokenUtil;
 
 @SpringBootTest
@@ -51,8 +51,8 @@ public class UserControllerIT {
 		adminToken = tokenUtil.obtainAccessToken(mockMvc, adminUserName, adminPassword);
 		invalidToken = adminToken + "xpto";
 		
-		user = Factory.createUser();
-		user.addRole(Factory.createRole());
+		user = FactoryUser.createUser();
+		user.addRole(FactoryUser.createRole());
 		user.setId(null);
 	}
 	

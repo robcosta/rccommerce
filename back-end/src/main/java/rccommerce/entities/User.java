@@ -19,6 +19,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
+import rccommerce.entities.enums.Auth;
 
 @SuppressWarnings("serial")
 @Entity
@@ -39,6 +40,8 @@ public class User implements UserDetails {
     		joinColumns = @JoinColumn(name = "user_id"),
     		inverseJoinColumns = @JoinColumn(name = "role_id"))
 	Set<Role> roles = new HashSet<>();
+    
+    Set<Integer> auths = new HashSet<>();
 	
 	public User() {
 	}
@@ -88,6 +91,18 @@ public class User implements UserDetails {
 
 	public void addRole(Role role) {
 		roles.add(role);
+	}
+	
+	public Set<Auth> getAuths() {
+		Set<Auth> result = new HashSet<>();
+		for (Integer auth : auths) {
+			result.add(Auth.searchCode(auth).get());
+		}
+		return result;
+	}
+	
+	public void addAuth(Auth auth) {
+		this.auths.add(auth.getCode());
 	}
 	
 	public boolean hasRole(String roleNmame) {

@@ -1,7 +1,6 @@
 package rccommerce.dto;
 
 import org.hibernate.validator.constraints.br.CPF;
-import org.springframework.security.core.GrantedAuthority;
 
 import rccommerce.entities.Client;
 
@@ -16,11 +15,8 @@ public class ClientDTO extends UserDTO {
 	}
 
 	public ClientDTO(Client entity) {
-		super(entity.getId(), entity.getName(), entity.getEmail(), entity.getPassword());
+		super(entity);
 		cpf = entity.getCpf();
-		for(GrantedAuthority role: entity.getRoles()){
-			super.getRoles().add(role.getAuthority());
-		}
 	}
 
 	public String getCpf() {

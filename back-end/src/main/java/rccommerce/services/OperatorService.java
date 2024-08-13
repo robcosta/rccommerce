@@ -1,21 +1,29 @@
 package rccommerce.services;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import jakarta.persistence.EntityNotFoundException;
 import rccommerce.dto.OperatorDTO;
 import rccommerce.dto.OperatorMinDTO;
+import rccommerce.dto.UserMinDTO;
 import rccommerce.entities.Operator;
+import rccommerce.entities.Role;
+import rccommerce.entities.enums.Auth;
 import rccommerce.repositories.OperatorRepository;
+import rccommerce.repositories.RoleRepository;
 import rccommerce.services.exceptions.DatabaseException;
 import rccommerce.services.exceptions.ForbiddenException;
+import rccommerce.services.exceptions.InvalidArgumentExecption;
 import rccommerce.services.exceptions.ResourceNotFoundException;
+import rccommerce.services.util.Authentication;
 
 @Service
 public class OperatorService {
@@ -25,9 +33,17 @@ public class OperatorService {
 	
 	@Autowired
 	private UserService userService;
-
+	
+	@Autowired
+	private RoleRepository roleRepository;
+	
+	@Autowired
+	private Authentication authentication;    
+	
 	@Transactional(readOnly = true)
 	public Page<OperatorMinDTO> findAll(String name, String email, Pageable pageable) {
+		authentication.authUser("READER", null);
+		
 		Page<Operator> result = repository.searchAll(name, email, pageable);
 		if (result.getContent().isEmpty()) {
 			throw new ResourceNotFoundException("Operador não encontrado");
@@ -37,6 +53,8 @@ public class OperatorService {
 
 	@Transactional(readOnly = true)
 	public OperatorMinDTO findById(Long id) {
+		authentication.authUser("READER", id);
+		
 		Operator result = repository.findById(id)
 				.orElseThrow(() -> new ResourceNotFoundException("Operador não encontrado."));
 		return new OperatorMinDTO(result);
@@ -44,9 +62,11 @@ public class OperatorService {
 
 	@Transactional
 	public OperatorMinDTO insert(OperatorDTO dto) {
+		authentication.authUser("CREATE", null);
+		
+		try {
 		Operator entity = new Operator();
 		copyDtoToEntity(dto, entity);
-		try {
 			entity = repository.save(entity);
 			return new OperatorMinDTO(entity);
 		} catch (DataIntegrityViolationException e) {
@@ -56,35 +76,70 @@ public class OperatorService {
 
 	@Transactional
 	public OperatorMinDTO update(OperatorDTO dto, Long id) {
+		if(id == 1L) {
+			throw new ForbiddenException("ADMINSTRADOR MASTER - Atualização proibida");
+		}
+		authentication.authUser("UPDATE", id);
 		try {
 			Operator entity = repository.getReferenceById(id);
 			copyDtoToEntity(dto, entity);
 			entity = repository.saveAndFlush(entity);
 			return new OperatorMinDTO(entity);
-		} catch (EntityNotFoundException e) {
-			throw new ResourceNotFoundException("Operador não encontrado");
 		} catch (DataIntegrityViolationException e) {
 			throw new DatabaseException("Email informado já existe");			
 		}
 	}
 
 	@Transactional(propagation = Propagation.SUPPORTS)
-	public void delete(Long id) {
+	public void delete(Long id) {	
+		if(id == 1L) {
+			throw new ForbiddenException("ADMINSTRADOR MASTER - Deleção proibida");
+		}
+		authentication.authUser("DELETE", id);
+
 		if (!repository.existsById(id)) {
 			throw new ResourceNotFoundException("Operador não encontrado");
 		}
-		if (id == userService.authenticated().getId()) {
-			throw new ForbiddenException("Proibida auto deleção");
-		}
 		try {
-			repository.deleteById(id);
+			repository.deleteById(id);		
 		} catch (DataIntegrityViolationException e) {
 			throw new DatabaseException("Falha de integridade referencial");
 		}
 	}
 		
-	private void copyDtoToEntity(OperatorDTO dto, Operator entity) {
-		userService.copyDtoToEntity(dto, entity);
+	void copyDtoToEntity(OperatorDTO dto, Operator entity) {
+		UserMinDTO userLogged = userService.getMe();
+		
+		entity.setName(dto.getName());
+		entity.setEmail(dto.getEmail());
 		entity.setCommission(dto.getCommission());
+		if (!dto.getPassword().isEmpty()) {
+			entity.setPassword(new BCryptPasswordEncoder().encode(dto.getPassword()));
+		}
+
+		try {
+			entity.getAuths().clear();
+			for (String auth : dto.getAuths()) {
+				entity.addAuth(Auth.valueOf(auth));
+			}
+		} catch (IllegalArgumentException e) {
+			throw new InvalidArgumentExecption("Autorização inexistentes");
+		}
+
+		if (!userLogged.getRoles().containsAll(List.of("ROLE_ADMIN"))) {			
+			return;
+		}
+		
+		if(dto.getRoles().isEmpty()) {
+			throw new InvalidArgumentExecption("Indicar pelo menos um nível de acesso");
+		}
+		entity.getRoles().clear();
+		for (String authority : dto.getRoles()) {
+			Role role = roleRepository.findByAuthority(authority);
+			if (role == null) {
+				throw new InvalidArgumentExecption("Nível de acesso inexistentes");
+			}
+			entity.getRoles().add(role);
+		}
 	}
 }

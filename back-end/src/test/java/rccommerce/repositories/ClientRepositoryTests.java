@@ -12,7 +12,7 @@ import org.springframework.data.domain.Page;
 
 import jakarta.persistence.EntityNotFoundException;
 import rccommerce.entities.Client;
-import rccommerce.tests.Factory;
+import rccommerce.tests.FactoryUser;
 
 @DataJpaTest
 public class ClientRepositoryTests {
@@ -36,7 +36,7 @@ public class ClientRepositoryTests {
 		nonExistsEmail = "richard@gmail.com";
 		existsCpf = "73995808042";
 		nonExistsCPF = "00000000000";
-		client = Factory.createClient();
+		client = FactoryUser.createClient();
 		totalClient = repository.count();
 	}
 	

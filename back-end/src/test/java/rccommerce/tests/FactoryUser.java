@@ -3,6 +3,7 @@ package rccommerce.tests;
 import java.util.ArrayList;
 import java.util.List;
 
+import rccommerce.dto.ClientDTO;
 import rccommerce.dto.OperatorDTO;
 import rccommerce.dto.UserDTO;
 import rccommerce.dto.UserMinDTO;
@@ -12,15 +13,25 @@ import rccommerce.entities.Role;
 import rccommerce.entities.User;
 import rccommerce.projections.UserDetailsProjection;
 
-public class Factory {
+public class FactoryUser {
 	
 	public static User createUser() {
 		User user = new User(6L, "Robert Black", "robert@gmail.com", "123456");
 		return user;
 	}
 	
-	public static Role createRole() {
+	public static Role createRoleAdmin() {
 		Role role = new Role(1L, "ROLE_ADMIN");
+		return role;
+	}
+	
+	public static Role createRoleOperator() {
+		Role role = new Role(3L, "ROLE_OPERATOR");
+		return role;
+	}
+	
+	public static Role createRoleClient() {
+		Role role = new Role(2L, "ROLE_CLIENT");
 		return role;
 	}
 	
@@ -36,6 +47,10 @@ public class Factory {
 		return new UserMinDTO(createUser());
 	}
 	
+	public static UserMinDTO createUserMinDTO(User user) {
+		return new UserMinDTO(user);
+	}
+	
 	public static List<UserDetailsProjection> createUserDetails(){
 		List<UserDetailsProjection> list = new ArrayList<>();		
 		list.add(new UserDetailsImpl("robert@gmail.com","$2a$10$Adpk5tdO8yFkIX.6IspH.OTF0dOxx2D9kx3drL6q4/1uLhoB/Ahze", 1L, "ROLE_CLIENT"));
@@ -44,7 +59,11 @@ public class Factory {
 
 	public static Operator createOperator() {
 		Operator operator = new Operator(7L, "Ana Pink", "ana@gmail.com", "123456", 1.5);	
-		operator.getRoles().add(createRole());
+		return operator;
+	}
+	
+	public static Operator createOperator(User user) {
+		Operator operator = new Operator(user.getId(), user.getName(), user.getEmail(), user.getPassword(), 1.5);	
 		return operator;
 	}
 	
@@ -54,8 +73,14 @@ public class Factory {
 	}
 	
 	public static Client createClient() {
-		Client client = new Client(7L, "Ana Pink", "ana@gmail.com", "123456", "11111111111");
+		Client client = new Client(7L, "Ana Pink", "ana@gmail.com", "123456", "59395734019");
+		client.getRoles().add(new Role(4L, "ROLE_CLIENT"));
 		return client;
+	}
+	
+	public static ClientDTO createClientDTO(Client client) {
+		ClientDTO clientDto = new ClientDTO(client);
+		return clientDto;
 	}
 
 }

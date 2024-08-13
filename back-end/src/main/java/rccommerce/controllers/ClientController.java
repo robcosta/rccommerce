@@ -48,7 +48,7 @@ public class ClientController {
 		return ResponseEntity.ok(dto);
 	}
 	
-	@PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_OPERATOR', 'ROLE_SELLER')")
+//	@PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_OPERATOR', 'ROLE_SELLER', 'ROLE_CLIENT')")
 	@PostMapping
 	public ResponseEntity<ClientMinDTO> insert(@Valid @RequestBody ClientDTO dto) {
 		ClientMinDTO minDTO = service.insert(dto);
@@ -57,14 +57,14 @@ public class ClientController {
 		return ResponseEntity.created(uri).body(minDTO);
 	}
 	
-	@PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_OPERATOR', 'ROLE_SELLER')")
+	@PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_OPERATOR', 'ROLE_SELLER', 'ROLE_CLIENT')")
 	@PutMapping(value = "/{id}")
 	public ResponseEntity<ClientMinDTO> update(@Valid @RequestBody ClientDTO dto, @PathVariable Long id) {
 		ClientMinDTO minDTO = service.update(dto, id);
 		return ResponseEntity.ok(minDTO);
 	}
 	
-	@PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_OPERATOR', 'ROLE_SELLER')")
+	@PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_OPERATOR', 'ROLE_SELLER', 'ROLE_CLIENT')")
 	@DeleteMapping(value = "/{id}")
 	public ResponseEntity<Void> delete(@PathVariable Long id) {
 		service.delete(id);

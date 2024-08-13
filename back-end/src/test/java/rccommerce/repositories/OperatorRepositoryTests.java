@@ -12,7 +12,7 @@ import org.springframework.data.domain.Page;
 
 import jakarta.persistence.EntityNotFoundException;
 import rccommerce.entities.Operator;
-import rccommerce.tests.Factory;
+import rccommerce.tests.FactoryUser;
 
 @DataJpaTest
 public class OperatorRepositoryTests {
@@ -34,7 +34,7 @@ public class OperatorRepositoryTests {
 		nonExistsName = "Richard";
 		existsEmail = "maria@gmail.com";
 		nonExistsEmail = "richard@gmail.com";
-		operator = Factory.createOperator();
+		operator = FactoryUser.createOperator();
 		totalOperator = repository.count();
 	}
 	

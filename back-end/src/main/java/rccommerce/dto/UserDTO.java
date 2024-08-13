@@ -10,6 +10,7 @@ import jakarta.validation.constraints.Size;
 import rccommerce.controllers.validators.EmailCustom;
 import rccommerce.controllers.validators.Password;
 import rccommerce.entities.User;
+import rccommerce.entities.enums.Auth;
 
 public class UserDTO {
 	private Long id;
@@ -25,8 +26,9 @@ public class UserDTO {
 	@Password(message = "Senha deve conter apenas números.")
 	private String password;	
 	
-	@Size(min = 1, message = "Necessário indicar pelo menos um nível de acesso.")
 	private List<String> roles = new ArrayList<>();
+	
+	private List<String> auths = new ArrayList<>();
 
 	public UserDTO(Long id, String name, String email, String password) {
 		this.id = id;
@@ -42,6 +44,9 @@ public class UserDTO {
 		password = entity.getPassword();
 		for(GrantedAuthority role: entity.getRoles()){
 			roles.add(role.getAuthority());
+		}
+		for(Auth auth: entity.getAuths()) {
+			auths.add(auth.toString());
 		}
 	}
 
@@ -65,4 +70,7 @@ public class UserDTO {
 		return roles;
 	}
 	
+	public List<String> getAuths() {
+		return auths;
+	}	
 }

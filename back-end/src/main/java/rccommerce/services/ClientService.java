@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,26 +13,29 @@ import jakarta.persistence.EntityNotFoundException;
 import rccommerce.dto.ClientDTO;
 import rccommerce.dto.ClientMinDTO;
 import rccommerce.entities.Client;
+import rccommerce.entities.enums.Auth;
 import rccommerce.repositories.ClientRepository;
 import rccommerce.repositories.RoleRepository;
 import rccommerce.services.exceptions.DatabaseException;
-import rccommerce.services.exceptions.ForbiddenException;
 import rccommerce.services.exceptions.ResourceNotFoundException;
+import rccommerce.services.util.Authentication;
 
 @Service
 public class ClientService {
 
 	@Autowired
 	private ClientRepository repository;
-
-	@Autowired
-	private UserService userService;
 	
 	@Autowired
 	private RoleRepository roleRepository;
+	
+	@Autowired
+	private Authentication authentication; 
 
 	@Transactional(readOnly = true)
 	public Page<ClientMinDTO> findAll(String name, String email, String cpf, Pageable pageable) {
+		authentication.authUser("READER", null);
+		
 		cpf =  cpf.replaceAll("[^0-9]", "");
 		Page<Client> result = repository.searchAll(name, email, cpf, pageable);
 		if (result.getContent().isEmpty()) {
@@ -42,6 +46,8 @@ public class ClientService {
 
 	@Transactional(readOnly = true)
 	public ClientMinDTO findById(Long id) {
+		authentication.authUser("READER", id);
+		
 		Client result = repository.findById(id)
 				.orElseThrow(() -> new ResourceNotFoundException("Cliente não encontrado."));
 		return new ClientMinDTO(result);
@@ -64,6 +70,8 @@ public class ClientService {
 
 	@Transactional
 	public ClientMinDTO update(ClientDTO dto, Long id) {
+		authentication.authUser("UPDATE", id);
+		
 		try {
 			Client entity = repository.getReferenceById(id);
 			copyDtoToEntity(dto, entity);
@@ -81,11 +89,10 @@ public class ClientService {
 
 	@Transactional(propagation = Propagation.SUPPORTS)
 	public void delete(Long id) {
+		authentication.authUser("DELETE", id);
+		
 		if (!repository.existsById(id)) {
 			throw new ResourceNotFoundException("Cliente não encontrado");
-		}
-		if (id == userService.authenticated().getId()) {
-			throw new ForbiddenException("Proibida auto deleção");
 		}
 		try {
 			repository.deleteById(id);
@@ -94,10 +101,15 @@ public class ClientService {
 		}
 	}
 
-	private void copyDtoToEntity(ClientDTO dto, Client entity) {
-		userService.copyDtoToEntity(dto, entity);
+	void copyDtoToEntity(ClientDTO dto, Client entity) {
+		entity.setName(dto.getName());
+		entity.setEmail(dto.getEmail());
+		if (!dto.getPassword().isEmpty()) {
+			entity.setPassword(new BCryptPasswordEncoder().encode(dto.getPassword()));
+		}
+		entity.setCpf(dto.getCpf());
 		entity.getRoles().clear();
 		entity.addRole(roleRepository.findByAuthority("ROLE_CLIENT"));
-		entity.setCpf(dto.getCpf());
+		entity.addAuth(Auth.NONE);
 	}
 }
