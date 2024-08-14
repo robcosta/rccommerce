@@ -5,8 +5,8 @@ import java.util.List;
 
 import org.springframework.security.core.GrantedAuthority;
 
+import rccommerce.entities.Auth;
 import rccommerce.entities.User;
-import rccommerce.entities.enums.Auth;
 
 public class UserMinDTO {
 	private Long id;
@@ -31,7 +31,7 @@ public class UserMinDTO {
 			roles.add(role.getAuthority());
 		}
 		for(Auth auth: entity.getAuths()) {
-			auths.add(auth.name());
+			auths.add(auth.getAuth());
 		}
 	}
 

@@ -42,7 +42,7 @@ public class UserControllerIT {
 	void setUp() throws Exception {
 		userName = "Blue";
 		userEmail = "alex@gmail.com";
-		adminUserName = "maria@gmail.com";
+		adminUserName = "admin@gmail.com";
 		adminPassword = "123456";
 
 		existingId = 3L;
@@ -52,7 +52,7 @@ public class UserControllerIT {
 		invalidToken = adminToken + "xpto";
 		
 		user = FactoryUser.createUser();
-		user.addRole(FactoryUser.createRole());
+		user.addRole(FactoryUser.createRoleAdmin());
 		user.setId(null);
 	}
 	
@@ -65,8 +65,8 @@ public class UserControllerIT {
 		
 		resultActions.andExpect(status().isOk());
 		resultActions.andExpect(jsonPath("$.id").value(1L));
-		resultActions.andExpect(jsonPath("$.name").value("Maria Brown"));
-		resultActions.andExpect(jsonPath("$.email").value("maria@gmail.com"));
+		resultActions.andExpect(jsonPath("$.name").value("Administrador"));
+		resultActions.andExpect(jsonPath("$.email").value("admin@gmail.com"));
 		resultActions.andExpect(jsonPath("$.roles[0]").value("ROLE_ADMIN"));		
 	}
 	
@@ -90,11 +90,9 @@ public class UserControllerIT {
 		resultActions.andExpect(status().isOk());
 		resultActions.andExpect(jsonPath("$.content.size()").value(5));
 		resultActions.andExpect(jsonPath("$.content[0].id").value(1L));
-		resultActions.andExpect(jsonPath("$.content[0].name").value("Maria Brown"));
-		resultActions.andExpect(jsonPath("$.content[0].email").value("maria@gmail.com"));
+		resultActions.andExpect(jsonPath("$.content[0].name").value("Administrador"));
+		resultActions.andExpect(jsonPath("$.content[0].email").value("admin@gmail.com"));
 		resultActions.andExpect(jsonPath("$.content[0].roles[0]").value("ROLE_ADMIN"));
-		resultActions.andExpect(jsonPath("$.content[0].roles[1]").value("ROLE_OPERATOR"));
-		resultActions.andExpect(jsonPath("$.content[0].roles[2]").value("ROLE_SELLER"));
 
 	}
 

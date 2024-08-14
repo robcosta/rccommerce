@@ -13,7 +13,7 @@ import jakarta.persistence.EntityNotFoundException;
 import rccommerce.dto.ClientDTO;
 import rccommerce.dto.ClientMinDTO;
 import rccommerce.entities.Client;
-import rccommerce.entities.enums.Auth;
+import rccommerce.repositories.AuthRepository;
 import rccommerce.repositories.ClientRepository;
 import rccommerce.repositories.RoleRepository;
 import rccommerce.services.exceptions.DatabaseException;
@@ -28,6 +28,9 @@ public class ClientService {
 	
 	@Autowired
 	private RoleRepository roleRepository;
+	
+	@Autowired
+	private AuthRepository authRepository;
 	
 	@Autowired
 	private Authentication authentication; 
@@ -110,6 +113,6 @@ public class ClientService {
 		entity.setCpf(dto.getCpf());
 		entity.getRoles().clear();
 		entity.addRole(roleRepository.findByAuthority("ROLE_CLIENT"));
-		entity.addAuth(Auth.NONE);
+		entity.addAuth(authRepository.findByAuth("NONE"));
 	}
 }

@@ -16,7 +16,7 @@ import rccommerce.dto.OperatorMinDTO;
 import rccommerce.dto.UserMinDTO;
 import rccommerce.entities.Operator;
 import rccommerce.entities.Role;
-import rccommerce.entities.enums.Auth;
+import rccommerce.repositories.AuthRepository;
 import rccommerce.repositories.OperatorRepository;
 import rccommerce.repositories.RoleRepository;
 import rccommerce.services.exceptions.DatabaseException;
@@ -30,20 +30,23 @@ public class OperatorService {
 
 	@Autowired
 	private OperatorRepository repository;
-	
+
 	@Autowired
 	private UserService userService;
-	
+
 	@Autowired
 	private RoleRepository roleRepository;
-	
+
 	@Autowired
-	private Authentication authentication;    
-	
+	private AuthRepository authRepository;
+
+	@Autowired
+	private Authentication authentication;
+
 	@Transactional(readOnly = true)
 	public Page<OperatorMinDTO> findAll(String name, String email, Pageable pageable) {
 		authentication.authUser("READER", null);
-		
+
 		Page<Operator> result = repository.searchAll(name, email, pageable);
 		if (result.getContent().isEmpty()) {
 			throw new ResourceNotFoundException("Operador não encontrado");
@@ -54,7 +57,7 @@ public class OperatorService {
 	@Transactional(readOnly = true)
 	public OperatorMinDTO findById(Long id) {
 		authentication.authUser("READER", id);
-		
+
 		Operator result = repository.findById(id)
 				.orElseThrow(() -> new ResourceNotFoundException("Operador não encontrado."));
 		return new OperatorMinDTO(result);
@@ -63,10 +66,10 @@ public class OperatorService {
 	@Transactional
 	public OperatorMinDTO insert(OperatorDTO dto) {
 		authentication.authUser("CREATE", null);
-		
+
 		try {
-		Operator entity = new Operator();
-		copyDtoToEntity(dto, entity);
+			Operator entity = new Operator();
+			copyDtoToEntity(dto, entity);
 			entity = repository.save(entity);
 			return new OperatorMinDTO(entity);
 		} catch (DataIntegrityViolationException e) {
@@ -76,7 +79,7 @@ public class OperatorService {
 
 	@Transactional
 	public OperatorMinDTO update(OperatorDTO dto, Long id) {
-		if(id == 1L) {
+		if (id == 1L) {
 			throw new ForbiddenException("ADMINSTRADOR MASTER - Atualização proibida");
 		}
 		authentication.authUser("UPDATE", id);
@@ -86,13 +89,13 @@ public class OperatorService {
 			entity = repository.saveAndFlush(entity);
 			return new OperatorMinDTO(entity);
 		} catch (DataIntegrityViolationException e) {
-			throw new DatabaseException("Email informado já existe");			
+			throw new DatabaseException("Email informado já existe");
 		}
 	}
 
 	@Transactional(propagation = Propagation.SUPPORTS)
-	public void delete(Long id) {	
-		if(id == 1L) {
+	public void delete(Long id) {
+		if (id == 1L) {
 			throw new ForbiddenException("ADMINSTRADOR MASTER - Deleção proibida");
 		}
 		authentication.authUser("DELETE", id);
@@ -101,15 +104,15 @@ public class OperatorService {
 			throw new ResourceNotFoundException("Operador não encontrado");
 		}
 		try {
-			repository.deleteById(id);		
+			repository.deleteById(id);
 		} catch (DataIntegrityViolationException e) {
 			throw new DatabaseException("Falha de integridade referencial");
 		}
 	}
-		
+
 	void copyDtoToEntity(OperatorDTO dto, Operator entity) {
 		UserMinDTO userLogged = userService.getMe();
-		
+
 		entity.setName(dto.getName());
 		entity.setEmail(dto.getEmail());
 		entity.setCommission(dto.getCommission());
@@ -117,20 +120,20 @@ public class OperatorService {
 			entity.setPassword(new BCryptPasswordEncoder().encode(dto.getPassword()));
 		}
 
+		if (!userLogged.getRoles().containsAll(List.of("ROLE_ADMIN"))) {
+			return;
+		}
+
 		try {
 			entity.getAuths().clear();
 			for (String auth : dto.getAuths()) {
-				entity.addAuth(Auth.valueOf(auth));
+				entity.addAuth(authRepository.findByAuth(auth));
 			}
 		} catch (IllegalArgumentException e) {
 			throw new InvalidArgumentExecption("Autorização inexistentes");
 		}
 
-		if (!userLogged.getRoles().containsAll(List.of("ROLE_ADMIN"))) {			
-			return;
-		}
-		
-		if(dto.getRoles().isEmpty()) {
+		if (dto.getRoles().isEmpty()) {
 			throw new InvalidArgumentExecption("Indicar pelo menos um nível de acesso");
 		}
 		entity.getRoles().clear();

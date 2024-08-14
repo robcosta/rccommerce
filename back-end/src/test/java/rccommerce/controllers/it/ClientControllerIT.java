@@ -19,8 +19,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import ch.qos.logback.core.net.SyslogOutputStream;
 import rccommerce.dto.ClientDTO;
 import rccommerce.entities.Client;
+import rccommerce.entities.enums.Auth;
 import rccommerce.tests.FactoryUser;
 import rccommerce.tests.TokenUtil;
 
@@ -41,7 +43,7 @@ public class ClientControllerIT {
 	
 	private String adminToken, clientToken, invalidToken;
 	private String userAdminEmail, userAdminPassword, userClientEmail, userClientPassword;
-	private String existsClientName, existsClientEmail, existsClientCpf,emailUnique;
+	private String existsClientName, existsClientEmail, existsClientCpf,existsEmail;
 	private String nonExistsClientName, nonExistsClientEmail, nonExistsClientCpf; 
 
 	private long existingId, nonExistingId;
@@ -51,7 +53,7 @@ public class ClientControllerIT {
 
 	@BeforeEach
 	void setUp() throws Exception {
-		userAdminEmail = "maria@gmail.com";
+		userAdminEmail = "admin@gmail.com";
 		userAdminPassword = "123456";
 		userClientEmail = "peter@gmail.com";
 		userClientPassword = "123456";
@@ -64,7 +66,7 @@ public class ClientControllerIT {
 		nonExistsClientEmail = "other@gmail.com";
 		nonExistsClientCpf = "37730902001";
 		
-		emailUnique = "bob@gmail.com";
+		existsEmail = "bob@gmail.com";
 
 		existingId = 4L;
 		nonExistingId = 100L;
@@ -74,8 +76,7 @@ public class ClientControllerIT {
 		invalidToken = adminToken + "xpto";
 		
 		client = FactoryUser.createClient();
-		client.addRole(FactoryUser.createRole());
-		client.setId(null);
+		//client.setId(null);
 	}
 
 	@Test
@@ -214,15 +215,14 @@ public class ClientControllerIT {
 	}
 	
 	@Test
-	public void insertShouldReturnClientMinDTOWhenAdminLoggedAndAllDataIsValid() throws Exception {
+	public void insertShouldReturnClientMinDTOWhenAllDataIsValid() throws Exception {
 		clientDTO = FactoryUser.createClientDTO(client);
 		String jsonBody = objectMapper.writeValueAsString(clientDTO);
-		
+	
 		String expectedName =  client.getName();
 		String expectedEmail = client.getEmail();
 		
 		ResultActions resultActions = mockMvc.perform(post("/clients")
-				.header("Authorization", "Bearer " + adminToken)
 				.content(jsonBody)
 				.contentType(MediaType.APPLICATION_JSON)
 				.accept(MediaType.APPLICATION_JSON));
@@ -233,42 +233,14 @@ public class ClientControllerIT {
 		resultActions.andExpect(jsonPath("$.roles[0]").value("ROLE_CLIENT"));
 	}
 	
-	@Test
-	public void insertShouldReturnForbiddenWhenClientLoggedAndAllDataIsValid() throws Exception {
-		clientDTO = FactoryUser.createClientDTO(client);
-		String jsonBody = objectMapper.writeValueAsString(clientDTO);
 
-		ResultActions resultActions = mockMvc.perform(post("/clients")
-				.header("Authorization", "Bearer " + clientToken)
-				.content(jsonBody)
-				.contentType(MediaType.APPLICATION_JSON)
-				.accept(MediaType.APPLICATION_JSON));
-		
-		resultActions.andExpect(status().isForbidden());
-	}
-	
 	@Test
-	public void insertShouldReturnUnauthorizedWhenClientLoggedAndAllDataIsValid() throws Exception {
+	public void insertShouldReturnBadRequestWhenDataIsValidAndEmailDoesNotUnique() throws Exception {
+		client.setEmail(existsEmail);
 		clientDTO = FactoryUser.createClientDTO(client);
 		String jsonBody = objectMapper.writeValueAsString(clientDTO);
 		
 		ResultActions resultActions = mockMvc.perform(post("/clients")
-				.header("Authorization", "Bearer " + invalidToken)
-				.content(jsonBody)
-				.contentType(MediaType.APPLICATION_JSON)
-				.accept(MediaType.APPLICATION_JSON));
-		
-		resultActions.andExpect(status().isUnauthorized());
-	}
-	
-	@Test
-	public void insertShouldReturnBadRequestWhenClientLoggedAndAllDataIsValidAndEmailDoesNotUnique() throws Exception {
-		client.setEmail(emailUnique);
-		clientDTO = FactoryUser.createClientDTO(client);
-		String jsonBody = objectMapper.writeValueAsString(clientDTO);
-		
-		ResultActions resultActions = mockMvc.perform(post("/clients")
-				.header("Authorization", "Bearer " + adminToken)
 				.content(jsonBody)
 				.contentType(MediaType.APPLICATION_JSON)
 				.accept(MediaType.APPLICATION_JSON));
@@ -277,13 +249,12 @@ public class ClientControllerIT {
 	}
 	
 	@Test
-	public void insertShouldReturnUnprocessableEntityWhenAdminLoggedAndInvalidName() throws Exception {
+	public void insertShouldReturnUnprocessableEntityWhenInvalidName() throws Exception {
 		client.setName("Ro");
 		clientDTO = FactoryUser.createClientDTO(client);
 		String jsonBody = objectMapper.writeValueAsString(clientDTO);
 		
 		ResultActions resultActions = mockMvc.perform(post("/clients")
-				.header("Authorization", "Bearer " + adminToken)
 				.content(jsonBody)
 				.contentType(MediaType.APPLICATION_JSON)
 				.accept(MediaType.APPLICATION_JSON));
@@ -292,14 +263,13 @@ public class ClientControllerIT {
 	}
 	
 	@Test
-	public void insertShouldReturnUnprocessableEntityWhenAdminLoggedAndInvalidEmail() throws Exception {
+	public void insertShouldReturnUnprocessableEntityWhenInvalidEmail() throws Exception {
 		client.setEmail("roberto.com");
-		client.addRole(FactoryUser.createRole());
+		client.addRole(FactoryUser.createRoleClient());
 		clientDTO = FactoryUser.createClientDTO(client);
 		String jsonBody = objectMapper.writeValueAsString(clientDTO);
 		
 		ResultActions resultActions = mockMvc.perform(post("/clients")
-				.header("Authorization", "Bearer " + adminToken)
 				.content(jsonBody)
 				.contentType(MediaType.APPLICATION_JSON)
 				.accept(MediaType.APPLICATION_JSON));
@@ -308,14 +278,13 @@ public class ClientControllerIT {
 	}
 	
 	@Test
-	public void insertShouldReturnUnprocessableEntityWhenAdminLoggedAndInvalidCpf() throws Exception {
+	public void insertShouldReturnUnprocessableEntityWhenInvalidCpf() throws Exception {
 		client.setCpf("12345678911");
-		client.addRole(FactoryUser.createRole());
+		client.addRole(FactoryUser.createRoleClient());
 		clientDTO = FactoryUser.createClientDTO(client);
 		String jsonBody = objectMapper.writeValueAsString(clientDTO);
 		
 		ResultActions resultActions = mockMvc.perform(post("/clients")
-				.header("Authorization", "Bearer " + adminToken)
 				.content(jsonBody)
 				.contentType(MediaType.APPLICATION_JSON)
 				.accept(MediaType.APPLICATION_JSON));
@@ -324,14 +293,13 @@ public class ClientControllerIT {
 	}
 	
 	@Test
-	public void insertShouldReturnUnprocessableEntityWhenAdminLoggedAndInvalidPassword() throws Exception {
+	public void insertShouldReturnUnprocessableEntityWhenInvalidPassword() throws Exception {
 		client.setPassword("12A34B");;
-		client.addRole(FactoryUser.createRole());
+		client.addRole(FactoryUser.createRoleClient());
 		clientDTO = FactoryUser.createClientDTO(client);
 		String jsonBody = objectMapper.writeValueAsString(clientDTO);
 		
 		ResultActions resultActions = mockMvc.perform(post("/clients")
-				.header("Authorization", "Bearer " + adminToken)
 				.content(jsonBody)
 				.contentType(MediaType.APPLICATION_JSON)
 				.accept(MediaType.APPLICATION_JSON));
@@ -340,18 +308,17 @@ public class ClientControllerIT {
 	}
 	
 	@Test
-	public void insertShouldReturnUnprocessableEntityWhenAdminLoggedAndInvalidRoles() throws Exception {
-		client.getRoles().clear();
+	public void insertShouldReturnBadRequestWhenInvalidPasswordXXXXXXXXX() throws Exception {
+		client.setEmail(existsEmail);;
 		clientDTO = FactoryUser.createClientDTO(client);
 		String jsonBody = objectMapper.writeValueAsString(clientDTO);
 		
 		ResultActions resultActions = mockMvc.perform(post("/clients")
-				.header("Authorization", "Bearer " + adminToken)
 				.content(jsonBody)
 				.contentType(MediaType.APPLICATION_JSON)
 				.accept(MediaType.APPLICATION_JSON));
 		
-		resultActions.andExpect(status().isUnprocessableEntity());
+		resultActions.andExpect(status().isBadRequest());
 	}
 	
 	@Test
@@ -404,8 +371,8 @@ public class ClientControllerIT {
 	}
 	
 	@Test
-	public void updateShouldReturnBadRequestWhenClientLoggedAndAllDataIsValidAndEmailDoesNotUnique() throws Exception {
-		client.setEmail(emailUnique);
+	public void updateShouldReturnBadRequestWhenDataIsValidAndEmailDoesNotUnique() throws Exception {
+		client.setEmail(existsEmail);
 		clientDTO = FactoryUser.createClientDTO(client);
 		String jsonBody = objectMapper.writeValueAsString(clientDTO);
 		
@@ -478,20 +445,6 @@ public class ClientControllerIT {
 		resultActions.andExpect(status().isUnprocessableEntity());
 	}
 	
-	@Test
-	public void updateShouldReturnUnprocessableEntityWhenAdminLoggedAndInvalidRoles() throws Exception {
-		client.getRoles().clear();
-		clientDTO = FactoryUser.createClientDTO(client);
-		String jsonBody = objectMapper.writeValueAsString(clientDTO);
-		
-		ResultActions resultActions = mockMvc.perform(put("/clients/{id}", existingId)
-				.header("Authorization", "Bearer " + adminToken)
-				.content(jsonBody)
-				.contentType(MediaType.APPLICATION_JSON)
-				.accept(MediaType.APPLICATION_JSON));
-		
-		resultActions.andExpect(status().isUnprocessableEntity());
-	}
 
 	@Test 
 	void deleteShouldNoContentWhenAdminLoggedAndDoNotDeleteYourself() throws Exception {
@@ -503,17 +456,6 @@ public class ClientControllerIT {
 		
 		result.andExpect(status().isNoContent());		
 	}
-	
-//	@Test 
-//	void deleteShouldForbiddenWhenClientLogged() throws Exception {
-//		existingId = 1L;		
-//		ResultActions result = 
-//				mockMvc.perform(delete("/clients/{id}", existingId)
-//						.header("Authorization", "Bearer " + clientToken)
-//						.accept(MediaType.APPLICATION_JSON));
-//		
-//		result.andExpect(status().isForbidden());		
-//	}
 	
 	@Test 
 	void deleteShouldUnauthorizedWhenInvalidToken() throws Exception {

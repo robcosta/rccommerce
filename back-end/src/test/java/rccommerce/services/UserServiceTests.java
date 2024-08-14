@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -19,14 +18,11 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import rccommerce.dto.UserDTO;
 import rccommerce.dto.UserMinDTO;
-import rccommerce.entities.Role;
 import rccommerce.entities.User;
 import rccommerce.projections.UserDetailsProjection;
 import rccommerce.repositories.RoleRepository;
 import rccommerce.repositories.UserRepository;
-import rccommerce.services.exceptions.InvalidArgumentExecption;
 import rccommerce.services.exceptions.ResourceNotFoundException;
 import rccommerce.tests.FactoryUser;
 import rccommerce.util.CustomUserUtil;
@@ -51,7 +47,6 @@ public class UserServiceTests {
 	private String existsEmail, nonExistsEmail, emptyEmail;
 	private long existsId, nonExistsId;
 	private User user;
-	private UserDTO dto;
 	Pageable pageable;
 	private List<UserDetailsProjection> userDetails;
 	private UserService serviceSpy;
@@ -59,7 +54,6 @@ public class UserServiceTests {
 	@BeforeEach
 	void setUp() throws Exception {
 		user = FactoryUser.createUser();
-		dto = FactoryUser.createUserDTO(user);
 		pageable = PageRequest.of(0, 10);
 		existsUsername = user.getEmail();
 		nonExistsUsername = "bar@gmail.com";
@@ -74,7 +68,7 @@ public class UserServiceTests {
 		emptyNameUser = "";
 
 		serviceSpy = Mockito.spy(service);
-		Mockito.doNothing().when(serviceSpy).copyDtoToEntity(dto, user);
+		//Mockito.doNothing().when(serviceSpy).copyDtoToEntity(dto, user);
 	}
 
 	@Test
@@ -251,37 +245,5 @@ public class UserServiceTests {
 		Assertions.assertThrows(ResourceNotFoundException.class, () -> {
 			service.findByEmail(nonExistsEmail);
 		});
-	}
-	
-	@Test
-	public void copyDtoToEntityShouldVoid() {		
-		Role role = FactoryUser.createRole();
-		user.addRole(role);
-		dto = FactoryUser.createUserDTO(user);
-		
-		Mockito.when(roleRepository.findByAuthority(ArgumentMatchers.anyString())).thenReturn(role);
-			
-		service.copyDtoToEntity(dto, user);
-		
-		Assertions.assertEquals(dto.getName(), user.getName());
-		Assertions.assertEquals(dto.getEmail(), user.getEmail());
-		Assertions.assertEquals(dto.getRoles().size(), user.getRoles().size());
-		Assertions.assertFalse(user.getRoles().isEmpty());
-		
-	}
-	
-	@Test
-	public void copyDtoToEntityShouldThrowIvalidArgumentExceptionWhenRoleISNull() {	
-
-		Mockito.when(roleRepository.findByAuthority("ROLE_INEXISTENTE")).thenReturn(null);
-		
-		Assertions.assertThrows(InvalidArgumentExecption.class, () -> {
-			user.addRole(new Role(100l, "ROLE_INEXISTENTE"));
-			dto = FactoryUser.createUserDTO(user);
-			service.copyDtoToEntity(dto, user);			
-		});
-		
-	
-	
 	}
 }

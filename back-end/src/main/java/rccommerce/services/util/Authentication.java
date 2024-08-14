@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import rccommerce.dto.UserMinDTO;
-import rccommerce.entities.enums.Auth;
 import rccommerce.services.UserService;
 import rccommerce.services.exceptions.ForbiddenException;
 
@@ -24,7 +23,7 @@ public class Authentication {
 		if(userLogged.getId() == id) {
 			return;
 		}
-		if(userLogged.getAuths().contains(Auth.ALL.toString())) {
+		if(userLogged.getAuths().contains("ALL")) {
 			return;
 		} 
 		if(userLogged.getAuths().containsAll(List.of(auth))) {

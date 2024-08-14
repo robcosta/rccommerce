@@ -9,8 +9,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import rccommerce.controllers.validators.EmailCustom;
 import rccommerce.controllers.validators.Password;
+import rccommerce.entities.Auth;
 import rccommerce.entities.User;
-import rccommerce.entities.enums.Auth;
 
 public class UserDTO {
 	private Long id;
@@ -46,7 +46,7 @@ public class UserDTO {
 			roles.add(role.getAuthority());
 		}
 		for(Auth auth: entity.getAuths()) {
-			auths.add(auth.toString());
+			auths.add(auth.getAuth());
 		}
 	}
 

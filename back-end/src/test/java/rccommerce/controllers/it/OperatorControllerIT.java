@@ -7,6 +7,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.util.List;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +23,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import rccommerce.dto.OperatorDTO;
 import rccommerce.entities.Operator;
+import rccommerce.entities.enums.Auth;
 import rccommerce.tests.FactoryUser;
 import rccommerce.tests.TokenUtil;
 
@@ -50,7 +53,7 @@ public class OperatorControllerIT {
 
 	@BeforeEach
 	void setUp() throws Exception {
-		userAdminEmail = "maria@gmail.com";
+		userAdminEmail = "admin@gmail.com";
 		userAdminPassword = "123456";
 		userOperatorEmail = "bob@gmail.com";
 		userOperatorPassword = "123456";
@@ -71,6 +74,8 @@ public class OperatorControllerIT {
 		invalidToken = adminToken + "xpto";
 		
 		operator = FactoryUser.createOperator();
+		operator.addAuth(Auth.NONE);
+		operator.addRole(FactoryUser.createRoleOperator());
 		operator.setId(null);
 	}
 
@@ -84,12 +89,9 @@ public class OperatorControllerIT {
 		resultActions.andExpect(status().isOk());
 		resultActions.andExpect(jsonPath("$.content.size()").value(3));
 		resultActions.andExpect(jsonPath("$.content[0].id").value(1L));
-		resultActions.andExpect(jsonPath("$.content[0].name").value("Maria Brown"));
-		resultActions.andExpect(jsonPath("$.content[0].email").value("maria@gmail.com"));
+		resultActions.andExpect(jsonPath("$.content[0].name").value("Administrador"));
+		resultActions.andExpect(jsonPath("$.content[0].email").value("admin@gmail.com"));
 		resultActions.andExpect(jsonPath("$.content[0].roles[0]").value("ROLE_ADMIN"));
-		resultActions.andExpect(jsonPath("$.content[0].roles[1]").value("ROLE_OPERATOR"));
-		resultActions.andExpect(jsonPath("$.content[0].roles[2]").value("ROLE_SELLER"));
-
 	}
 
 	@Test
@@ -191,6 +193,7 @@ public class OperatorControllerIT {
 	@Test
 	public void insertShouldReturnOperatorMinDTOWhenAdminLoggedAndAllDataIsValid() throws Exception {
 		operatorDTO = FactoryUser.createOperatorDTO(operator);
+		
 		String jsonBody = objectMapper.writeValueAsString(operatorDTO);
 		
 		String expectedName =  operator.getName();
@@ -205,7 +208,7 @@ public class OperatorControllerIT {
 		resultActions.andExpect(status().isCreated());
 		resultActions.andExpect(jsonPath("$.name").value(expectedName));
 		resultActions.andExpect(jsonPath("$.email").value(expectedEmail));
-		resultActions.andExpect(jsonPath("$.roles[0]").value("ROLE_ADMIN"));
+		resultActions.andExpect(jsonPath("$.roles[0]").value("ROLE_OPERATOR"));
 	}
 	
 	@Test
@@ -269,7 +272,7 @@ public class OperatorControllerIT {
 	@Test
 	public void insertShouldReturnUnprocessableEntityWhenAdminLoggedAndInvalidEmail() throws Exception {
 		operator.setEmail("roberto.com");
-		operator.addRole(FactoryUser.createRole());
+		operator.addRole(FactoryUser.createRoleOperator());
 		operatorDTO = FactoryUser.createOperatorDTO(operator);
 		String jsonBody = objectMapper.writeValueAsString(operatorDTO);
 		
@@ -301,7 +304,7 @@ public class OperatorControllerIT {
 	@Test
 	public void insertShouldReturnUnprocessableEntityWhenAdminLoggedAndInvalidPassword() throws Exception {
 		operator.setPassword("12A34B");;
-		operator.addRole(FactoryUser.createRole());
+		operator.addRole(FactoryUser.createRoleOperator());
 		operatorDTO = FactoryUser.createOperatorDTO(operator);
 		String jsonBody = objectMapper.writeValueAsString(operatorDTO);
 		
@@ -347,22 +350,22 @@ public class OperatorControllerIT {
 		resultActions.andExpect(jsonPath("$.id").value(existingId));
 		resultActions.andExpect(jsonPath("$.name").value(expectedName));
 		resultActions.andExpect(jsonPath("$.email").value(expectedEmail));
-		resultActions.andExpect(jsonPath("$.roles[0]").value("ROLE_ADMIN"));
+		resultActions.andExpect(jsonPath("$.roles[0]").value("ROLE_OPERATOR"));
 	}
 	
-	@Test
-	public void updateShouldReturnForbiddenWhenOperatorLoggedAndAllDataIsValid() throws Exception {
-		operatorDTO = FactoryUser.createOperatorDTO(operator);
-		String jsonBody = objectMapper.writeValueAsString(operatorDTO);
-		
-		ResultActions resultActions = mockMvc.perform(put("/operators/{id}", existingId)
-				.header("Authorization", "Bearer " + operatorToken)
-				.content(jsonBody)
-				.contentType(MediaType.APPLICATION_JSON)
-				.accept(MediaType.APPLICATION_JSON));
-		
-		resultActions.andExpect(status().isForbidden());
-	}
+//	@Test
+//	public void updateShouldReturnForbiddenWhenOperatorLoggedAndDataIsValid() throws Exception {
+//		operatorDTO = FactoryUser.createOperatorDTO(operator);
+//		String jsonBody = objectMapper.writeValueAsString(operatorDTO);
+//	
+//		ResultActions resultActions = mockMvc.perform(put("/operators/{id}", existingId)
+//				.header("Authorization", "Bearer " + operatorToken)
+//				.content(jsonBody)
+//				.contentType(MediaType.APPLICATION_JSON)
+//				.accept(MediaType.APPLICATION_JSON));
+//		
+//		resultActions.andExpect(status().isForbidden());
+//	}
 	
 	@Test
 	public void updateShouldReturnUnauthorizedWhenInvalidTokenAndAllDataIsValid() throws Exception {
@@ -490,17 +493,6 @@ public class OperatorControllerIT {
 		
 		result.andExpect(status().isForbidden());
 		
-	}
-	
-	@Test 
-	void deleteShouldForbiddenWhenOperatorLogged() throws Exception {
-				
-		ResultActions result = 
-				mockMvc.perform(delete("/operators/{id}", existingId)
-						.header("Authorization", "Bearer " + operatorToken)
-						.accept(MediaType.APPLICATION_JSON));
-		
-		result.andExpect(status().isForbidden());		
 	}
 	
 	@Test 

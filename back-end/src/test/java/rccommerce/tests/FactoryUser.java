@@ -11,6 +11,7 @@ import rccommerce.entities.Client;
 import rccommerce.entities.Operator;
 import rccommerce.entities.Role;
 import rccommerce.entities.User;
+import rccommerce.entities.enums.Auth;
 import rccommerce.projections.UserDetailsProjection;
 
 public class FactoryUser {
@@ -58,7 +59,7 @@ public class FactoryUser {
 	}
 
 	public static Operator createOperator() {
-		Operator operator = new Operator(7L, "Ana Pink", "ana@gmail.com", "123456", 1.5);	
+		Operator operator = new Operator(7L, "Ana Pink", "ana@gmail.com", "123456", 1.5);
 		return operator;
 	}
 	
@@ -74,7 +75,8 @@ public class FactoryUser {
 	
 	public static Client createClient() {
 		Client client = new Client(7L, "Ana Pink", "ana@gmail.com", "123456", "59395734019");
-		client.getRoles().add(new Role(4L, "ROLE_CLIENT"));
+		client.addRole(createRoleClient());
+		client.addAuth(Auth.NONE);;
 		return client;
 	}
 	

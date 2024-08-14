@@ -1,7 +1,5 @@
 package rccommerce.services;
 
-import static org.hamcrest.CoreMatchers.any;
-
 import java.util.List;
 import java.util.Optional;
 
@@ -13,6 +11,7 @@ import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -20,17 +19,17 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import jakarta.persistence.EntityNotFoundException;
 import rccommerce.dto.OperatorDTO;
 import rccommerce.dto.OperatorMinDTO;
-import rccommerce.dto.UserDTO;
 import rccommerce.dto.UserMinDTO;
 import rccommerce.entities.Operator;
 import rccommerce.entities.User;
+import rccommerce.entities.enums.Auth;
 import rccommerce.repositories.OperatorRepository;
 import rccommerce.services.exceptions.DatabaseException;
 import rccommerce.services.exceptions.ForbiddenException;
 import rccommerce.services.exceptions.ResourceNotFoundException;
+import rccommerce.services.util.Authentication;
 import rccommerce.tests.FactoryUser;
 
 @ExtendWith(SpringExtension.class)
@@ -41,6 +40,9 @@ public class OperatorServiceTests {
 
 	@Mock
 	private OperatorRepository repository;
+	
+	@Mock
+	private Authentication authentication;  
 
 	@Mock
 	private UserService userService;
@@ -73,15 +75,19 @@ public class OperatorServiceTests {
 		nonExistingId = 100L;
 		integrityViolationId = 2L;
 		emptyNameOperator = "";
-
+		
+		Mockito.doNothing().when(authentication).authUser(ArgumentMatchers.anyString(), ArgumentMatchers.anyLong());
+		
 		serviceSpy = Mockito.spy(service);
 		Mockito.doNothing().when(serviceSpy).copyDtoToEntity(dto, operator);
+		
 	}
 
 	@Test
 	public void findAllShouldReturnPagedOperatorMinDTOWhenEmptyNameAndEmail() {
 		Mockito.when(repository.searchAll(emptyNameOperator, emptyEmail, pageable))
 				.thenReturn(new PageImpl<>(List.of(operator, operator, operator)));
+
 
 		Page<OperatorMinDTO> result = service.findAll(emptyNameOperator, emptyEmail, pageable);
 
@@ -233,9 +239,12 @@ public class OperatorServiceTests {
 	@Test
 	public void updateShouldReturnOperatorMinDTOWhenUserLoggedNotAdminAndNonSelfeId() {
 		user.addRole(FactoryUser.createRoleOperator());
+		user.addAuth(Auth.UPDATE);
 		userMinDTO = FactoryUser.createUserMinDTO(user);
 		operator = FactoryUser.createOperator(user);
 		existsId = dto.getId();
+		
+		System.out.println("Operator:" + operator.getName());
 		
 		Mockito.when(userService.getMe()).thenReturn(userMinDTO);
 		Mockito.when(repository.getReferenceById(existsId)).thenReturn(operator);
@@ -245,128 +254,4 @@ public class OperatorServiceTests {
 		});
 
 	}
-	
-//	@Test
-//	public void updateShouldReturnOperatorMinDTOWhenExistsIdAndEmptyPassword() {
-//		Mockito.when(repository.getReferenceById(existsId)).thenReturn(operator);
-//		Mockito.when(repository.saveAndFlush(ArgumentMatchers.any())).thenReturn(operator);
-//		operator.setPassword("");
-//		dto = Factory.createOperatorDTO(operator);
-//		
-//		OperatorMinDTO result = serviceSpy.update(dto, existsId);
-//		
-//		Assertions.assertNotNull(result);
-//		Assertions.assertEquals(result.getId(), existsId);
-//		Assertions.assertEquals(result.getName(), operator.getName());
-//	}
-//
-//	@Test
-//	public void updateShouldThrowResourceNotFoundExceptionWhenIdDoesNotExists() {
-//		Mockito.doThrow(EntityNotFoundException.class).when(repository).getReferenceById(nonExistingId);
-//		Assertions.assertThrows(ResourceNotFoundException.class, () -> {
-//			serviceSpy.update(dto, nonExistingId);
-//		});
-//
-//	}
-//
-//	@Test
-//	public void updateShouldDatabaseExceptionWhenEmailAlreadyRegistered() {
-//		Mockito.when(repository.getReferenceById(existsId)).thenReturn(operator);
-//		Mockito.doThrow(DataIntegrityViolationException.class).when(repository).saveAndFlush(operator);
-//
-//		Assertions.assertThrows(DatabaseException.class, () -> {
-//			serviceSpy.update(dto, existsId);
-//		});
-//	}
-//
-//	@Test
-//	public void updateShouldVerifiPaswordWhenPassswordNotEmpty() {
-//		Mockito.when(repository.getReferenceById(existsId)).thenReturn(operator);
-//		Mockito.when(repository.saveAndFlush(ArgumentMatchers.any())).thenReturn(operator);
-//
-//		OperatorMinDTO result = serviceSpy.update(dto, existsId);
-//
-//		Assertions.assertNotNull(result);
-//		Assertions.assertEquals(result.getId(), existsId);
-//		Assertions.assertEquals(result.getName(), operator.getName());
-//	}
-//
-//	@Test
-//	public void deleteShouldDoNothingWhenExixstsId() {
-//		Operator operatorLogged = operator;
-//		operatorLogged.setId(20L);
-//		Mockito.doReturn(operatorLogged).when(userService).authenticated();
-//		Mockito.when(repository.existsById(existsId)).thenReturn(true);
-//		Mockito.doNothing().when(repository).deleteById(existsId);
-//
-//		Assertions.assertDoesNotThrow(() -> {
-//			serviceSpy.delete(existsId);
-//		});
-//	}
-//
-//	@Test
-//	public void deleteShouldThrowResourceNotFoundExceptionWhenIdDoesNotExists() {
-//		Mockito.when(repository.existsById(nonExistingId)).thenReturn(false);
-//
-//		Assertions.assertThrows(ResourceNotFoundException.class, () -> {
-//			service.delete(nonExistingId);
-//		});
-//
-//	}
-//
-//	@Test
-//	public void deleteShoulThronForbiddenExceptionWhenTryToDeleteLoggedInOperator() {
-//		Mockito.when(repository.existsById(existsId)).thenReturn(true);
-//		Mockito.doReturn(operator).when(userService).authenticated();
-//
-//		Assertions.assertThrows(ForbiddenException.class, () -> {
-//			serviceSpy.delete(existsId);
-//		});
-//	}
-//
-//	@Test
-//	public void deleteShouldThrowDatabaseExceptionWhenBreachOfIntegrity() {
-//		Mockito.when(repository.existsById(integrityViolationId)).thenReturn(true);
-//		Mockito.doThrow(DataIntegrityViolationException.class).when(repository).deleteById(integrityViolationId);
-//		Mockito.doReturn(operator).when(userService).authenticated();
-//
-//		Assertions.assertThrows(DatabaseException.class, () -> {
-//			serviceSpy.delete(integrityViolationId);
-//		});
-//	}
-//
-//	@Test
-//	public void checkPassordShouldThrowInvalidPasswordExecptionWhenPasswordLessThanFuorCaracters() {
-//		String password = "123";
-//
-//		Assertions.assertThrows(InvalidPasswordExecption.class, () -> {
-//			service.checkPassword(password);
-//		});
-//	}
-//	
-//	public void checkPassordShouldThrowInvalidPasswordExecptionWhenPasswordGreaterThanEighCaracters() {
-//		String password = "123456789";
-//
-//		Assertions.assertThrows(InvalidPasswordExecption.class, () -> {
-//			service.checkPassword(password);
-//		});
-//	}
-//	
-//	@Test
-//	public void checkPassordShouldThrowInvalidPasswordExecptionWhenPasswordPasswordIsNotPositiveInteger() {
-//		String password = "A345-4";
-//		
-//		Assertions.assertThrows(InvalidPasswordExecption.class, () -> {
-//			service.checkPassword(password);
-//		});
-//	}
-//
-//	@Test
-//	public void checkPassordShouldTrueWithPasswordIsOk() {
-//		String password = "123456";
-//
-//		boolean result = serviceSpy.checkPassword(password);
-//
-//		Assertions.assertTrue(result);
-//	}
 }
