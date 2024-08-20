@@ -30,9 +30,9 @@ public class OperatorRepositoryTests {
 	void SetUp() throws Exception {
 		existingId = 2L;
 		nonExistingId = 100L;
-		existsName = "Maria Brown";
+		existsName = "Administrador";
 		nonExistsName = "Richard";
-		existsEmail = "maria@gmail.com";
+		existsEmail = "admin@gmail.com";
 		nonExistsEmail = "richard@gmail.com";
 		operator = FactoryUser.createOperator();
 		totalOperator = repository.count();

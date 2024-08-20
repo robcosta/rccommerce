@@ -7,8 +7,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.util.List;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +21,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import rccommerce.dto.OperatorDTO;
 import rccommerce.entities.Operator;
-import rccommerce.entities.enums.Auth;
 import rccommerce.tests.FactoryUser;
 import rccommerce.tests.TokenUtil;
 
@@ -74,7 +71,7 @@ public class OperatorControllerIT {
 		invalidToken = adminToken + "xpto";
 		
 		operator = FactoryUser.createOperator();
-		operator.addAuth(Auth.NONE);
+		operator.addAuth(FactoryUser.createAuth());
 		operator.addRole(FactoryUser.createRoleOperator());
 		operator.setId(null);
 	}

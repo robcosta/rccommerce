@@ -17,17 +17,17 @@ public class UserDTO {
 	@NotBlank(message = "Campo requerido")
 	@Size(min = 3, max = 80, message = "Nome precisa ter de 3 a 80 caracteres.")
 	private String name;
-	
+
 	@NotBlank(message = "Campo requerido")
 	@EmailCustom
 	private String email;
-	
-	@Size(min = 4, max = 8, message = "Senha: mínimo de 4 e máximo de 8 caracteres." )
+
+	@Size(min = 4, max = 8, message = "Senha: mínimo de 4 e máximo de 8 caracteres.")
 	@Password(message = "Senha deve conter apenas números.")
-	private String password;	
-	
+	private String password;
+
 	private List<String> roles = new ArrayList<>();
-	
+
 	private List<String> auths = new ArrayList<>();
 
 	public UserDTO(Long id, String name, String email, String password) {
@@ -36,16 +36,16 @@ public class UserDTO {
 		this.email = email;
 		this.password = password;
 	}
-	
+
 	public UserDTO(User entity) {
 		id = entity.getId();
 		name = entity.getName();
 		email = entity.getEmail();
 		password = entity.getPassword();
-		for(GrantedAuthority role: entity.getRoles()){
+		for (GrantedAuthority role : entity.getRoles()) {
 			roles.add(role.getAuthority());
 		}
-		for(Auth auth: entity.getAuths()) {
+		for (Auth auth : entity.getAuths()) {
 			auths.add(auth.getAuth());
 		}
 	}
@@ -61,7 +61,7 @@ public class UserDTO {
 	public String getEmail() {
 		return email;
 	}
-	
+
 	public String getPassword() {
 		return password;
 	}
@@ -69,8 +69,8 @@ public class UserDTO {
 	public List<String> getRoles() {
 		return roles;
 	}
-	
+
 	public List<String> getAuths() {
 		return auths;
-	}	
+	}
 }

@@ -25,11 +25,11 @@ public class UserRepositoryTests {
 	
 	@BeforeEach
 	void SetUp() throws Exception {
-		existingId = 2L;
+		existingId = 1L;
 		nonExistingId = 100L;
-		existsName = "Maria Brown";
+		existsName = "Administrador";
 		nonExistsName = "Richard";
-		existsEmail = "maria@gmail.com";
+		existsEmail = "admin@gmail.com";
 		nonExistsEmail = "richard@gmail.com";
 	}
 	

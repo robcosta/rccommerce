@@ -21,14 +21,16 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import jakarta.persistence.EntityNotFoundException;
 import rccommerce.dto.ClientDTO;
 import rccommerce.dto.ClientMinDTO;
+import rccommerce.dto.UserMinDTO;
+import rccommerce.entities.Auth;
 import rccommerce.entities.Client;
 import rccommerce.entities.Role;
+import rccommerce.repositories.AuthRepository;
 import rccommerce.repositories.ClientRepository;
 import rccommerce.repositories.RoleRepository;
 import rccommerce.services.exceptions.DatabaseException;
-import rccommerce.services.exceptions.ForbiddenException;
-import rccommerce.services.exceptions.InvalidPasswordExecption;
 import rccommerce.services.exceptions.ResourceNotFoundException;
+import rccommerce.services.util.Authentication;
 import rccommerce.tests.FactoryUser;
 
 @ExtendWith(SpringExtension.class)
@@ -41,331 +43,287 @@ public class ClientServiceTests {
 	private ClientRepository repository;
 	
 	@Mock
+	private AuthRepository authRepository;
+	
+	@Mock
+	private Authentication authentication; 
+	
+	@Mock
 	private RoleRepository roleRepository;
 
 	@Mock
 	private UserService userService;
 
-	private String existsName, nonExistsName, emptyName;
-	private String existsEmail, nonExistsEmail,emptyEmail;
-	private String existsCpf, nonExistsCpf, formatedCpf, emptyCpf;
-	private long existingId, nonExistingId, integrityViolationId;
+	private String existsNameClient, nonExistsNameClient, emptyNameClient;
+	private String existsEmail, nonExistsEmail, emptyEmail;
+	private String existsCpf, nonExistsCpf, emptyCpf;
+	private long existsId, nonExistsId, dependentId;
 	private Client client;
 	Pageable pageable;	
 	private ClientService serviceSpy;
 	private ClientDTO dto;
-	private Role role;
+	private UserMinDTO userMinDTO;
+	
 
 	@BeforeEach
 	void setUp() throws Exception {
 		client = FactoryUser.createClient();
 		dto = FactoryUser.createClientDTO(client);
+		userMinDTO = FactoryUser.createUserMinDTO();
 		pageable = PageRequest.of(0, 10);
-		existsName = client.getName();
-		nonExistsName = "Other Client";
+		existsNameClient = client.getName();
+		nonExistsNameClient = "Other Client";
 		existsEmail = client.getEmail();
 		nonExistsEmail = "bar@gmail.com";
 		emptyEmail = "";
-		existsCpf = "59395734019";
-		nonExistsCpf = "96191581050";
-		formatedCpf = "593.957.340-19";
-		emptyCpf = "";
-		existingId = client.getId();
-		nonExistingId = 100L;
-		integrityViolationId = 2L;
-		emptyName = "";
-		role = FactoryUser.createRoleClient();
+		existsCpf = client.getCpf();
+		nonExistsCpf = "71301239070";
+		emptyCpf ="";
+		existsId = dto.getId();
+		nonExistsId = 100L;
+		dependentId = 3L;
 		
-//		serviceSpy = Mockito.spy(service);
-//		Mockito.doNothing().when(serviceSpy).copyDtoToEntity(dto, client);
+		emptyNameClient = "";
 		
-//		Mockito.doNothing().when(userService).copyDtoToEntity(dto, client);
 		
-		Mockito.when(roleRepository.findByAuthority("ROLE_CLIENT")).thenReturn(role);
+		Mockito.doNothing().when(authentication).authUser(ArgumentMatchers.anyString(), ArgumentMatchers.anyLong());
+		
+		Mockito.when(repository.getReferenceById(existsId)).thenReturn(client);
+		Mockito.when(repository.saveAndFlush(ArgumentMatchers.any())).thenReturn(client);	
+		Mockito.when(repository.existsById(existsId)).thenReturn(true);
+		Mockito.when(repository.existsById(dependentId)).thenReturn(true);
+		Mockito.when(repository.existsById(nonExistsId)).thenReturn(false);
+		Mockito.doNothing().when(repository).deleteById(existsId);
+		Mockito.doThrow(DataIntegrityViolationException.class).when(repository).deleteById(dependentId);
+		
+		Mockito.when(userService.getMe()).thenReturn(userMinDTO);
+		Mockito.when(roleRepository.findByAuthority(ArgumentMatchers.anyString())).thenReturn(new Role(null, "ROLE_CLIENT"));
+		Mockito.when(authRepository.findByAuth(ArgumentMatchers.anyString())).thenReturn(new Auth(null, "READER"));
+		
+
+		Mockito.when(userService.getMe()).thenReturn(userMinDTO);
+	
+		serviceSpy = Mockito.spy(service);
+		Mockito.doNothing().when(serviceSpy).copyDtoToEntity(ArgumentMatchers.any(), ArgumentMatchers.any());		
 	}
 
 	@Test
-	public void findAllShouldReturnPagedClientMinDTOWhenEmptyParams() {
-		Mockito.when(repository.searchAll(emptyName, emptyEmail, emptyCpf, pageable))
-				.thenReturn(new PageImpl<>(List.of(client, client)));
+	public void findAllShouldReturnPagedClientMinDTOWhenEmptyNameAndEmail() {
+		Mockito.when(repository.searchAll(emptyNameClient, emptyEmail, emptyCpf, pageable))
+				.thenReturn(new PageImpl<>(List.of(client, client, client)));
 
-		Page<ClientMinDTO> result = service.findAll(emptyName, emptyEmail, emptyCpf, pageable);
+
+		Page<ClientMinDTO> result = service.findAll(emptyNameClient, emptyEmail, emptyCpf, pageable);
 
 		Assertions.assertFalse(result.isEmpty());
-		Assertions.assertEquals(result.getSize(), 2);
-		Assertions.assertEquals(result.toList().get(1).getName(), existsName);
+		Assertions.assertEquals(result.getSize(), 3);
+		Assertions.assertEquals(result.toList().get(0).getName(), existsNameClient);
 		Assertions.assertEquals(result.toList().get(1).getEmail(), existsEmail);
-		Assertions.assertEquals(result.toList().get(0).getCpf(), formatedCpf);
 	}
 	
 	@Test
-	public void findAllShouldReturnPagedClientMinDTOWhenExistingName() {
-		Mockito.when(repository.searchAll(existsName, emptyEmail, emptyCpf, pageable))
-		.thenReturn(new PageImpl<>(List.of(client)));
+	public void findAllShouldReturnPagedClientMinDTOWhenNotEmptyName() {
+		Mockito.when(repository.searchAll(existsNameClient, emptyEmail, emptyCpf, pageable))
+		.thenReturn(new PageImpl<>(List.of(client, client, client)));
 		
-		Page<ClientMinDTO> result = service.findAll(existsName, emptyEmail, emptyCpf, pageable);
+		Page<ClientMinDTO> result = service.findAll(existsNameClient, emptyEmail, emptyCpf, pageable);
 		
 		Assertions.assertFalse(result.isEmpty());
-		Assertions.assertEquals(result.getSize(), 1);
-		Assertions.assertEquals(result.toList().get(0).getName(), existsName);
-		Assertions.assertEquals(result.toList().get(0).getEmail(), existsEmail);
-		Assertions.assertEquals(result.toList().get(0).getCpf(), formatedCpf);
+		Assertions.assertEquals(result.getSize(), 3);
+		Assertions.assertEquals(result.toList().get(0).getName(), existsNameClient);
 	}
 	
 	@Test
-	public void findAllShouldReturnPagedClientMinDTOWhenExistingEmail() {
-		Mockito.when(repository.searchAll(emptyName, existsEmail, emptyCpf, pageable))
-		.thenReturn(new PageImpl<>(List.of(client)));
+	public void findAllShouldReturnPagedClientMinDTOWhenNotEmptyEmail() {
+		Mockito.when(repository.searchAll(emptyNameClient, existsEmail, emptyCpf, pageable))
+		.thenReturn(new PageImpl<>(List.of(client, client, client)));
 		
-		Page<ClientMinDTO> result = service.findAll(emptyName, existsEmail, emptyCpf, pageable);
+		Page<ClientMinDTO> result = service.findAll(emptyNameClient, existsEmail, emptyCpf, pageable);
 		
 		Assertions.assertFalse(result.isEmpty());
-		Assertions.assertEquals(result.getSize(), 1);
-		Assertions.assertEquals(result.toList().get(0).getName(), existsName);
+		Assertions.assertEquals(result.getSize(), 3);
 		Assertions.assertEquals(result.toList().get(0).getEmail(), existsEmail);
-		Assertions.assertEquals(result.toList().get(0).getCpf(), formatedCpf);
 	}
+	
+	@Test
+	public void findAllShouldReturnPagedClientMinDTOWhenExistsNameAndEmailAndCPF() {
+		Mockito.when(repository.searchAll(existsNameClient, existsEmail, existsCpf, pageable))
+				.thenReturn(new PageImpl<>(List.of(client, client, client)));
 
-	@Test
-	public void findAllShouldReturnPagedClientMinDTOWhenExistingCpf() {
-		Mockito.when(repository.searchAll(emptyName, emptyEmail, existsCpf, pageable))
-		.thenReturn(new PageImpl<>(List.of(client)));
-		
-		Page<ClientMinDTO> result = service.findAll(emptyName, emptyEmail, existsCpf, pageable);
-		
+		Page<ClientMinDTO> result = service.findAll(existsNameClient, existsEmail, existsCpf, pageable);
+
 		Assertions.assertFalse(result.isEmpty());
-		Assertions.assertEquals(result.getSize(), 1);
-		Assertions.assertEquals(result.toList().get(0).getName(), existsName);
-		Assertions.assertEquals(result.toList().get(0).getEmail(), existsEmail);
-		Assertions.assertEquals(result.toList().get(0).getCpf(), formatedCpf);
-	}
-	
-	@Test
-	public void findAllShouldReturnPagedClientMinDTOWhenExistsNameAndEmailAndCpf() {
-		Mockito.when(repository.searchAll(existsName, existsEmail, existsCpf, pageable))
-		.thenReturn(new PageImpl<>(List.of(client)));
-		
-		Page<ClientMinDTO> result = service.findAll(existsName, existsEmail, existsCpf, pageable);
-		
-		Assertions.assertFalse(result.isEmpty());
-		Assertions.assertEquals(result.getSize(), 1);
-		Assertions.assertEquals(result.toList().get(0).getName(), existsName);
-		Assertions.assertEquals(result.toList().get(0).getEmail(), existsEmail);
-		Assertions.assertEquals(result.toList().get(0).getCpf(), formatedCpf);
+		Assertions.assertEquals(result.getSize(), 3);
+		Assertions.assertEquals(result.toList().get(0).getName(), existsNameClient);
+		Assertions.assertEquals(result.toList().get(1).getEmail(), existsEmail);
 	}
 
 	@Test
 	public void findAllShouldfindAllShouldTrhowResouceNotFoundExceptionWhenDoesNotExistsName() {
-		Mockito.when(repository.searchAll(nonExistsName,emptyEmail, emptyCpf , pageable)).thenReturn(new PageImpl<>(List.of()));
+		Mockito.when(repository.searchAll(nonExistsNameClient,emptyEmail, emptyCpf, pageable)).thenReturn(new PageImpl<>(List.of()));
 
 		Assertions.assertThrows(ResourceNotFoundException.class, () -> {
-			service.findAll(nonExistsName,emptyEmail, emptyCpf, pageable);
+			service.findAll(nonExistsNameClient,emptyEmail, emptyCpf,  pageable);
 		});
 	}
 	
 	@Test
 	public void findAllShouldTrhowResouceNotFoundExceptionWhenDoesNotExistsEmail() {
-		Mockito.when(repository.searchAll(emptyName,nonExistsEmail, emptyCpf, pageable)).thenReturn(new PageImpl<>(List.of()));
+		Mockito.when(repository.searchAll(emptyNameClient,nonExistsEmail, emptyCpf, pageable)).thenReturn(new PageImpl<>(List.of()));
 		
 		Assertions.assertThrows(ResourceNotFoundException.class, () -> {
-			service.findAll(emptyName,nonExistsEmail, emptyCpf, pageable);
-		});
-	}
-	
-	@Test
-	public void findAllShouldTrhowResouceNotFoundExceptionWhenDoesNotExistsCpf() {
-		Mockito.when(repository.searchAll(emptyName,emptyEmail, nonExistsCpf, pageable)).thenReturn(new PageImpl<>(List.of()));
-		
-		Assertions.assertThrows(ResourceNotFoundException.class, () -> {
-			service.findAll(emptyName,emptyEmail, nonExistsCpf, pageable);
+			service.findAll(emptyNameClient,nonExistsEmail, emptyCpf, pageable);
 		});
 	}
 	
 	@Test
 	public void findAllShouldTrhowResouceNotFoundExceptionWhenDoesNotExistsNameAndEmailAndCpf() {
-		Mockito.when(repository.searchAll(nonExistsName,nonExistsEmail,nonExistsCpf, pageable)).thenReturn(new PageImpl<>(List.of()));
+		Mockito.when(repository.searchAll(nonExistsNameClient,nonExistsEmail, nonExistsCpf, pageable)).thenReturn(new PageImpl<>(List.of()));
 		
 		Assertions.assertThrows(ResourceNotFoundException.class, () -> {
-			service.findAll(nonExistsName, nonExistsEmail, nonExistsCpf, pageable);
+			service.findAll(nonExistsNameClient,nonExistsEmail, nonExistsCpf, pageable);
 		});
 	}
 
 	@Test
 	public void findByIdShouldReturnClientMinDTOWhenExistsId() {
-		Mockito.when(repository.findById(existingId)).thenReturn(Optional.of(client));
+		Mockito.when(repository.findById(existsId)).thenReturn(Optional.of(client));
 
-		ClientMinDTO result = service.findById(existingId);
+		ClientMinDTO result = service.findById(existsId);
 
-		Assertions.assertEquals(result.getId(), existingId);
+		Assertions.assertEquals(result.getId(), existsId);
 		Assertions.assertEquals(result.getName(), client.getName());
 		Assertions.assertEquals(result.getEmail(), client.getEmail());
 	}
 
 	@Test
 	public void findByIdShouldThrowResourceNotFoundExceptionWhenDoesNotExistsId() {
-		Mockito.doThrow(ResourceNotFoundException.class).when(repository).findById(nonExistingId);
+		Mockito.when(repository.findById(nonExistsId)).thenReturn(Optional.empty());
 
 		Assertions.assertThrows(ResourceNotFoundException.class, () -> {
-			service.findById(nonExistingId);
+			service.findById(nonExistsId);
 		});
 	}
 
 	@Test
 	public void insertShouldReturnClientMinDTOWhenEmailIsUnique() {
-		client.setId(null);
-
-		Mockito.when(repository.saveAndFlush(ArgumentMatchers.any())).thenReturn(client);
-
-		ClientMinDTO result = service.insert(dto);
+		ClientMinDTO result = serviceSpy.insert(dto);
 
 		Assertions.assertNotNull(result);
 		Assertions.assertEquals(result.getName(), client.getName());
 		Assertions.assertEquals(result.getEmail(), client.getEmail());
 	}
-
+	
 	@Test
-	public void insertShouldDatabaseExceptionWhenEmailAlreadyRegistered() {
-		client.setId(null);
-		Mockito.doThrow(DataIntegrityViolationException.class).when(repository).saveAndFlush(client);
-
+	public void insertShouldTrowDatabaseExceptionWhenEamilDoesNotUnique() {	
+		DataIntegrityViolationException e = new DataIntegrityViolationException("");
+		e.toString().concat("EMAIL NULLS FIRST");
+		Mockito.doThrow(e).when(repository).saveAndFlush(ArgumentMatchers.any());	
+		
 		Assertions.assertThrows(DatabaseException.class, () -> {
-			service.insert(dto);
+			serviceSpy.insert(dto);
+		});
+	}
+	
+	@Test
+	public void insertShouldTrowDatabaseExceptionWhenCpfDoesNotUnique() {		
+		Mockito.doThrow(DataIntegrityViolationException.class).when(repository).saveAndFlush(ArgumentMatchers.any());	
+		
+		Assertions.assertThrows(DatabaseException.class, () -> {
+			serviceSpy.insert(dto);
 		});
 	}
 
 	@Test
-	public void updateShouldReturnClientMinDTOWhenExistsId() {
-		Mockito.when(repository.getReferenceById(existingId)).thenReturn(client);
-		Mockito.when(repository.saveAndFlush(ArgumentMatchers.any())).thenReturn(client);
-
-		ClientMinDTO result = service.update(dto, existingId);
+	public void updateShouldReturnClientMinDTOWhenExistsIdAndIdIsNot1AndEmailIsUnique() {
+		ClientMinDTO result = serviceSpy.update(dto, existsId);
 
 		Assertions.assertNotNull(result);
-		Assertions.assertEquals(result.getId(), existingId);
+		Assertions.assertEquals(result.getId(), existsId);
 		Assertions.assertEquals(result.getName(), client.getName());
 	}
 	
 	@Test
-	public void updateShouldReturnClientMinDTOWhenExistsIdAndEmptyPassword() {
-		Mockito.when(repository.getReferenceById(existingId)).thenReturn(client);
-		Mockito.when(repository.saveAndFlush(ArgumentMatchers.any())).thenReturn(client);
-		client.setPassword("");
-		dto = FactoryUser.createClientDTO(client);
-		
-		ClientMinDTO result = service.update(dto, existingId);
-		
-		Assertions.assertNotNull(result);
-		Assertions.assertEquals(result.getId(), existingId);
-		Assertions.assertEquals(result.getName(), client.getName());
-	}
-
-	@Test
-	public void updateShouldThrowResourceNotFoundExceptionWhenIdDoesNotExists() {
-		Mockito.doThrow(EntityNotFoundException.class).when(repository).getReferenceById(nonExistingId);
+	public void updateShouldTrowEntityNotFoundExceptionWhenNonExistsClient() {
+		Mockito.doThrow(EntityNotFoundException.class).when(repository).saveAndFlush(ArgumentMatchers.any());	
 		Assertions.assertThrows(ResourceNotFoundException.class, () -> {
-			service.update(dto, nonExistingId);
+			serviceSpy.update(dto, existsId);
 		});
-
+		
 	}
-
+	
 	@Test
-	public void updateShouldDatabaseExceptionWhenEmailAlreadyRegistered() {
-		Mockito.when(repository.getReferenceById(existingId)).thenReturn(client);
-		Mockito.doThrow(DataIntegrityViolationException.class).when(repository).saveAndFlush(client);
-
+	public void updateShouldTrowDatabaseExceptionWhenEamilDoesNotUnique() {
+		DataIntegrityViolationException e = new DataIntegrityViolationException("");
+		e.toString().concat("EMAIL NULLS FIRST");
+	
+		Mockito.doThrow(e).when(repository).saveAndFlush(ArgumentMatchers.any());	
 		Assertions.assertThrows(DatabaseException.class, () -> {
-			service.update(dto, existingId);
+			serviceSpy.update(dto, existsId);
 		});
+
 	}
-
-//	@Test
-//	public void updateShouldVerifiPaswordWhenPassswordNotEmpty() {
-//		Mockito.when(repository.getReferenceById(existingId)).thenReturn(client);
-//		Mockito.when(repository.saveAndFlush(ArgumentMatchers.any())).thenReturn(client);
-//
-//		ClientMinDTO result = service.update(dto, existingId);
-//
-//		Assertions.assertNotNull(result);
-//		Assertions.assertEquals(result.getId(), existingId);
-//		Assertions.assertEquals(result.getName(), client.getName());
-//	}
-
+	
 	@Test
-	public void deleteShouldDoNothingWhenExixstsId() {
-		Client clientLogged = client;
-		clientLogged.setId(20L);
-		Mockito.doReturn(clientLogged).when(userService).authenticated();
-		Mockito.when(repository.existsById(existingId)).thenReturn(true);
-		Mockito.doNothing().when(repository).deleteById(existingId);
-
+	public void updateShouldTrowDatabaseExceptionWhenCpfDoesNotUnique() {
+		Mockito.doThrow(DataIntegrityViolationException.class).when(repository).saveAndFlush(ArgumentMatchers.any());	
+		Assertions.assertThrows(DatabaseException.class, () -> {
+			serviceSpy.update(dto, existsId);
+		});
+		
+	}
+	
+	
+	@Test 
+	public void deleteShouldDoNothingWhenIdExistsAndIdDoesNotDependent() {
 		Assertions.assertDoesNotThrow(() -> {
-			service.delete(existingId);
+			serviceSpy.delete(existsId);
 		});
 	}
-
+	
 	@Test
-	public void deleteShouldThrowResourceNotFoundExceptionWhenIdDoesNotExists() {
-		Mockito.when(repository.existsById(nonExistingId)).thenReturn(false);
-
+	public void deleteShouldThrowResourceNotFoundExceptionWhenIdDoesNotExist() {
 		Assertions.assertThrows(ResourceNotFoundException.class, () -> {
-			service.delete(nonExistingId);
+			serviceSpy.delete(nonExistsId);
 		});
-
 	}
-
-//	@Test
-//	public void deleteShoulThronForbiddenExceptionWhenTryToDeleteLoggedInClient() {
-//		Mockito.when(repository.existsById(existingId)).thenReturn(true);
-//		Mockito.doReturn(client).when(userService).authenticated();
-//
-//		Assertions.assertThrows(ForbiddenException.class, () -> {
-//			service.delete(existingId);
-//		});
-//	}
-
+	
 	@Test
-	public void deleteShouldThrowDatabaseExceptionWhenBreachOfIntegrity() {
-		Mockito.when(repository.existsById(integrityViolationId)).thenReturn(true);
-		Mockito.doThrow(DataIntegrityViolationException.class).when(repository).deleteById(integrityViolationId);
-		Mockito.doReturn(client).when(userService).authenticated();
-
+	public void deleteShouldThrowDatabaseExceptionWhenIdIsDependent() {
 		Assertions.assertThrows(DatabaseException.class, () -> {
-			service.delete(integrityViolationId);
+			serviceSpy.delete(dependentId);
 		});
 	}
-
-//	@Test
-//	public void checkPassordShouldThrowInvalidPasswordExecptionWhenPasswordLessThanFuorCaracters() {
-//		String password = "123";
-//
-//		Assertions.assertThrows(InvalidPasswordExecption.class, () -> {
-//			service.checkPassword(password);
-//		});
-//	}
-//	
-//	public void checkPassordShouldThrowInvalidPasswordExecptionWhenPasswordGreaterThanEighCaracters() {
-//		String password = "123456789";
-//
-//		Assertions.assertThrows(InvalidPasswordExecption.class, () -> {
-//			service.checkPassword(password);
-//		});
-//	}
-//	
-//	@Test
-//	public void checkPassordShouldThrowInvalidPasswordExecptionWhenPasswordPasswordIsNotPositiveInteger() {
-//		String password = "A345-4";
-//		
-//		Assertions.assertThrows(InvalidPasswordExecption.class, () -> {
-//			service.checkPassword(password);
-//		});
-//	}
-//
-//	@Test
-//	public void checkPassordShouldTrueWithPasswordIsOk() {
-//		String password = "123456";
-//
-//		boolean result = serviceSpy.checkPassword(password);
-//
-//		Assertions.assertTrue(result);
-//	}
+	
+	@Test
+	public void copyDtoToEntityShouldCopyAllDataDtoForClient(){
+		service.copyDtoToEntity(dto, client);
+	
+		List<String> resultAuhts = client.getAuths().stream().map(x -> x.getAuth()).toList();
+		List<String> resultRoles = client.getRoles().stream().map(x -> x.getAuthority()).toList();
+		
+		
+		Assertions.assertEquals(dto.getName(), client.getName());
+		Assertions.assertEquals(dto.getEmail(), client.getEmail());
+		Assertions.assertEquals(dto.getCpf(), client.getCpf());
+		Assertions.assertTrue(resultAuhts.contains("READER"));
+		Assertions.assertTrue(resultRoles.contains("ROLE_CLIENT"));
+	}
+	
+	@Test
+	public void copyDtoToEntityShouldCopyAllDataDtoForClientWhenEmptyPassword(){
+		dto.getPassword().isEmpty();
+	
+		service.copyDtoToEntity(dto, client);
+		
+		List<String> resultAuhts = client.getAuths().stream().map(x -> x.getAuth()).toList();
+		List<String> resultRoles = client.getRoles().stream().map(x -> x.getAuthority()).toList();
+		
+		
+		Assertions.assertEquals(dto.getName(), client.getName());
+		Assertions.assertEquals(dto.getEmail(), client.getEmail());
+		Assertions.assertEquals(dto.getCpf(), client.getCpf());
+		Assertions.assertTrue(resultAuhts.contains("READER"));
+		Assertions.assertTrue(resultRoles.contains("ROLE_CLIENT"));
+	}
 }

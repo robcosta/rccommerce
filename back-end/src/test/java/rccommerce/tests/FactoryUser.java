@@ -7,11 +7,11 @@ import rccommerce.dto.ClientDTO;
 import rccommerce.dto.OperatorDTO;
 import rccommerce.dto.UserDTO;
 import rccommerce.dto.UserMinDTO;
+import rccommerce.entities.Auth;
 import rccommerce.entities.Client;
 import rccommerce.entities.Operator;
 import rccommerce.entities.Role;
 import rccommerce.entities.User;
-import rccommerce.entities.enums.Auth;
 import rccommerce.projections.UserDetailsProjection;
 
 public class FactoryUser {
@@ -34,6 +34,11 @@ public class FactoryUser {
 	public static Role createRoleClient() {
 		Role role = new Role(2L, "ROLE_CLIENT");
 		return role;
+	}
+	
+	public static Auth createAuth() {
+		Auth auth = new Auth(6L, "NONE");
+		return auth;
 	}
 	
 	public static UserDTO createUserDTO() {
@@ -64,7 +69,9 @@ public class FactoryUser {
 	}
 	
 	public static Operator createOperator(User user) {
-		Operator operator = new Operator(user.getId(), user.getName(), user.getEmail(), user.getPassword(), 1.5);	
+		Operator operator = new Operator(user.getId(), user.getName(), user.getEmail(), user.getPassword(), 1.5);
+		operator.addRole(createRoleAdmin());
+		operator.addAuth(createAuth());
 		return operator;
 	}
 	
@@ -76,7 +83,7 @@ public class FactoryUser {
 	public static Client createClient() {
 		Client client = new Client(7L, "Ana Pink", "ana@gmail.com", "123456", "59395734019");
 		client.addRole(createRoleClient());
-		client.addAuth(Auth.NONE);;
+		client.addAuth(createAuth());;
 		return client;
 	}
 	

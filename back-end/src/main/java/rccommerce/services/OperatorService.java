@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import rccommerce.dto.OperatorDTO;
 import rccommerce.dto.OperatorMinDTO;
 import rccommerce.dto.UserMinDTO;
+import rccommerce.entities.Auth;
 import rccommerce.entities.Operator;
 import rccommerce.entities.Role;
 import rccommerce.repositories.AuthRepository;
@@ -70,7 +71,7 @@ public class OperatorService {
 		try {
 			Operator entity = new Operator();
 			copyDtoToEntity(dto, entity);
-			entity = repository.save(entity);
+			entity = repository.saveAndFlush(entity);
 			return new OperatorMinDTO(entity);
 		} catch (DataIntegrityViolationException e) {
 			throw new DatabaseException("Email informado já existe");
@@ -124,13 +125,13 @@ public class OperatorService {
 			return;
 		}
 
-		try {
-			entity.getAuths().clear();
-			for (String auth : dto.getAuths()) {
-				entity.addAuth(authRepository.findByAuth(auth));
+		entity.getAuths().clear();
+		for (String auth : dto.getAuths()) {
+			Auth result = authRepository.findByAuth(auth);
+			if (result == null) {
+				throw new InvalidArgumentExecption("Nível 'AUTH' de acesso inexistentes");
 			}
-		} catch (IllegalArgumentException e) {
-			throw new InvalidArgumentExecption("Autorização inexistentes");
+			entity.addAuth(result);
 		}
 
 		if (dto.getRoles().isEmpty()) {
@@ -138,11 +139,11 @@ public class OperatorService {
 		}
 		entity.getRoles().clear();
 		for (String authority : dto.getRoles()) {
-			Role role = roleRepository.findByAuthority(authority);
-			if (role == null) {
-				throw new InvalidArgumentExecption("Nível de acesso inexistentes");
+			Role result = roleRepository.findByAuthority(authority);
+			if (result == null) {
+				throw new InvalidArgumentExecption("Nível 'ROLE' de acesso inexistentes");
 			}
-			entity.getRoles().add(role);
+			entity.addRole(result);
 		}
 	}
 }

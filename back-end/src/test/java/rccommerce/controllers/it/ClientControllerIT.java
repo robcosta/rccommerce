@@ -19,10 +19,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import ch.qos.logback.core.net.SyslogOutputStream;
 import rccommerce.dto.ClientDTO;
 import rccommerce.entities.Client;
-import rccommerce.entities.enums.Auth;
 import rccommerce.tests.FactoryUser;
 import rccommerce.tests.TokenUtil;
 
