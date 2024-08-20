@@ -1,7 +1,11 @@
 package rccommerce.entities;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
 @SuppressWarnings("serial")
@@ -11,6 +15,9 @@ public class Client extends User {
 	
 	@Column(unique = true)
 	private String cpf;
+	
+	@OneToMany(mappedBy = "client")
+	private List<Order> orders = new ArrayList<>();
 
 	public Client() {
 	}
@@ -27,5 +34,9 @@ public class Client extends User {
 
 	public void setCpf(String cpf) {
 		this.cpf = cpf.replaceAll("[^0-9]", "");
+	}
+	
+	public List<Order> getOrders() {
+		return orders;
 	}
 }
