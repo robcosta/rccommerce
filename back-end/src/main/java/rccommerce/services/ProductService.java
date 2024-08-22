@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import rccommerce.dto.ProductDTO;
 import rccommerce.entities.Category;
 import rccommerce.entities.Product;
+import rccommerce.entities.Suplier;
 import rccommerce.repositories.CategoryRepository;
 import rccommerce.repositories.ProductRepository;
 import rccommerce.repositories.SuplierRepository;
@@ -24,10 +25,10 @@ public class ProductService {
 
 	@Autowired
 	private ProductRepository repository;
-	
+
 	@Autowired
 	private CategoryRepository categoryRepository;
-	
+
 	@Autowired
 	private SuplierRepository suplierRepository;
 
@@ -43,7 +44,7 @@ public class ProductService {
 		}
 		return result.map(x -> new ProductDTO(x));
 	}
-	
+
 	@Transactional(readOnly = true)
 	public ProductDTO findById(Long id) {
 
@@ -95,7 +96,7 @@ public class ProductService {
 		try {
 			repository.deleteById(id);
 		} catch (DataIntegrityViolationException e) {
-			throw new DatabaseException("Falha de integridade referencial");
+			throw new DatabaseException("Produto inserido em algum pedido, proibido exclusão");
 		}
 	}
 
@@ -106,7 +107,7 @@ public class ProductService {
 		entity.setPrice(dto.getPrice());
 		entity.setImgUrl(dto.getImgUrl());
 		entity.setReference(dto.getReference());
-		
+
 		entity.getCategories().clear();
 		for (String category : dto.getCategories()) {
 			Category result = categoryRepository.findByCategory(category);
@@ -116,9 +117,16 @@ public class ProductService {
 			entity.addCategory(result);
 		}
 
-		if (!dto.getSuplier().isEmpty()) {
-			entity.setSuplier(suplierRepository.findBySuplier(dto.getSuplier()));
+		if (dto.getSuplier().isEmpty()) {
+			entity.setSuplier(suplierRepository.findById(1L).get());
+			return;
 		}
-		entity.setSuplier(suplierRepository.findById(1L).get());
+		
+		Suplier result = suplierRepository.findBySuplier(dto.getSuplier());
+		if(result == null) {
+			throw new InvalidArgumentExecption("Fornecedor inexistente");
+		}
+		entity.setSuplier(result);
+		
 	}
 }
