@@ -24,12 +24,18 @@ public class Product {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
+	
+	@Column(unique = true)
 	private String name;
 	
 	@Column(columnDefinition = "TEXT")
 	private String description;
+	private String unit;
 	private Double price;
 	private String imgUrl;
+	
+	@Column(unique = true)
+	private String reference;
 	
 	@ManyToOne
 	@JoinColumn(name = "suplier_id")
@@ -75,6 +81,14 @@ public class Product {
 		return description;
 	}
 
+	public String getUnit() {
+		return unit;
+	}
+	
+	public void setUnit(String unit) {
+		this.unit = unit;
+	}
+	
 	public void setDescription(String description) {
 		this.description = description;
 	}
@@ -99,12 +113,16 @@ public class Product {
 		return suplier;
 	}
 	
-	public void setCategories(Set<Category> categories) {
-		this.categories = categories;
+	public void setSuplier(Suplier suplier) {
+		this.suplier = suplier;
 	}
 	
 	public Set<Category> getCategories() {
 		return categories;
+	}
+	
+	public void addCategory(Category category) {
+		categories.add(category);
 	}
 	
 	public Set<OrderItem> getItems() {
@@ -115,6 +133,14 @@ public class Product {
 		return items.stream().map(x -> x.gerOrder()).toList();
 	}
 
+	public String getReference() {
+		return reference;
+	}
+	
+	public void setReference(String reference) {
+		this.reference = reference;
+	}
+	
 	@Override
 	public int hashCode() {
 		return Objects.hash(id);
