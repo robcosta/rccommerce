@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import rccommerce.dto.ProductDTO;
+import rccommerce.dto.ProductMinDTO;
 import rccommerce.entities.Category;
 import rccommerce.entities.Product;
 import rccommerce.entities.Suplier;
@@ -36,19 +37,27 @@ public class ProductService {
 	private Authentication authentication;
 
 	@Transactional(readOnly = true)
-	public Page<ProductDTO> findAll(String name, String reference, Pageable pageable) {
+	public Page<ProductMinDTO> findAll(String name, String reference, Pageable pageable) {
 
 		Page<Product> result = repository.searchAll(name, reference, pageable);
 		if (result.getContent().isEmpty()) {
 			throw new ResourceNotFoundException("Produto não encontrado");
 		}
-		return result.map(x -> new ProductDTO(x));
+		return result.map(x -> new ProductMinDTO(x));
 	}
 
 	@Transactional(readOnly = true)
 	public ProductDTO findById(Long id) {
 
 		Product result = repository.findById(id)
+				.orElseThrow(() -> new ResourceNotFoundException("Produto não encontrado."));
+		return new ProductDTO(result);
+	}
+	
+	@Transactional(readOnly = true)
+	public ProductDTO findByReference(String codBarra) {
+		codBarra = String.format("0000000000000" + codBarra).substring(codBarra.length());
+		Product result = repository.findByReference(codBarra)
 				.orElseThrow(() -> new ResourceNotFoundException("Produto não encontrado."));
 		return new ProductDTO(result);
 	}

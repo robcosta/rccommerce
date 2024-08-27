@@ -1,5 +1,7 @@
 package rccommerce.repositories;
 
+import java.util.Optional;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -17,6 +19,8 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 			+ "WHERE UPPER(obj.name) LIKE UPPER(CONCAT('%', :name,'%')) "
 			+ "AND UPPER(obj.reference) LIKE UPPER(CONCAT('%', :reference,'%'))")
 	public Page<Product> searchAll(String name, String reference, Pageable pageable);
+	
+	Optional<Product> findByReference(String codeBarra);
 
 }
 

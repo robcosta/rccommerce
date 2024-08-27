@@ -20,6 +20,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import jakarta.validation.Valid;
 import rccommerce.dto.ProductDTO;
+import rccommerce.dto.ProductMinDTO;
 import rccommerce.services.ProductService;
 
 @RestController
@@ -30,17 +31,23 @@ public class ProductController {
 	private ProductService service;
 	
 	@GetMapping
-	public ResponseEntity<Page<ProductDTO>> findAll(
+	public ResponseEntity<Page<ProductMinDTO>> findAll(
 			@RequestParam(name = "name", defaultValue = "") String name,
 			@RequestParam(name = "reference", defaultValue = "") String reference,
 			Pageable pageable) {
-		Page<ProductDTO> dto = service.findAll(name, reference, pageable);
+		Page<ProductMinDTO> dto = service.findAll(name, reference, pageable);
 		return ResponseEntity.ok(dto);
 	}
 	
 	@GetMapping(value = "/{id}")
 	public ResponseEntity<ProductDTO> findById(@PathVariable Long id) {
 		ProductDTO dto = service.findById(id);
+		return ResponseEntity.ok(dto);
+	}
+	
+	@GetMapping(value = "/cod/{codBarra}")
+	public ResponseEntity<ProductDTO> findByReference(@PathVariable String codBarra) {
+		ProductDTO dto = service.findByReference(codBarra);
 		return ResponseEntity.ok(dto);
 	}
 	
