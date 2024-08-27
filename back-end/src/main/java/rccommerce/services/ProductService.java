@@ -64,7 +64,7 @@ public class ProductService {
 			return new ProductDTO(entity);
 		} catch (DataIntegrityViolationException e) {
 			if (e.toString().contains("NAME NULLS FIRST")) {
-				throw new DatabaseException("name informado já existe");
+				throw new DatabaseException("Nome informado já existe");
 			}
 			throw new DatabaseException("Código de barras já cadastrado");
 		}
@@ -80,7 +80,7 @@ public class ProductService {
 			return new ProductDTO(entity);
 		} catch (DataIntegrityViolationException e) {
 			if (e.toString().contains("NAME NULLS FIRST")) {
-				throw new DatabaseException("name informado já existe");
+				throw new DatabaseException("Nome informado já existe");
 			}
 			throw new DatabaseException("Código de barras já cadastrado");
 		}
@@ -106,7 +106,7 @@ public class ProductService {
 		entity.setUnit(dto.getUnit());
 		entity.setPrice(dto.getPrice());
 		entity.setImgUrl(dto.getImgUrl());
-		entity.setReference(dto.getReference());
+		entity.setReference(getReference(dto, entity));
 
 		entity.getCategories().clear();
 		for (String category : dto.getCategories()) {
@@ -121,12 +121,74 @@ public class ProductService {
 			entity.setSuplier(suplierRepository.findById(1L).get());
 			return;
 		}
-		
+
 		Suplier result = suplierRepository.findBySuplier(dto.getSuplier());
-		if(result == null) {
+		if (result == null) {
 			throw new InvalidArgumentExecption("Fornecedor inexistente");
 		}
 		entity.setSuplier(result);
-		
+	}
+
+	private String getReference(ProductDTO dto, Product entity) {
+		String barCode = isValidBarCodeEAN(dto.getReference());
+
+		if (entity.getId() != null && barCode.isEmpty()) {
+			return generateEAN13(entity.getId());
+		}
+
+		if (barCode.isEmpty()) {
+			return generateEAN13(repository.count() + 1L);
+		}
+
+		return barCode;
+	}
+
+	private String generateEAN13(Long id) {
+		String codEan13 = id.toString();
+		codEan13 = String.format("000000000000" + codEan13).substring(codEan13.length());
+		int digit = checkDigit(codEan13);
+
+		return codEan13 + Integer.toString(digit);
+	}
+
+	private String isValidBarCodeEAN(String barCode) {
+		int digit;
+
+		if (barCode.isEmpty()) {
+			return "";
+		}
+
+		if (barCode.length() != 13) {
+			throw new InvalidArgumentExecption("Código de barras inválido");
+		}
+
+		digit = checkDigit(barCode);
+		if (Integer.parseInt(barCode.substring(12)) != digit) {
+			throw new InvalidArgumentExecption("Código de barras inválido");
+		}
+		return barCode;
+	}
+
+	private int checkDigit(String codEan) {
+		int digit;
+		int sum = 0;
+		int size = codEan.length();
+		String checkSum = "131313131313";
+
+		if (size == 13) {
+			size--;
+		}
+		try {
+			Long.parseLong(codEan);
+		} catch (NumberFormatException e) {
+			throw new InvalidArgumentExecption("Código de barras inválido");
+		}
+
+		for (int i = 0; i < size; i++) {
+			sum += Character.getNumericValue(codEan.charAt(i)) * Character.getNumericValue(checkSum.charAt(i));
+		}
+
+		digit = 10 - (sum % 10);
+		return digit == 10 ? 0 : digit;
 	}
 }
