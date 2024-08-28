@@ -20,6 +20,6 @@ public class ClientDTO extends UserDTO {
 	}
 
 	public String getCpf() {
-		return cpf;
+		return cpf.replaceAll("(\\d{3})(\\d{3})(\\d{3})(\\d{2})", "$1.$2.$3-$4");
 	}
 }

@@ -27,13 +27,13 @@ public class ProductDTO {
 	private Double price;
 	private String imgUrl;
 	private String reference;
-	private String suplier;
+	private SuplierMinDTO suplier;
 
 	@Size(min=1, message = "Indique pelo menos uma categoria válida")
-	private List<String> categories = new ArrayList<>();
+	private List<CategoryDTO> categories = new ArrayList<>();
 
 	public ProductDTO(Long id, String name, String description, String unit, Double price, String imgUrl,
-			String reference, String suplier) {
+			String reference, SuplierMinDTO suplier) {
 		this.id = id;
 		this.name = name;
 		this.description = description;
@@ -52,9 +52,9 @@ public class ProductDTO {
 		price = entity.getPrice();
 		imgUrl = entity.getImgUrl();
 		reference = entity.getReference();
-		suplier = entity.getSuplier().getName();
+		suplier = new SuplierMinDTO(entity.getSuplier());
 		for(Category category : entity.getCategories()) {
-			categories.add(category.getName());
+			categories.add(new CategoryDTO(category));
 		}
 	}
 
@@ -86,11 +86,11 @@ public class ProductDTO {
 		return reference;
 	}
 
-	public String getSuplier() {
+	public SuplierMinDTO getSuplier() {
 		return suplier;
 	}
 
-	public List<String> getCategories() {
+	public List<CategoryDTO> getCategories() {
 		return categories;
 	}
 }

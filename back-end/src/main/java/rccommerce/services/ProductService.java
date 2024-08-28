@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import rccommerce.dto.CategoryDTO;
 import rccommerce.dto.ProductDTO;
 import rccommerce.dto.ProductMinDTO;
 import rccommerce.entities.Category;
@@ -118,18 +119,19 @@ public class ProductService {
 		entity.setReference(getReference(dto, entity));
 
 		entity.getCategories().clear();
-		for (String category : dto.getCategories()) {
-			Category result = categoryRepository.findByName(category)
+		for (CategoryDTO category : dto.getCategories()) {
+			Category result = categoryRepository.findById(category.getId())
 					.orElseThrow(() -> new ResourceNotFoundException("Categoria não encontrada"));
 			entity.addCategory(result);
 		}
 
-		if (dto.getSuplier().isEmpty()) {
+		if (dto.getSuplier() == null) {
 			entity.setSuplier(suplierRepository.findById(1L).get());
 			return;
 		}
 
-		Suplier result = suplierRepository.findBySuplier(dto.getSuplier());
+		Suplier result = suplierRepository.findById(dto.getSuplier().getId())
+				.orElseThrow(() -> new ResourceNotFoundException("Fornecedor não encontrado"));
 		if (result == null) {
 			throw new InvalidArgumentExecption("Fornecedor inexistente");
 		}
