@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -18,6 +19,8 @@ public class Category {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
+	
+	@Column(unique = true)
 	private String name;
 	
 	@ManyToMany(mappedBy = "categories")
@@ -44,7 +47,7 @@ public class Category {
 	}
 
 	public void setName(String name) {
-		this.name = name;
+		this.name = name.toUpperCase();
 	}
 
 	public Set<Product> getProducts() {

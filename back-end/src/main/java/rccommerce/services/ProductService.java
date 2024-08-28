@@ -119,10 +119,8 @@ public class ProductService {
 
 		entity.getCategories().clear();
 		for (String category : dto.getCategories()) {
-			Category result = categoryRepository.findByCategory(category);
-			if (result == null) {
-				throw new InvalidArgumentExecption("Categoria inexistente");
-			}
+			Category result = categoryRepository.findByName(category)
+					.orElseThrow(() -> new ResourceNotFoundException("Categoria não encontrada"));
 			entity.addCategory(result);
 		}
 

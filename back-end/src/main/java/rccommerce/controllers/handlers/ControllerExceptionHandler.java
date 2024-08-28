@@ -11,8 +11,8 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import jakarta.servlet.http.HttpServletRequest;
-import rccommerce.dto.CustomError;
-import rccommerce.dto.ValidationError;
+import rccommerce.entities.errors.CustomError;
+import rccommerce.entities.errors.ValidationError;
 import rccommerce.services.exceptions.DatabaseException;
 import rccommerce.services.exceptions.ForbiddenException;
 import rccommerce.services.exceptions.InvalidArgumentExecption;

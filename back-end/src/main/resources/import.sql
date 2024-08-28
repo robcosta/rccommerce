@@ -49,9 +49,9 @@ INSERT INTO tb_suplier(name, cnpj) VALUES ('Soluções Nexus','36687922000166');
 INSERT INTO tb_suplier(name, cnpj) VALUES ('Nova Onda','49557765000116'); 
 INSERT INTO tb_suplier(name, cnpj) VALUES ('PixelPower','85994937000182'); 
 
-INSERT INTO tb_category(name) VALUES ('Livros');
-INSERT INTO tb_category(name) VALUES ('Eletrônicos');
-INSERT INTO tb_category(name) VALUES ('Computadores');
+INSERT INTO tb_category(name) VALUES ('LIVROS');
+INSERT INTO tb_category(name) VALUES ('ELETRÔNICOS');
+INSERT INTO tb_category(name) VALUES ('COMPUTADORES');
 
 INSERT INTO tb_product (name, price, unit, description, img_url, reference, suplier_id) VALUES ('The Lord of the Rings', 90.5,'UN', 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.', 'https://raw.githubusercontent.com/devsuperior/dscatalog-resources/master/backend/img/1-big.jpg','0000000000017',1);
 INSERT INTO tb_product (name, price, unit, description, img_url, reference, suplier_id) VALUES ('Smart TV', 2190.0,'UN', 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.', 'https://raw.githubusercontent.com/devsuperior/dscatalog-resources/master/backend/img/2-big.jpg','0000000000024',3);

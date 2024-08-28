@@ -1,4 +1,4 @@
-package rccommerce.dto;
+package rccommerce.entities.errors;
 
 import java.time.Instant;
 import java.util.ArrayList;

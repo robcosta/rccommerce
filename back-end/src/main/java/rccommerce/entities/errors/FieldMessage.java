@@ -1,4 +1,4 @@
-package rccommerce.dto;
+package rccommerce.entities.errors;
 
 public class FieldMessage {
 	private String fieldName;
