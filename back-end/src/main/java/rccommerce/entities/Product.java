@@ -33,6 +33,7 @@ public class Product {
 	private String unit;
 	private Double price;
 	private String imgUrl;
+	private Double qttStock;
 	
 	@Column(unique = true)
 	private String reference;
@@ -107,6 +108,14 @@ public class Product {
 
 	public void setImgUrl(String imgUrl) {
 		this.imgUrl = imgUrl;
+	}
+	
+	public Double getQttStock() {
+		return qttStock;
+	}
+	
+	public void setQttStock(Double qttStock) {
+		this.qttStock = qttStock;
 	}
 	
 	public Suplier getSuplier() {

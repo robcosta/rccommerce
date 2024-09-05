@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import jakarta.persistence.EntityNotFoundException;
 import rccommerce.dto.CategoryDTO;
 import rccommerce.dto.ProductDTO;
 import rccommerce.dto.ProductMinDTO;
@@ -88,6 +89,8 @@ public class ProductService {
 			copyDtoToEntity(dto, entity);
 			entity = repository.saveAndFlush(entity);
 			return new ProductDTO(entity);
+		} catch (EntityNotFoundException e) {
+			throw new ResourceNotFoundException("Produto não encontrado");
 		} catch (DataIntegrityViolationException e) {
 			if (e.toString().contains("NAME NULLS FIRST")) {
 				throw new DatabaseException("Nome informado já existe");

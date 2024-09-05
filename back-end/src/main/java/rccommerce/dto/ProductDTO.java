@@ -26,6 +26,7 @@ public class ProductDTO {
 	@Positive(message = "Informe o preço do produto")
 	private Double price;
 	private String imgUrl;
+	private Double qttStock;
 	private String reference;
 	private SuplierMinDTO suplier;
 
@@ -80,6 +81,10 @@ public class ProductDTO {
 
 	public String getImgUrl() {
 		return imgUrl;
+	}
+	
+	public Double getQttStock() {
+		return qttStock;
 	}
 
 	public String getReference() {
