@@ -1,7 +1,9 @@
 package rccommerce.entities;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -18,6 +20,7 @@ import jakarta.persistence.InheritanceType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
 @SuppressWarnings("serial")
@@ -45,6 +48,9 @@ public class User implements UserDetails {
     		joinColumns = @JoinColumn(name = "user_id"),
     		inverseJoinColumns = @JoinColumn(name = "auth_id"))    
     Set<Auth> auths = new HashSet<>();
+    
+	@OneToMany(mappedBy = "user")
+	private List<Order> orders = new ArrayList<>();
 	
 	public User() {
 	}
@@ -102,6 +108,10 @@ public class User implements UserDetails {
 	
 	public void addAuth(Auth auth) {
 		auths.add(auth);
+	}
+	
+	public List<Order> getOrders() {
+		return orders;
 	}
 	
 	public boolean hasRole(String roleNmame) {

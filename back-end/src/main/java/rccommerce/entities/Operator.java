@@ -1,10 +1,6 @@
 package rccommerce.entities;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import jakarta.persistence.Entity;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
 @SuppressWarnings("serial")
@@ -13,9 +9,6 @@ import jakarta.persistence.Table;
 public class Operator extends User {
 	
 	private Double commission;
-	
-	@OneToMany(mappedBy = "operator")
-	private List<Order> orders = new ArrayList<>();
 
 	public Operator() {
 	}
@@ -31,9 +24,5 @@ public class Operator extends User {
 
 	public void setCommission(Double commission) {
 		this.commission = commission;
-	}
-	
-	public List<Order> getOrders() {
-		return orders;
 	}
 }

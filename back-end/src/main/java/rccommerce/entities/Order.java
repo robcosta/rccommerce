@@ -32,8 +32,8 @@ public class Order {
 	private OrderStatus status;
 	
 	@ManyToOne
-	@JoinColumn(name = "operator_id")
-	private Operator operator;
+	@JoinColumn(name = "user_id")
+	private User user;
 	
 	@ManyToOne
 	@JoinColumn(name = "client_id")
@@ -48,12 +48,12 @@ public class Order {
 	public Order() {
 	}
 
-	public Order(Long id, Instant moment, OrderStatus status, Operator operator, Client client, Payment payment) {
+	public Order(Long id, Instant moment, OrderStatus status, User user, Client client, Payment payment) {
 		this.id = id;
 		this.moment = moment;
 		this.status = status;
+		this.user = user;
 		this.client = client;
-		this.operator = operator;
 		this.payment = payment;
 	}
 
@@ -80,6 +80,14 @@ public class Order {
 	public void setStatus(OrderStatus status) {
 		this.status = status;
 	}
+	
+	public User getUser() {
+		return user;
+	}
+	
+	public void setUser(User user) {
+		this.user = user;
+	}
 
 	public Client getClient() {
 		return client;
@@ -87,14 +95,6 @@ public class Order {
 
 	public void setClient(Client client) {
 		this.client = client;
-	}
-	
-	public Operator getOperator() {
-		return operator;
-	}
-	
-	public void setOperator(Operator operator) {
-		this.operator = operator;
 	}
 	
 	public Payment getPayment() {

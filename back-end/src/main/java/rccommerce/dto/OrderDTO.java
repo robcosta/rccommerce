@@ -14,18 +14,18 @@ public class OrderDTO {
 	private Long id;
 	private Instant moment;
 	private OrderStatus status;
-	private OperatorOrderDTO operator;
+	private UserOrderDTO User;
 	private ClientOrderDTO client;
 	private PaymentDTO payment;
 	
 	@NotEmpty(message = "Deve ter pelo menos um item")
 	private List<OrderItemDTO> items = new ArrayList<>();
 
-	public OrderDTO(Long id, Instant moment, OrderStatus status, OperatorOrderDTO operator, ClientOrderDTO client, PaymentDTO payment) {
+	public OrderDTO(Long id, Instant moment, OrderStatus status, UserOrderDTO User, ClientOrderDTO client, PaymentDTO payment) {
 		this.id = id;
 		this.moment = moment;
 		this.status = status;
-		this.operator = operator;
+		this.User = User;
 		this.client = client;
 		this.payment = payment;
 	}
@@ -34,7 +34,7 @@ public class OrderDTO {
 		id = entity.getId();
 		moment = entity.getMoment();
 		status = entity.getStatus();
-		operator = new OperatorOrderDTO(entity.getOperator());
+		User = new UserOrderDTO(entity.getUser());
 		client = new ClientOrderDTO(entity.getClient());
 		payment = (entity.getPayment() == null) ? null : new PaymentDTO(entity.getPayment());
 		for(OrderItem item : entity.getItems()) {
@@ -54,8 +54,8 @@ public class OrderDTO {
 		return status;
 	}
 
-	public OperatorOrderDTO getOperator() {
-		return operator;
+	public UserOrderDTO getUser() {
+		return User;
 	}
 	
 	public ClientOrderDTO getClient() {
