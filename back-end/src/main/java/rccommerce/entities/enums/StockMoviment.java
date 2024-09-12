@@ -3,18 +3,17 @@ package rccommerce.entities.enums;
 import java.util.Arrays;
 import java.util.Optional;
 
-public enum PaymentType {
+public enum StockMoviment {
 	
-	MONEY(1),
-	PIX(2),
-	CREDIT_CARD(3),
-	DEBIT_CARD(4),
-	FOOD_VOUCHER(5),
-	CANCELED(6);
+	BUY(1),
+	INPUT(2),
+	SALE(3),
+	OUTPUT(4),
+	TRANSFER(5);
 	
 	private final Integer code;
 	
-	private PaymentType(int code) {
+	private StockMoviment(int code) {
 		this.code = code;
 	}
 	
@@ -22,7 +21,7 @@ public enum PaymentType {
 		return code;
 	}
 	
-	public static Optional<PaymentType> searchCode(Integer code) {
+	public static Optional<StockMoviment> searchCode(Integer code) {
 		return Arrays.stream(values()).sequential().filter(t -> t.code.equals(code)).findFirst();
 	}
 }

@@ -1,5 +1,7 @@
 package rccommerce.services;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
@@ -14,9 +16,11 @@ import rccommerce.dto.ProductDTO;
 import rccommerce.dto.ProductMinDTO;
 import rccommerce.entities.Category;
 import rccommerce.entities.Product;
+import rccommerce.entities.Stock;
 import rccommerce.entities.Suplier;
 import rccommerce.repositories.CategoryRepository;
 import rccommerce.repositories.ProductRepository;
+import rccommerce.repositories.StockRepository;
 import rccommerce.repositories.SuplierRepository;
 import rccommerce.services.exceptions.DatabaseException;
 import rccommerce.services.exceptions.InvalidArgumentExecption;
@@ -34,6 +38,9 @@ public class ProductService {
 
 	@Autowired
 	private SuplierRepository suplierRepository;
+	
+	@Autowired
+	private StockRepository stockRepository;
 
 	@Autowired
 	private Authentication authentication;
@@ -55,7 +62,7 @@ public class ProductService {
 				.orElseThrow(() -> new ResourceNotFoundException("Produto não encontrado."));
 		return new ProductDTO(result);
 	}
-	
+
 	@Transactional(readOnly = true)
 	public ProductDTO findByReference(String codBarra) {
 		codBarra = String.format("0000000000000" + codBarra).substring(codBarra.length());
@@ -113,12 +120,27 @@ public class ProductService {
 		}
 	}
 
+	@Transactional
+	public void updateStock(List<Stock> stocks) {
+		for (Stock productStock : stocks) {
+			try {
+				Product entity = repository.getReferenceById(productStock.getProduct().getId());
+				entity.setQuantity(productStock.getQuantity());
+				entity = repository.saveAndFlush(entity);
+			} catch (EntityNotFoundException e) {
+				throw new ResourceNotFoundException("Produto não encontrado");
+			}
+		}
+		stockRepository.saveAllAndFlush(stocks);
+	}
+
 	void copyDtoToEntity(ProductDTO dto, Product entity) {
 		entity.setName(dto.getName());
 		entity.setDescription(dto.getDescription());
 		entity.setUnit(dto.getUnit());
 		entity.setPrice(dto.getPrice());
 		entity.setImgUrl(dto.getImgUrl());
+		entity.setQuantity(0.0);
 		entity.setReference(getReference(dto, entity));
 
 		entity.getCategories().clear();

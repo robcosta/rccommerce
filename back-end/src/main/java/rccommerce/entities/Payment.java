@@ -13,31 +13,29 @@ import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import rccommerce.entities.enums.PaymentType;
 
-
 @Entity
 @Table(name = "tb_payment")
 public class Payment {
-	
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
-	
+
 	@Column(columnDefinition = "TIMESTAMP WITHOUT TIME ZONE")
 	private Instant moment;
-	
+
 	private PaymentType paymentType;
-	
+
 	@OneToOne
 	@MapsId
 	private Order order;
-	
+
 	public Payment() {
 	}
 
 	public Payment(Long id, Instant moment, PaymentType paymentType, Order order) {
 		this.id = id;
 		this.moment = moment;
-		this.paymentType = paymentType;
 		this.order = order;
 	}
 
@@ -56,11 +54,11 @@ public class Payment {
 	public void setMoment(Instant moment) {
 		this.moment = moment;
 	}
-
+	
 	public PaymentType getPaymentType() {
 		return paymentType;
 	}
-
+	
 	public void setPaymentType(PaymentType paymentType) {
 		this.paymentType = paymentType;
 	}

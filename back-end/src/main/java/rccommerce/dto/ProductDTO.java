@@ -26,14 +26,14 @@ public class ProductDTO {
 	@Positive(message = "Informe o preço do produto")
 	private Double price;
 	private String imgUrl;
-	private Double qttStock;
+	private Double quantity;
 	private String reference;
 	private SuplierMinDTO suplier;
 
-	@Size(min=1, message = "Indique pelo menos uma categoria válida")
+	@Size(min = 1, message = "Indique pelo menos uma categoria válida")
 	private List<CategoryDTO> categories = new ArrayList<>();
 
-	public ProductDTO(Long id, String name, String description, String unit, Double price, String imgUrl,
+	public ProductDTO(Long id, String name, String description, String unit, Double price, String imgUrl, Double quantity,
 			String reference, SuplierMinDTO suplier) {
 		this.id = id;
 		this.name = name;
@@ -41,6 +41,7 @@ public class ProductDTO {
 		this.unit = unit;
 		this.price = price;
 		this.imgUrl = imgUrl;
+		this.quantity = quantity;
 		this.reference = reference;
 		this.suplier = suplier;
 	}
@@ -52,9 +53,10 @@ public class ProductDTO {
 		unit = entity.getUnit();
 		price = entity.getPrice();
 		imgUrl = entity.getImgUrl();
+		quantity = entity.getQuantity();
 		reference = entity.getReference();
 		suplier = new SuplierMinDTO(entity.getSuplier());
-		for(Category category : entity.getCategories()) {
+		for (Category category : entity.getCategories()) {
 			categories.add(new CategoryDTO(category));
 		}
 	}
@@ -82,9 +84,9 @@ public class ProductDTO {
 	public String getImgUrl() {
 		return imgUrl;
 	}
-	
-	public Double getQttStock() {
-		return qttStock;
+
+	public Double getQuantity() {
+		return quantity;
 	}
 
 	public String getReference() {

@@ -1,12 +1,16 @@
 package rccommerce.dto;
 
+import jakarta.validation.constraints.Positive;
 import rccommerce.entities.OrderItem;
 
 public class OrderItemDTO {
 
+	@Positive(message = "Informe um valor positivo")
 	private Long productId;
-	private String name;
+	private String name;	
 	private Double price;
+	
+	@Positive(message = "Informe um valor positivo")
 	private Double quantity;
 	private String imgUrl;
 	

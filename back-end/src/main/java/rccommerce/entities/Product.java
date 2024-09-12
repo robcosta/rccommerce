@@ -20,46 +20,50 @@ import jakarta.persistence.Table;
 @Entity
 @Table(name = "tb_product")
 public class Product {
-	
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
-	
+
 	@Column(unique = true)
 	private String name;
-	
+
 	@Column(columnDefinition = "TEXT")
 	private String description;
 	private String unit;
 	private Double price;
 	private String imgUrl;
-	private Double qttStock;
-	
+
+	private Double quantity;
+
 	@Column(unique = true)
 	private String reference;
-	
+
 	@ManyToOne
 	@JoinColumn(name = "suplier_id")
 	private Suplier suplier;
-	
+
 	@ManyToMany
-	@JoinTable(name = "tb_product_category",
-	joinColumns = @JoinColumn(name = "product_id"),
-	inverseJoinColumns = @JoinColumn(name = "category_id"))
+	@JoinTable(name = "tb_product_category", joinColumns = @JoinColumn(name = "product_id"), inverseJoinColumns = @JoinColumn(name = "category_id"))
 	private Set<Category> categories = new HashSet<>();
-	
+
 	@OneToMany(mappedBy = "id.product")
 	private Set<OrderItem> items = new HashSet<>();
-	
+
 	public Product() {
 	}
 
-	public Product(Long id, String name, String description, Double price, String imgUrl) {
+	public Product(Long id, String name, String description, String unit, Double price, String imgUrl, Double quantity,
+			String reference, Suplier suplier) {
 		this.id = id;
 		this.name = name;
 		this.description = description;
+		this.unit = unit;
 		this.price = price;
 		this.imgUrl = imgUrl;
+		this.quantity = quantity;
+		this.reference = reference;
+		this.suplier = suplier;
 	}
 
 	public Long getId() {
@@ -82,16 +86,16 @@ public class Product {
 		return description;
 	}
 
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
 	public String getUnit() {
 		return unit;
 	}
-	
+
 	public void setUnit(String unit) {
 		this.unit = unit;
-	}
-	
-	public void setDescription(String description) {
-		this.description = description;
 	}
 
 	public Double getPrice() {
@@ -109,47 +113,47 @@ public class Product {
 	public void setImgUrl(String imgUrl) {
 		this.imgUrl = imgUrl;
 	}
-	
-	public Double getQttStock() {
-		return qttStock;
+
+	public Double getQuantity() {
+		return quantity;
 	}
-	
-	public void setQttStock(Double qttStock) {
-		this.qttStock = qttStock;
-	}
-	
-	public Suplier getSuplier() {
-		return suplier;
-	}
-	
-	public void setSuplier(Suplier suplier) {
-		this.suplier = suplier;
-	}
-	
-	public Set<Category> getCategories() {
-		return categories;
-	}
-	
-	public void addCategory(Category category) {
-		categories.add(category);
-	}
-	
-	public Set<OrderItem> getItems() {
-		return items;
-	}
-	
-	public List<Order> getOrders(){
-		return items.stream().map(x -> x.gerOrder()).toList();
+
+	public void setQuantity(Double quantity) {
+		this.quantity = quantity;
 	}
 
 	public String getReference() {
 		return reference;
 	}
-	
+
 	public void setReference(String reference) {
 		this.reference = reference;
 	}
-	
+
+	public Suplier getSuplier() {
+		return suplier;
+	}
+
+	public void setSuplier(Suplier suplier) {
+		this.suplier = suplier;
+	}
+
+	public Set<Category> getCategories() {
+		return categories;
+	}
+
+	public void addCategory(Category category) {
+		categories.add(category);
+	}
+
+	public Set<OrderItem> getItems() {
+		return items;
+	}
+
+	public List<Order> getOrders() {
+		return items.stream().map(x -> x.gerOrder()).toList();
+	}
+
 	@Override
 	public int hashCode() {
 		return Objects.hash(id);
