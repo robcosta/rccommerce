@@ -16,6 +16,7 @@ public interface ClientRepository extends JpaRepository<Client, Long> {
 
 	@Query("SELECT obj FROM Client obj "
 			+ "JOIN FETCH obj.roles "
+			+ "JOIN FETCH obj.auths "
 			+ "WHERE UPPER(obj.name) LIKE UPPER(CONCAT('%', :name,'%')) "
 			+ "AND UPPER(obj.email) LIKE UPPER(CONCAT('%', :email,'%')) "
 			+ "AND UPPER(obj.cpf) LIKE UPPER(CONCAT('%', :cpf,'%')) ")

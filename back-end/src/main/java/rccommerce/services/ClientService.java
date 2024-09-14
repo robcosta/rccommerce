@@ -1,15 +1,17 @@
 package rccommerce.services;
 
+import java.util.NoSuchElementException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.validation.Valid;
 import rccommerce.dto.ClientDTO;
 import rccommerce.dto.ClientMinDTO;
 import rccommerce.entities.Client;
@@ -17,94 +19,43 @@ import rccommerce.repositories.AuthRepository;
 import rccommerce.repositories.ClientRepository;
 import rccommerce.repositories.RoleRepository;
 import rccommerce.services.exceptions.DatabaseException;
+import rccommerce.services.exceptions.IgnoredException;
 import rccommerce.services.exceptions.ResourceNotFoundException;
+import rccommerce.services.interfaces.GenericService;
 import rccommerce.services.util.Authentication;
 
 @Service
-public class ClientService {
+public class ClientService implements GenericService<Client, ClientDTO, ClientMinDTO, Long> {
 
 	@Autowired
 	private ClientRepository repository;
-	
+
 	@Autowired
 	private RoleRepository roleRepository;
-	
+
 	@Autowired
 	private AuthRepository authRepository;
-	
-	@Autowired
-	private Authentication authentication; 
 
-	@Transactional(readOnly = true)
-	public Page<ClientMinDTO> findAll(String name, String email, String cpf, Pageable pageable) {
+	@Autowired
+	private Authentication authentication;
+	
+	public Page<ClientMinDTO> searchClient(@Valid ClientMinDTO dto, Pageable pageable) {
 		authentication.authUser("READER", null);
 		
-		cpf =  cpf.replaceAll("[^0-9]", "");
+		String name = dto.getName() != "" ? dto.getName():"";
+		String cpf =  dto.getCpf() != "" ? dto.getCpf().replaceAll("[^0-9]", ""):"";
+		String email =  dto.getEmail() != "" ? dto.getEmail():"";
+		
 		Page<Client> result = repository.searchAll(name, email, cpf, pageable);
 		if (result.getContent().isEmpty()) {
 			throw new ResourceNotFoundException("Cliente não encontrado");
 		}
-		return result.map(x -> new ClientMinDTO(x));
+		Page<ClientMinDTO> result2 =  result.map(x -> new ClientMinDTO(x));
+		return result2;
 	}
 
-	@Transactional(readOnly = true)
-	public ClientMinDTO findById(Long id) {
-		authentication.authUser("READER", id);
-		
-		Client result = repository.findById(id)
-				.orElseThrow(() -> new ResourceNotFoundException("Cliente não encontrado."));
-		return new ClientMinDTO(result);
-	}
-
-	@Transactional
-	public ClientMinDTO insert(ClientDTO dto) {
-		Client entity = new Client();
-		copyDtoToEntity(dto, entity);	
-		try {
-			entity = repository.saveAndFlush(entity);
-			return new ClientMinDTO(entity);
-		} catch (DataIntegrityViolationException e) {
-			if (e.toString().contains("EMAIL NULLS FIRST")) {
-				throw new DatabaseException("Email informado já existe");
-			}
-			throw new DatabaseException("CPF informado já existe");
-		}
-	}
-
-	@Transactional
-	public ClientMinDTO update(ClientDTO dto, Long id) {
-		authentication.authUser("UPDATE", id);
-		
-		try {
-			Client entity = repository.getReferenceById(id);
-			copyDtoToEntity(dto, entity);
-			entity = repository.saveAndFlush(entity);
-			return new ClientMinDTO(entity);
-		} catch (EntityNotFoundException e) {
-			throw new ResourceNotFoundException("Cliente não encontrado");
-		} catch (DataIntegrityViolationException e) {
-			if(e.toString().contains("EMAIL NULLS FIRST")) {
-				throw new DatabaseException("Email informado já existe");
-			}
-			throw new DatabaseException("CPF informado já existe");			
-		}
-	}
-
-	@Transactional(propagation = Propagation.SUPPORTS)
-	public void delete(Long id) {
-		authentication.authUser("DELETE", id);
-		
-		if (!repository.existsById(id)) {
-			throw new ResourceNotFoundException("Cliente não encontrado");
-		}
-		try {
-			repository.deleteById(id);
-		} catch (DataIntegrityViolationException e) {
-			throw new DatabaseException("Falha de integridade referencial");
-		}
-	}
-
-	void copyDtoToEntity(ClientDTO dto, Client entity) {
+	@Override
+	public void copyDtoToEntity(ClientDTO dto, Client entity) {
 		entity.setName(dto.getName());
 		entity.setEmail(dto.getEmail());
 		if (!dto.getPassword().isEmpty()) {
@@ -114,5 +65,47 @@ public class ClientService {
 		entity.getRoles().clear();
 		entity.addRole(roleRepository.findByAuthority("ROLE_CLIENT"));
 		entity.addAuth(authRepository.findByAuth("NONE"));
+	}
+
+	@Override
+	public JpaRepository<Client, Long> getRepository() {
+		return repository;
+	}
+
+	@Override
+	public Client createEntity() {
+		return new Client();
+	}
+
+	@Override
+	public RuntimeException messageException(RuntimeException e) {
+
+		if (e.getClass().equals(NoSuchElementException.class)) {
+			return new ResourceNotFoundException("Cliente não existe");
+		}
+
+		if (e.getClass().equals(DataIntegrityViolationException.class)) {
+			if (e.toString().contains("EMAIL NULLS FIRST")) {
+				return new DatabaseException("Email informado já existe");
+			}
+			if (e.toString().contains("CPF NULLS FIRST")) {
+				return new DatabaseException("CPF informado já existe");
+			}
+			return new DatabaseException("Cliente possui pedidos em seu nome, exclusão proibida");
+		}
+		
+		if (e.getClass().equals(EntityNotFoundException.class)) {
+			return new ResourceNotFoundException("Cliente não encontrado");
+		}
+
+		return new IgnoredException("Erro ignorado");
+	}
+
+	@Override
+	public void authentication(String auth, Long id) {
+		if (auth.equalsIgnoreCase("INSERT")) {
+			return;
+		}
+		authentication.authUser(auth, id);
 	}
 }

@@ -7,11 +7,14 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import rccommerce.dto.ClientDTO;
+import rccommerce.dto.ClientMinDTO;
+import rccommerce.util.Convertible;
 
 @SuppressWarnings("serial")
 @Entity
 @Table(name = "tb_client")
-public class Client extends User {
+public class Client extends User implements Convertible<ClientDTO, ClientMinDTO> {
 	
 	@Column(unique = true)
 	private String cpf;
@@ -38,5 +41,15 @@ public class Client extends User {
 	
 	public List<Order> getOrders() {
 		return orders;
+	}
+
+	@Override
+	public ClientDTO convertDTO() {
+		return new ClientDTO(this);
+	}
+
+	@Override
+	public ClientMinDTO convertMinDTO() {
+		return new ClientMinDTO(this);
 	}
 }

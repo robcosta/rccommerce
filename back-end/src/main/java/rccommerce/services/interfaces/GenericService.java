@@ -29,6 +29,7 @@ public interface GenericService<T extends Convertible<DTO,MINDTO>, DTO, MINDTO, 
 	@Transactional(readOnly = true)
 	default Page<MINDTO> findAll(Pageable pageable) {
 		authentication("READER", null);
+		
 		Page<T> result =  getRepository().findAll(pageable);
 		if (result.getContent().isEmpty()) {
 			throw new ResourceNotFoundException("Cliente não encontrado");
@@ -39,6 +40,7 @@ public interface GenericService<T extends Convertible<DTO,MINDTO>, DTO, MINDTO, 
 	@Transactional(readOnly = true)
 	default MINDTO findById(ID id) {
 		authentication("READER", id);
+		
 		try {
 			Optional<T> result = getRepository().findById(id);			
 			return result.get().convertMinDTO();
@@ -50,6 +52,7 @@ public interface GenericService<T extends Convertible<DTO,MINDTO>, DTO, MINDTO, 
 	@Transactional
 	default MINDTO insert(DTO dto) {
 		authentication("INSERT", null);
+		
 		T entity = createEntity();
 		copyDtoToEntity(dto, entity);	
 		try {

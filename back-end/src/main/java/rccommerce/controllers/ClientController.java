@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -22,6 +21,7 @@ import jakarta.validation.Valid;
 import rccommerce.dto.ClientDTO;
 import rccommerce.dto.ClientMinDTO;
 import rccommerce.services.ClientService;
+import rccommerce.services.exceptions.ForbiddenException;
 
 @RestController
 @RequestMapping(value =  "/clients")
@@ -31,24 +31,31 @@ public class ClientController {
 	private ClientService service;
 	
 	@PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_OPERATOR', 'ROLE_SELLER', 'ROLE_CLIENT')")
-	@GetMapping
+	@GetMapping(value = "/all")
 	public ResponseEntity<Page<ClientMinDTO>> findAll(
-			@RequestParam(name = "name", defaultValue = "") String name,
-			@RequestParam(name = "email", defaultValue = "") String email,
-			@RequestParam(name = "cpf", defaultValue = "") String cpf,
+//			@RequestParam(name = "name", defaultValue = "") String name,
+//			@RequestParam(name = "email", defaultValue = "") String email,
+//			@RequestParam(name = "cpf", defaultValue = "") String cpf,
 			Pageable pageable) {
-		Page<ClientMinDTO> dto = service.findAll(name, email, cpf, pageable);
+		Page<ClientMinDTO> dto = service.findAll(pageable);
 		return ResponseEntity.ok(dto);
 	}
 	
 	@PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_OPERATOR', 'ROLE_SELLER', 'ROLE_CLIENT')")
+	@GetMapping(value = "/search")
+	public ResponseEntity<Page<ClientMinDTO>> seachClient(
+			@Valid @RequestBody ClientMinDTO dto, Pageable pageable) {
+		Page<ClientMinDTO> pageDto = service.searchClient(dto, pageable);
+		return ResponseEntity.ok(pageDto);
+	}
+	
+	@PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_OPERATOR', 'ROLE_SELLER', 'ROLE_CLIENT')")
 	@GetMapping(value = "/{id}")
-	public ResponseEntity<ClientMinDTO> findById(@PathVariable Long id) {
+	public ResponseEntity<ClientMinDTO> findById3(@PathVariable Long id) {
 		ClientMinDTO dto = service.findById(id);
 		return ResponseEntity.ok(dto);
 	}
 	
-//	@PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_OPERATOR', 'ROLE_SELLER', 'ROLE_CLIENT')")
 	@PostMapping
 	public ResponseEntity<ClientMinDTO> insert(@Valid @RequestBody ClientDTO dto) {
 		ClientMinDTO minDTO = service.insert(dto);
@@ -60,6 +67,9 @@ public class ClientController {
 	@PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_OPERATOR', 'ROLE_SELLER', 'ROLE_CLIENT')")
 	@PutMapping(value = "/{id}")
 	public ResponseEntity<ClientMinDTO> update(@Valid @RequestBody ClientDTO dto, @PathVariable Long id) {
+		if(id == 4L) {
+			throw new ForbiddenException("Não é permitido atualizar o cliente: 'Venda ao Consumidor'");
+		}
 		ClientMinDTO minDTO = service.update(dto, id);
 		return ResponseEntity.ok(minDTO);
 	}
@@ -67,6 +77,9 @@ public class ClientController {
 	@PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_OPERATOR', 'ROLE_SELLER', 'ROLE_CLIENT')")
 	@DeleteMapping(value = "/{id}")
 	public ResponseEntity<Void> delete(@PathVariable Long id) {
+		if(id == 4L) {
+			throw new ForbiddenException("Não é permitido deletar o cliente: 'Venda ao Consumidor'");
+		}
 		service.delete(id);
 		return ResponseEntity.noContent().build();
 	}
