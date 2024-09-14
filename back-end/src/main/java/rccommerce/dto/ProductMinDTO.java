@@ -3,32 +3,20 @@ package rccommerce.dto;
 import java.util.ArrayList;
 import java.util.List;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Positive;
-import jakarta.validation.constraints.Size;
 import rccommerce.entities.Category;
 import rccommerce.entities.Product;
 
 public class ProductMinDTO {
 
 	private Long id;
-
-	@NotBlank(message = "Campo requerido")
-	@Size(min = 3, max = 80, message = "Nome precisa ter de 3 a 80 caracteres.")
 	private String name;
-	
-	@NotBlank(message = "Campo requerido")
-	@Size(min = 2, max = 2, message = "Unidade com 2 caracteres.")
 	private String unit;
-
-	@Positive(message = "Informe o preço do produto")
 	private Double price;
 	private String imgUrl;
 	private Double qttStock;
 	private String reference;
 	private SuplierMinDTO suplier;
 
-	@Size(min=1, message = "Indique pelo menos uma categoria válida")
 	private List<CategoryDTO> categories = new ArrayList<>();
 
 	public ProductMinDTO(Long id, String name, String unit, Double price, String imgUrl,

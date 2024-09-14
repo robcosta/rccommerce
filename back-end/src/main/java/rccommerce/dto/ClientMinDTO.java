@@ -1,12 +1,9 @@
 package rccommerce.dto;
 
-import org.hibernate.validator.constraints.br.CPF;
-
 import rccommerce.entities.Client;
 
 public class ClientMinDTO extends UserMinDTO {
 
-	@CPF
 	private String cpf;
 
 	public ClientMinDTO(Long id, String name, String email, String cpf) {

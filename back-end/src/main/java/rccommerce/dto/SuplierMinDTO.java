@@ -1,21 +1,11 @@
 package rccommerce.dto;
 
-import org.hibernate.validator.constraints.br.CNPJ;
-
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 import rccommerce.entities.Suplier;
 
 public class SuplierMinDTO {
 
 	private Long id;
-	
-	@NotBlank(message = "Campo requerido")
-	@Size(min = 3, max = 80, message = "Nome precisa ter de 3 a 80 caracteres.")
 	private String name;
-	
-	@NotBlank(message = "Campo requerido")
-	@CNPJ
 	private String cnpj;
 
 	public SuplierMinDTO(Long id, String name, String cnpj) {

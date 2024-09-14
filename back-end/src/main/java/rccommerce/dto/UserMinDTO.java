@@ -9,6 +9,7 @@ import rccommerce.entities.Auth;
 import rccommerce.entities.User;
 
 public class UserMinDTO {
+	
 	private Long id;
 	private String name;
 	private String email;
