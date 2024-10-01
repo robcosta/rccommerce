@@ -1,7 +1,6 @@
 package rccommerce.services;
 
 import java.time.Instant;
-import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -36,7 +35,7 @@ public class StockService {
 			stock.setQttMoved(qttMoved);
 			stock.setMoviment(moviment);
 			product.setQuantity(stock.getQuantity());
-			product = productRepository.saveAndFlush(product);
+			product = productRepository.saveAndFlush(product);	
 			stock = repository.saveAndFlush(stock);
 		}catch (EntityNotFoundException e) {
 			throw new ResourceNotFoundException("Produto não encontrado");

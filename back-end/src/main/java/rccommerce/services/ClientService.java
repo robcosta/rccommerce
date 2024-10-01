@@ -50,8 +50,8 @@ public class ClientService implements GenericService<Client, ClientDTO, ClientMi
 		if (result.getContent().isEmpty()) {
 			throw new ResourceNotFoundException("Cliente não encontrado");
 		}
-		Page<ClientMinDTO> result2 =  result.map(x -> new ClientMinDTO(x));
-		return result2;
+	//	Page<ClientMinDTO> result2 =  result.map(x -> new ClientMinDTO(x));
+		return result.map(x -> new ClientMinDTO(x));
 	}
 
 	@Override
@@ -91,7 +91,7 @@ public class ClientService implements GenericService<Client, ClientDTO, ClientMi
 			if (e.toString().contains("CPF NULLS FIRST")) {
 				return new DatabaseException("CPF informado já existe");
 			}
-			return new DatabaseException("Cliente possui pedidos em seu nome, exclusão proibida");
+			return new DatabaseException("Cliente possui pedido(s) em seu nome, exclusão proibida");
 		}
 		
 		if (e.getClass().equals(EntityNotFoundException.class)) {

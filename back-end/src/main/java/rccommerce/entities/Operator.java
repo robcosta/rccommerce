@@ -2,11 +2,14 @@ package rccommerce.entities;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
+import rccommerce.dto.OperatorDTO;
+import rccommerce.dto.OperatorMinDTO;
+import rccommerce.util.Convertible;
 
 @SuppressWarnings("serial")
 @Entity
 @Table(name = "tb_operator")
-public class Operator extends User {
+public class Operator extends User implements Convertible<OperatorDTO, OperatorMinDTO>{
 	
 	private Double commission;
 
@@ -24,5 +27,15 @@ public class Operator extends User {
 
 	public void setCommission(Double commission) {
 		this.commission = commission;
+	}
+
+	@Override
+	public OperatorDTO convertDTO() {
+		return new OperatorDTO(this);
+	}
+
+	@Override
+	public OperatorMinDTO convertMinDTO() {
+		return new OperatorMinDTO(this);
 	}
 }
