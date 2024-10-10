@@ -27,29 +27,29 @@ public interface GenericService<T extends Convertible<DTO, MINDTO>, DTO, MINDTO,
 
 	@Transactional(readOnly = true)
 	default Page<MINDTO> findAll(Pageable pageable) {
-//		UserVerification(Very.READER, null);
+		UserVerification(Very.READER, null);
 
 		Page<T> result = getRepository().findAll(pageable);
 		if (result.getContent().isEmpty()) {
-			throw new ResourceNotFoundException(getTranslatedEntityName() + " não encontrado para os critérios especificados.");	
+			throwResourceNotFound();	
 		}
 		return result.map(x -> x.convertMinDTO());
 	}
 
 	@Transactional(readOnly = true)
 	default Page<MINDTO> searchAll(Example<T> example, Pageable pageable) {
-//		UserVerification(Very.READER, null);
+		UserVerification(Very.READER, null);
 
 		Page<T> result = getRepository().findAll(example, pageable);
 		if (result.isEmpty()) {
-			throw new ResourceNotFoundException(getTranslatedEntityName() + " não encontrado para os critérios especificados.");			
+			throwResourceNotFound();			
 		}
 		return result.map(x -> x.convertMinDTO());
 	}
 
 	@Transactional(readOnly = true)
 	default MINDTO findById(ID id) {
-//		UserVerification(Very.READER, id);
+		UserVerification(Very.READER, id);
 		
 		T result = getRepository().findById(id)
 					.orElseThrow(() -> new ResourceNotFoundException(getTranslatedEntityName() + " não encontrado para os critérios especificados."));
@@ -59,19 +59,19 @@ public interface GenericService<T extends Convertible<DTO, MINDTO>, DTO, MINDTO,
 	
 	@Transactional(readOnly = true)
 	default Page<MINDTO> findBy(Example<T> example, Pageable pageable) {
-//		UserVerification(Very.READER, null);
+		UserVerification(Very.READER, null);
 		
 			Page<T> result = getRepository().findBy(example, query -> query.page(pageable));
 			
 			if (result.getContent().isEmpty()) {
-				throw new ResourceNotFoundException(getTranslatedEntityName() + " não encontrado para os critérios especificados.");	
+				throwResourceNotFound();	
 			}
 			return result.map(x -> x.convertMinDTO()); 
 	}
 
 	@Transactional
 	default MINDTO insert(DTO dto) {
-//		UserVerification(Very.CREATE, null);
+		UserVerification(Very.CREATE, null);
 
 		T entity = createEntity();
 		copyDtoToEntity(dto, entity);
@@ -86,7 +86,7 @@ public interface GenericService<T extends Convertible<DTO, MINDTO>, DTO, MINDTO,
 
 	@Transactional
 	default MINDTO update(DTO dto, ID id) {
-//		UserVerification(Very.UPDATE, id);
+		UserVerification(Very.UPDATE, id);
 
 		try {
 			T entity = getRepository().getReferenceById(id);
@@ -103,15 +103,15 @@ public interface GenericService<T extends Convertible<DTO, MINDTO>, DTO, MINDTO,
 
 	@Transactional(propagation = Propagation.SUPPORTS)
 	default void delete(ID id) {
-//		UserVerification(Very.DELETE, id);
+		UserVerification(Very.DELETE, id);
 
 		if (!getRepository().existsById(id)) {
-			throw new ResourceNotFoundException(getTranslatedEntityName() + " não encontrado para os critérios especificados.");
+			throwResourceNotFound();
 		}
 		try {
 			getRepository().deleteById(id);
 		} catch (DataIntegrityViolationException e) {
-			throw new DatabaseException(getTranslatedEntityName() + "com vínculos em outras tabelas, exclusão proibida");
+			throwResourceNotFound();
 		}
 	}
 	
@@ -126,5 +126,10 @@ public interface GenericService<T extends Convertible<DTO, MINDTO>, DTO, MINDTO,
 	        throw new DatabaseException("CPF informado já existe");
 	    }
 	    throw new DatabaseException(getTranslatedEntityName() + "com vínculos em outras tabelas, exclusão proibida");	
+	}
+	
+	// Método auxiliar para lançar a exceção
+	default void throwResourceNotFound() {
+		throw new ResourceNotFoundException(getTranslatedEntityName() + " não encontrado para os critérios especificados.");
 	}
 }
