@@ -22,15 +22,15 @@ import jakarta.persistence.EntityNotFoundException;
 import rccommerce.dto.ClientDTO;
 import rccommerce.dto.ClientMinDTO;
 import rccommerce.dto.UserMinDTO;
-import rccommerce.entities.Auth;
+import rccommerce.entities.Verify;
 import rccommerce.entities.Client;
 import rccommerce.entities.Role;
-import rccommerce.repositories.AuthRepository;
+import rccommerce.repositories.VerifyRepository;
 import rccommerce.repositories.ClientRepository;
 import rccommerce.repositories.RoleRepository;
 import rccommerce.services.exceptions.DatabaseException;
 import rccommerce.services.exceptions.ResourceNotFoundException;
-import rccommerce.services.util.Authentication;
+import rccommerce.services.util.AuthService;
 import rccommerce.tests.FactoryUser;
 
 @ExtendWith(SpringExtension.class)
@@ -43,10 +43,10 @@ public class ClientServiceTests {
 	private ClientRepository repository;
 	
 	@Mock
-	private AuthRepository authRepository;
+	private VerifyRepository authRepository;
 	
 	@Mock
-	private Authentication authentication; 
+	private Verify authentication; 
 	
 	@Mock
 	private RoleRepository roleRepository;
@@ -98,7 +98,7 @@ public class ClientServiceTests {
 		
 		Mockito.when(userService.getMe()).thenReturn(userMinDTO);
 		Mockito.when(roleRepository.findByAuthority(ArgumentMatchers.anyString())).thenReturn(new Role(null, "ROLE_CLIENT"));
-		Mockito.when(authRepository.findByAuth(ArgumentMatchers.anyString())).thenReturn(new Auth(null, "READER"));
+		Mockito.when(authRepository.findByAuth(ArgumentMatchers.anyString())).thenReturn(new Verify(null, "READER"));
 		
 
 		Mockito.when(userService.getMe()).thenReturn(userMinDTO);

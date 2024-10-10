@@ -9,7 +9,7 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import rccommerce.dto.ClientDTO;
 import rccommerce.dto.ClientMinDTO;
-import rccommerce.util.Convertible;
+import rccommerce.services.interfaces.Convertible;
 
 @SuppressWarnings("serial")
 @Entity

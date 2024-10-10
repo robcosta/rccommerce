@@ -4,7 +4,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import rccommerce.dto.OperatorDTO;
 import rccommerce.dto.OperatorMinDTO;
-import rccommerce.util.Convertible;
+import rccommerce.services.interfaces.Convertible;
 
 @SuppressWarnings("serial")
 @Entity

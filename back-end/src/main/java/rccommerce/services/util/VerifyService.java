@@ -6,27 +6,28 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import rccommerce.dto.UserMinDTO;
+import rccommerce.entities.enums.Very;
 import rccommerce.services.UserService;
 import rccommerce.services.exceptions.ForbiddenException;
 
 @Service
-public class Authentication {
+public class VerifyService {
 	
 	@Autowired
 	private UserService service;
 	
 	private UserMinDTO userLogged;
 	
-	public void authUser(String auth, Long id) {
+	public void veryUser(Very very, Long id) {
 		userLogged = service.getMe();
 
 		if(userLogged.getId() == id) {
 			return;
 		}
-		if(userLogged.getAuths().contains("ALL")) {
+		if(userLogged.getVery().contains(Very.ALL)) {
 			return;
 		} 
-		if(userLogged.getAuths().containsAll(List.of(auth))) {
+		if(userLogged.getVery().containsAll(List.of(very))) {
 			return;
 		} 
 		throw new ForbiddenException("Acesso negado");	

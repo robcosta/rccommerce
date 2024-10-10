@@ -21,17 +21,17 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import rccommerce.dto.OperatorDTO;
 import rccommerce.dto.OperatorMinDTO;
 import rccommerce.dto.UserMinDTO;
-import rccommerce.entities.Auth;
+import rccommerce.entities.Verify;
 import rccommerce.entities.Operator;
 import rccommerce.entities.Role;
-import rccommerce.repositories.AuthRepository;
+import rccommerce.repositories.VerifyRepository;
 import rccommerce.repositories.OperatorRepository;
 import rccommerce.repositories.RoleRepository;
 import rccommerce.services.exceptions.DatabaseException;
 import rccommerce.services.exceptions.ForbiddenException;
 import rccommerce.services.exceptions.InvalidArgumentExecption;
 import rccommerce.services.exceptions.ResourceNotFoundException;
-import rccommerce.services.util.Authentication;
+import rccommerce.services.util.AuthService;
 import rccommerce.tests.FactoryUser;
 
 @ExtendWith(SpringExtension.class)
@@ -44,10 +44,10 @@ public class OperatorServiceTests {
 	private OperatorRepository repository;
 	
 	@Mock
-	private AuthRepository authRepository;
+	private VerifyRepository authRepository;
 	
 	@Mock
-	private Authentication authentication; 
+	private Verify authentication; 
 	
 	@Mock
 	private RoleRepository roleRepository;
@@ -287,7 +287,7 @@ public class OperatorServiceTests {
 		
 		Mockito.when(userService.getMe()).thenReturn(adminDTO);
 		Mockito.when(roleRepository.findByAuthority(ArgumentMatchers.anyString())).thenReturn(new Role(null, "ROLE_SELLER"));
-		Mockito.when(authRepository.findByAuth(ArgumentMatchers.anyString())).thenReturn(new Auth(null, "CREATE"));
+		Mockito.when(authRepository.findByAuth(ArgumentMatchers.anyString())).thenReturn(new Verify(null, "CREATE"));
 		
 		service.copyDtoToEntity(dto, operator);
 	
@@ -312,7 +312,7 @@ public class OperatorServiceTests {
 			
 		Mockito.when(userService.getMe()).thenReturn(adminDTO);
 		Mockito.when(roleRepository.findByAuthority(ArgumentMatchers.anyString())).thenReturn(new Role(null, "ROLE_SELLER"));
-		Mockito.when(authRepository.findByAuth(ArgumentMatchers.anyString())).thenReturn(new Auth(null, "CREATE"));
+		Mockito.when(authRepository.findByAuth(ArgumentMatchers.anyString())).thenReturn(new Verify(null, "CREATE"));
 		
 		service.copyDtoToEntity(dto, operator);
 		

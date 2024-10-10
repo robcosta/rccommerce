@@ -1,28 +1,28 @@
 package rccommerce.services;
 
-import java.util.NoSuchElementException;
+import java.util.Locale;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.context.MessageSource;
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import jakarta.persistence.EntityNotFoundException;
-import jakarta.validation.Valid;
 import rccommerce.dto.ClientDTO;
 import rccommerce.dto.ClientMinDTO;
 import rccommerce.entities.Client;
-import rccommerce.repositories.AuthRepository;
+import rccommerce.entities.enums.Very;
 import rccommerce.repositories.ClientRepository;
 import rccommerce.repositories.RoleRepository;
-import rccommerce.services.exceptions.DatabaseException;
-import rccommerce.services.exceptions.IgnoredException;
-import rccommerce.services.exceptions.ResourceNotFoundException;
+import rccommerce.repositories.VerifyRepository;
 import rccommerce.services.interfaces.GenericService;
-import rccommerce.services.util.Authentication;
+import rccommerce.services.util.VerifyService;
+import rccommerce.util.AccentUtils;
 
 @Service
 public class ClientService implements GenericService<Client, ClientDTO, ClientMinDTO, Long> {
@@ -34,37 +34,17 @@ public class ClientService implements GenericService<Client, ClientDTO, ClientMi
 	private RoleRepository roleRepository;
 
 	@Autowired
-	private AuthRepository authRepository;
+	private VerifyRepository verifyRepository;
 
 	@Autowired
-	private Authentication authentication;
-	
-	public Page<ClientMinDTO> searchClient(@Valid ClientMinDTO dto, Pageable pageable) {
-		authentication.authUser("READER", null);
-		
-		String name = dto.getName() != "" ? dto.getName():"";
-		String cpf =  dto.getCpf() != "" ? dto.getCpf().replaceAll("[^0-9]", ""):"";
-		String email =  dto.getEmail() != "" ? dto.getEmail():"";
-		
-		Page<Client> result = repository.searchAll(name, email, cpf, pageable);
-		if (result.getContent().isEmpty()) {
-			throw new ResourceNotFoundException("Cliente não encontrado");
-		}
-	//	Page<ClientMinDTO> result2 =  result.map(x -> new ClientMinDTO(x));
-		return result.map(x -> new ClientMinDTO(x));
-	}
+	private VerifyService verifyService;
 
-	@Override
-	public void copyDtoToEntity(ClientDTO dto, Client entity) {
-		entity.setName(dto.getName());
-		entity.setEmail(dto.getEmail());
-		if (!dto.getPassword().isEmpty()) {
-			entity.setPassword(new BCryptPasswordEncoder().encode(dto.getPassword()));
-		}
-		entity.setCpf(dto.getCpf());
-		entity.getRoles().clear();
-		entity.addRole(roleRepository.findByAuthority("ROLE_CLIENT"));
-		entity.addAuth(authRepository.findByAuth("NONE"));
+	@Autowired
+	private MessageSource messageSource;
+
+	@Transactional(readOnly = true)
+	public Page<ClientMinDTO> searchEntity(Long id, String name, String email, String cpf, Pageable pageable) {
+		return searchAll(example(id, name, email, cpf), pageable);
 	}
 
 	@Override
@@ -78,34 +58,54 @@ public class ClientService implements GenericService<Client, ClientDTO, ClientMi
 	}
 
 	@Override
-	public RuntimeException messageException(RuntimeException e) {
-
-		if (e.getClass().equals(NoSuchElementException.class)) {
-			return new ResourceNotFoundException("Cliente não existe");
+	public void UserVerification(Very very, Long id) {
+		if (very.equals(Very.CREATE)) {
+			return;
 		}
-
-		if (e.getClass().equals(DataIntegrityViolationException.class)) {
-			if (e.toString().contains("EMAIL NULLS FIRST")) {
-				return new DatabaseException("Email informado já existe");
-			}
-			if (e.toString().contains("CPF NULLS FIRST")) {
-				return new DatabaseException("CPF informado já existe");
-			}
-			return new DatabaseException("Cliente possui pedido(s) em seu nome, exclusão proibida");
+		verifyService.veryUser(very, id);
+	}
+	
+	@Override
+	public void copyDtoToEntity(ClientDTO dto, Client entity) {
+		entity.setName(dto.getName());
+		entity.setEmail(dto.getEmail().toLowerCase());
+		if (!dto.getPassword().isEmpty()) {
+			entity.setPassword(new BCryptPasswordEncoder().encode(dto.getPassword()));
 		}
-		
-		if (e.getClass().equals(EntityNotFoundException.class)) {
-			return new ResourceNotFoundException("Cliente não encontrado");
-		}
-
-		return new IgnoredException("Erro ignorado");
+		entity.setCpf(dto.getCpf());
+		entity.getRoles().clear();
+		entity.addRole(roleRepository.findByAuthority("ROLE_CLIENT"));
+		entity.getVerified().clear();
+		entity.addVerified(verifyRepository.getReferenceById(Very.NONE.getCode().longValue()));
 	}
 
 	@Override
-	public void authentication(String auth, Long id) {
-		if (auth.equalsIgnoreCase("INSERT")) {
-			return;
+	public String getTranslatedEntityName() {
+		// Pega a tradução do nome da entidade para "Client" e aplicar nas mensagens de erro"
+		return messageSource.getMessage("entity.Client", null, Locale.getDefault());
+	}
+
+	private Example<Client> example(Long id,String name, String email, String cpf) {
+		Client clientExample = createEntity();
+		if (id != null) {
+			clientExample.setId(id);
 		}
-		authentication.authUser(auth, id);
+		if (name != null && !name.isEmpty()) {
+			clientExample.setNameUnaccented(AccentUtils.removeAccents(name));
+		}
+		if (email != null && !email.isEmpty()) {
+			clientExample.setEmail(AccentUtils.removeAccents(email));
+		}
+		if (cpf != null && !cpf.isEmpty()) {
+			clientExample.setCpf(cpf);
+		}
+
+		ExampleMatcher matcher = ExampleMatcher.matching()
+				.withMatcher("id", ExampleMatcher.GenericPropertyMatchers.exact())	
+				.withMatcher("nameUnaccented", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase())
+				.withMatcher("email", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase())
+				.withMatcher("cpf", ExampleMatcher.GenericPropertyMatchers.exact());
+
+		return Example.of(clientExample, matcher);
 	}
 }

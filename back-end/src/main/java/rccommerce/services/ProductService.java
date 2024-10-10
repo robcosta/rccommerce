@@ -25,7 +25,7 @@ import rccommerce.repositories.SuplierRepository;
 import rccommerce.services.exceptions.DatabaseException;
 import rccommerce.services.exceptions.InvalidArgumentExecption;
 import rccommerce.services.exceptions.ResourceNotFoundException;
-import rccommerce.services.util.Authentication;
+import rccommerce.services.util.VerifyService;
 
 @Service
 public class ProductService {
@@ -43,7 +43,7 @@ public class ProductService {
 	private StockRepository stockRepository;
 
 	@Autowired
-	private Authentication authentication;
+	private VerifyService VerifyService;
 
 	@Transactional(readOnly = true)
 	public Page<ProductMinDTO> findAll(String name, String reference, Pageable pageable) {
@@ -73,7 +73,7 @@ public class ProductService {
 
 	@Transactional
 	public ProductDTO insert(ProductDTO dto) {
-		authentication.authUser("CREATE", null);
+	//	authentication.authUser("CREATE", null);
 
 		try {
 			Product entity = new Product();
@@ -90,7 +90,7 @@ public class ProductService {
 
 	@Transactional
 	public ProductDTO update(ProductDTO dto, Long id) {
-		authentication.authUser("UPDATE", id);
+	//	authentication.authUser("UPDATE", id);
 		try {
 			Product entity = repository.getReferenceById(id);
 			copyDtoToEntity(dto, entity);
@@ -108,7 +108,7 @@ public class ProductService {
 
 	@Transactional(propagation = Propagation.SUPPORTS)
 	public void delete(Long id) {
-		authentication.authUser("DELETE", id);
+	//	authentication.authUser("DELETE", id);
 
 		if (!repository.existsById(id)) {
 			throw new ResourceNotFoundException("Produto não encontrado");

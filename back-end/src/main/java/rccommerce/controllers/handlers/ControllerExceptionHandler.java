@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.ConstraintViolationException;
 import rccommerce.entities.errors.CustomError;
 import rccommerce.entities.errors.ValidationError;
 import rccommerce.services.exceptions.DatabaseException;
@@ -64,6 +65,13 @@ public class ControllerExceptionHandler {
 		HttpStatus status = HttpStatus.FORBIDDEN;
 		CustomError err = new CustomError(Instant.now(),status.value(), e.getMessage(), request.getRequestURI());
 		return ResponseEntity.status(status).body(err);
+	}
+	
+	@ExceptionHandler(ConstraintViolationException.class)
+	public ResponseEntity<CustomError> ConstraintViolation(ConstraintViolationException e, HttpServletRequest request){
+		HttpStatus status = HttpStatus.BAD_REQUEST;
+		CustomError err = new CustomError(Instant.now(),status.value(), e.getMessage(), request.getRequestURI());
+	    return ResponseEntity.status(status).body(err);
 	}
 
 }

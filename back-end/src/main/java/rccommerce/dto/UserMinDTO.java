@@ -5,19 +5,20 @@ import java.util.List;
 
 import org.springframework.security.core.GrantedAuthority;
 
-import rccommerce.entities.Auth;
 import rccommerce.entities.User;
+import rccommerce.entities.Verify;
+import rccommerce.entities.enums.Very;
 
 public class UserMinDTO {
-	
+
 	private Long id;
 	private String name;
 	private String email;
 
 	private List<String> roles = new ArrayList<>();
-	
-	private List<String> auths = new ArrayList<>();
-	
+
+	private List<Very> very = new ArrayList<>();
+
 	public UserMinDTO(Long id, String name, String email) {
 		this.id = id;
 		this.name = name;
@@ -28,11 +29,11 @@ public class UserMinDTO {
 		id = entity.getId();
 		name = entity.getName();
 		email = entity.getEmail();
-		for(GrantedAuthority role: entity.getRoles()){
+		for (GrantedAuthority role : entity.getRoles()) {
 			roles.add(role.getAuthority());
 		}
-		for(Auth auth: entity.getAuths()) {
-			auths.add(auth.getAuth());
+		for (Verify verify : entity.getVerified()) {
+			very.add(verify.getVery());
 		}
 	}
 
@@ -51,7 +52,8 @@ public class UserMinDTO {
 	public List<String> getRoles() {
 		return roles;
 	}
-	public List<String> getAuths() {
-		return auths;
+
+	public List<Very> getVery() {
+		return very;
 	}
 }

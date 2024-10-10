@@ -3,21 +3,41 @@ package rccommerce.entities.enums;
 import java.util.Arrays;
 import java.util.Optional;
 
-public enum AuthOld {
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 
-	ALL(0), CREATE(1), READER(2), UPDATE(3), DELETE(4), NONE(99);
+import rccommerce.services.exceptions.InvalidArgumentExecption;
+
+public enum Very {
+
+	ALL(1), CREATE(2), READER(3), UPDATE(4), DELETE(5), NONE(6);
 
 	private final Integer code;
 
-	AuthOld(int code) {
+	Very(int code) {
 		this.code = code;
 	}
 
-	public int getCode() {
+	public Integer getCode() {
 		return code;
 	}
 
-	public static Optional<AuthOld> searchCode(Integer code) {
+	public static Optional<Very> searchCode(Integer code) {
 		return Arrays.stream(values()).sequential().filter(t -> t.code.equals(code)).findFirst();
 	}
+	
+	@JsonValue
+    public String getName() {
+        return name();
+    }
+
+    @JsonCreator
+    public static Very fromValue(String value) {
+        for (Very very : Very.values()) {
+            if (very.name().equalsIgnoreCase(value)) {
+                return very;
+            }
+        }
+        throw new InvalidArgumentExecption("Um ou mais valores no campo 'very' não são válidos: " + value);
+    }
 }

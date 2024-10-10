@@ -4,15 +4,14 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import rccommerce.entities.Auth;
+import rccommerce.entities.Verify;
 
 
 @Repository
-public interface AuthRepository extends JpaRepository<Auth, Long> {
+public interface VerifyRepository extends JpaRepository<Verify, Long> {
 
-	@Query("SELECT obj FROM Auth obj "
-			+ "WHERE UPPER(obj.auth) LIKE UPPER(CONCAT('%', :auth,'%'))")
-	Auth findByAuth(String auth);
-
+	@Query("SELECT obj FROM Verify obj "
+			+ "WHERE obj.very = :very")
+	Verify findByVery(Integer very);
 }
 

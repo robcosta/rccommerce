@@ -7,7 +7,7 @@ import rccommerce.dto.ClientDTO;
 import rccommerce.dto.OperatorDTO;
 import rccommerce.dto.UserDTO;
 import rccommerce.dto.UserMinDTO;
-import rccommerce.entities.Auth;
+import rccommerce.entities.Verify;
 import rccommerce.entities.Client;
 import rccommerce.entities.Operator;
 import rccommerce.entities.Role;
@@ -36,8 +36,8 @@ public class FactoryUser {
 		return role;
 	}
 	
-	public static Auth createAuth() {
-		Auth auth = new Auth(6L, "NONE");
+	public static Verify createAuth() {
+		Verify auth = new Verify(6L, "NONE");
 		return auth;
 	}
 	

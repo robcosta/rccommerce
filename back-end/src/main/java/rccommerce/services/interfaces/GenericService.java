@@ -1,8 +1,7 @@
 package rccommerce.services.interfaces;
 
-import java.util.Optional;
-
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -10,84 +9,122 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.persistence.EntityNotFoundException;
+import rccommerce.entities.enums.Very;
+import rccommerce.services.exceptions.DatabaseException;
 import rccommerce.services.exceptions.ResourceNotFoundException;
-import rccommerce.util.Convertible;
 
-
-public interface GenericService<T extends Convertible<DTO,MINDTO>, DTO, MINDTO, ID> {
+public interface GenericService<T extends Convertible<DTO, MINDTO>, DTO, MINDTO, ID> {
 	
 	JpaRepository<T, ID> getRepository();
-	
+
 	void copyDtoToEntity(DTO dto, T entity);
-	
+
 	T createEntity();
+
+	void UserVerification(Very very, ID id);
 	
-	RuntimeException messageException(RuntimeException e);
-	
-	void authentication(String auth, ID id);
+	String getTranslatedEntityName();
 
 	@Transactional(readOnly = true)
 	default Page<MINDTO> findAll(Pageable pageable) {
-		authentication("READER", null);
-		
-		Page<T> result =  getRepository().findAll(pageable);
+//		UserVerification(Very.READER, null);
+
+		Page<T> result = getRepository().findAll(pageable);
 		if (result.getContent().isEmpty()) {
-			throw new ResourceNotFoundException("Cliente não encontrado");
+			throw new ResourceNotFoundException(getTranslatedEntityName() + " não encontrado para os critérios especificados.");	
+		}
+		return result.map(x -> x.convertMinDTO());
+	}
+
+	@Transactional(readOnly = true)
+	default Page<MINDTO> searchAll(Example<T> example, Pageable pageable) {
+//		UserVerification(Very.READER, null);
+
+		Page<T> result = getRepository().findAll(example, pageable);
+		if (result.isEmpty()) {
+			throw new ResourceNotFoundException(getTranslatedEntityName() + " não encontrado para os critérios especificados.");			
 		}
 		return result.map(x -> x.convertMinDTO());
 	}
 
 	@Transactional(readOnly = true)
 	default MINDTO findById(ID id) {
-		authentication("READER", id);
+//		UserVerification(Very.READER, id);
 		
-		try {
-			Optional<T> result = getRepository().findById(id);			
-			return result.get().convertMinDTO();
-		} catch (RuntimeException e) {
-			throw messageException(e);
-		}
+		T result = getRepository().findById(id)
+					.orElseThrow(() -> new ResourceNotFoundException(getTranslatedEntityName() + " não encontrado para os critérios especificados."));
+		
+		return result.convertMinDTO();
+	}
+	
+	@Transactional(readOnly = true)
+	default Page<MINDTO> findBy(Example<T> example, Pageable pageable) {
+//		UserVerification(Very.READER, null);
+		
+			Page<T> result = getRepository().findBy(example, query -> query.page(pageable));
+			
+			if (result.getContent().isEmpty()) {
+				throw new ResourceNotFoundException(getTranslatedEntityName() + " não encontrado para os critérios especificados.");	
+			}
+			return result.map(x -> x.convertMinDTO()); 
 	}
 
 	@Transactional
 	default MINDTO insert(DTO dto) {
-		authentication("INSERT", null);
-		
+//		UserVerification(Very.CREATE, null);
+
 		T entity = createEntity();
-		copyDtoToEntity(dto, entity);	
+		copyDtoToEntity(dto, entity);
 		try {
 			entity = getRepository().saveAndFlush(entity);
 			return entity.convertMinDTO();
-		} catch (RuntimeException e) {
-			throw messageException(e);
+		} catch (DataIntegrityViolationException e) {
+			handleDataIntegrityViolation(e);
+			return null;
 		}
 	}
 
 	@Transactional
 	default MINDTO update(DTO dto, ID id) {
-		authentication("UPDATE", id);
-		
+//		UserVerification(Very.UPDATE, id);
+
 		try {
 			T entity = getRepository().getReferenceById(id);
 			copyDtoToEntity(dto, entity);
 			entity = getRepository().saveAndFlush(entity);
 			return entity.convertMinDTO();
-		} catch (RuntimeException e) {
-			throw messageException(e);
+		} catch (EntityNotFoundException e) {
+			throw new ResourceNotFoundException(getTranslatedEntityName() + " não encontrado para os critérios especificados.");
+		} catch (DataIntegrityViolationException e) {
+			handleDataIntegrityViolation(e);
+			return null;
 		}
 	}
 
 	@Transactional(propagation = Propagation.SUPPORTS)
 	default void delete(ID id) {
-		authentication("DELETE", id);
-		
+//		UserVerification(Very.DELETE, id);
+
 		if (!getRepository().existsById(id)) {
-			throw messageException(new EntityNotFoundException());
+			throw new ResourceNotFoundException(getTranslatedEntityName() + " não encontrado para os critérios especificados.");
 		}
 		try {
 			getRepository().deleteById(id);
 		} catch (DataIntegrityViolationException e) {
-			throw messageException(e);
+			throw new DatabaseException(getTranslatedEntityName() + "com vínculos em outras tabelas, exclusão proibida");
 		}
+	}
+	
+	default void handleDataIntegrityViolation(DataIntegrityViolationException e) {
+	    if (e.toString().contains("EMAIL NULLS FIRST")) {
+	        throw new DatabaseException("Email informado já existe");
+	    }
+	    if (e.toString().contains("NAME NULLS FIRST")) {
+	        throw new DatabaseException("Nome informado já existe");
+	    }
+	    if (e.toString().contains("CPF NULLS FIRST")) {
+	        throw new DatabaseException("CPF informado já existe");
+	    }
+	    throw new DatabaseException(getTranslatedEntityName() + "com vínculos em outras tabelas, exclusão proibida");	
 	}
 }

@@ -14,7 +14,6 @@ import rccommerce.entities.Suplier;
 import rccommerce.repositories.SuplierRepository;
 import rccommerce.services.exceptions.DatabaseException;
 import rccommerce.services.exceptions.ResourceNotFoundException;
-import rccommerce.services.util.Authentication;
 
 @Service
 public class SuplierService {
@@ -22,12 +21,11 @@ public class SuplierService {
 	@Autowired
 	private SuplierRepository repository;
 
-	@Autowired
-	private Authentication authentication;
+
 
 	@Transactional(readOnly = true)
 	public Page<SuplierMinDTO> findAll(String name, String cnpj, Pageable pageable) {
-		authentication.authUser("READER", null);
+	//	authentication.authUser("READER", null);
 		
 		Page<Suplier> result = repository.searchAll(name, cnpj, pageable);
 		if (result.getContent().isEmpty()) {
@@ -38,7 +36,7 @@ public class SuplierService {
 
 	@Transactional(readOnly = true)
 	public SuplierDTO findById(Long id) {
-		authentication.authUser("READER", null);
+//		authentication.authUser("READER", null);
 		
 		Suplier result = repository.findById(id)
 				.orElseThrow(() -> new ResourceNotFoundException("Fornecedor não encontrado"));
@@ -48,7 +46,7 @@ public class SuplierService {
 
 	@Transactional
 	public SuplierDTO insert(SuplierDTO dto) {
-		authentication.authUser("CREATE", null);
+//		authentication.authUser("CREATE", null);
 
 		try {
 			Suplier entity = new Suplier();
@@ -62,7 +60,7 @@ public class SuplierService {
 
 	@Transactional
 	public SuplierDTO update(SuplierDTO dto, Long id) {
-		authentication.authUser("UPDATE", id);
+//		authentication.authUser("UPDATE", id);
 		
 		try {
 			Suplier entity = repository.getReferenceById(id);
@@ -76,7 +74,7 @@ public class SuplierService {
 
 	@Transactional(propagation = Propagation.SUPPORTS)
 	public void delete(Long id) {
-		authentication.authUser("DELETE", id);
+//		authentication.authUser("DELETE", id);
 
 		if (!repository.existsById(id)) {
 			throw new ResourceNotFoundException("Fornecedor não encontrado");

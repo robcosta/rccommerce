@@ -8,11 +8,14 @@ import org.springframework.security.core.GrantedAuthority;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import rccommerce.controllers.validators.EmailCustom;
+import rccommerce.controllers.validators.EnumExists;
 import rccommerce.controllers.validators.Password;
-import rccommerce.entities.Auth;
 import rccommerce.entities.User;
+import rccommerce.entities.Verify;
+import rccommerce.entities.enums.Very;
 
 public class UserDTO {
+
 	private Long id;
 	@NotBlank(message = "Campo requerido")
 	@Size(min = 3, max = 80, message = "Nome precisa ter de 3 a 80 caracteres.")
@@ -25,10 +28,11 @@ public class UserDTO {
 	@Size(min = 4, max = 8, message = "Senha: mínimo de 4 e máximo de 8 caracteres.")
 	@Password(message = "Senha deve conter apenas números.")
 	private String password;
-
+	
 	private List<String> roles = new ArrayList<>();
 
-	private List<String> auths = new ArrayList<>();
+	@EnumExists(enumClass = Very.class, message = "Um ou mais valores no campo 'verified' não são válidos.")
+	private List<Very> very = new ArrayList<>();
 
 	public UserDTO(Long id, String name, String email, String password) {
 		this.id = id;
@@ -45,8 +49,8 @@ public class UserDTO {
 		for (GrantedAuthority role : entity.getRoles()) {
 			roles.add(role.getAuthority());
 		}
-		for (Auth auth : entity.getAuths()) {
-			auths.add(auth.getAuth());
+		for (Verify verify : entity.getVerified()) {
+			very.add(verify.getVery());
 		}
 	}
 
@@ -70,7 +74,7 @@ public class UserDTO {
 		return roles;
 	}
 
-	public List<String> getAuths() {
-		return auths;
+	public List<Very> getVery() {
+		return very;
 	}
 }

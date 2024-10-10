@@ -15,6 +15,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
 import jakarta.persistence.JoinColumn;
@@ -22,36 +23,37 @@ import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import rccommerce.util.AccentUtils;
 
 @SuppressWarnings("serial")
 @Entity
-@Table(name="tb_user")
+@Table(name = "tb_user", indexes = {
+		@Index(name = "idx_user_name_unaccented", columnList = "nameUnaccented")
+})
 @Inheritance(strategy = InheritanceType.JOINED)
 public class User implements UserDetails {
-	
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	private String name;
+	private String nameUnaccented;
+	
 	@Column(unique = true)
 	private String email;
 	private String password;
-	
-    @ManyToMany
-    @JoinTable(name = "tb_user_role",
-    		joinColumns = @JoinColumn(name = "user_id"),
-    		inverseJoinColumns = @JoinColumn(name = "role_id"))
+
+	@ManyToMany
+	@JoinTable(name = "tb_user_role", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
 	Set<Role> roles = new HashSet<>();
-    
-    @ManyToMany
-    @JoinTable(name = "tb_user_auth",
-    		joinColumns = @JoinColumn(name = "user_id"),
-    		inverseJoinColumns = @JoinColumn(name = "auth_id"))    
-    Set<Auth> auths = new HashSet<>();
-    
+
+	@ManyToMany
+	@JoinTable(name = "tb_user_verify", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "verify_id"))
+	Set<Verify> verified = new HashSet<>();
+
 	@OneToMany(mappedBy = "user")
 	private List<Order> orders = new ArrayList<>();
-	
+
 	public User() {
 	}
 
@@ -76,6 +78,15 @@ public class User implements UserDetails {
 
 	public void setName(String name) {
 		this.name = name;
+		setNameUnaccented(this.name);
+	}
+	
+	public String getNameUnaccented() {
+		return nameUnaccented;
+	}
+	
+	public void setNameUnaccented(String nameUnaccented) {
+		this.nameUnaccented = AccentUtils.removeAccents(nameUnaccented);
 	}
 
 	public String getEmail() {
@@ -83,9 +94,9 @@ public class User implements UserDetails {
 	}
 
 	public void setEmail(String email) {
-		this.email = email.toLowerCase();
+		this.email = AccentUtils.removeAccents(email.toLowerCase());
 	}
-	
+
 	public String getPassword() {
 		return password;
 	}
@@ -101,28 +112,28 @@ public class User implements UserDetails {
 	public void addRole(Role role) {
 		roles.add(role);
 	}
-	
-	public Set<Auth> getAuths() {
-		return auths;
+
+	public Set<Verify> getVerified() {
+		return verified;
 	}
-	
-	public void addAuth(Auth auth) {
-		auths.add(auth);
+
+	public void addVerified(Verify verify) {
+		verified.add(verify);
 	}
-	
+
 	public List<Order> getOrders() {
 		return orders;
 	}
-	
+
 	public boolean hasRole(String roleNmame) {
-		for(Role role : roles) {
-			if(role.getAuthority().equals(roleNmame)) {
+		for (Role role : roles) {
+			if (role.getAuthority().equals(roleNmame)) {
 				return true;
 			}
 		}
 		return false;
 	}
-	
+
 	@Override
 	public int hashCode() {
 		return Objects.hash(id);

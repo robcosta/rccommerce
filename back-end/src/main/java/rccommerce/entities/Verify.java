@@ -4,28 +4,32 @@ import java.util.Objects;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import rccommerce.entities.enums.Very;
 
 @Entity
-@Table(name = "tb_auth")
-public class Auth {
-	
+@Table(name = "tb_verify")
+public class Verify {
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
-	
+
+	@Enumerated(EnumType.STRING)
 	@Column(unique = true)
-	private String auth;
-	
-	public Auth() {
+	private Very very;
+
+	public Verify() {
 	}
 
-	public Auth(Long id, String auth) {
+	public Verify(Long id, Very very) {
 		this.id = id;
-		this.auth = auth;
+		this.very = very;
 	}
 
 	public Long getId() {
@@ -36,17 +40,17 @@ public class Auth {
 		this.id = id;
 	}
 
-	public String getAuth() {
-		return auth;
+	public Very getVery() {
+		return very;
 	}
 
-	public void setAuth(String auth) {
-		this.auth = auth;
+	public void addVery(Very very) {
+		this.very = very;
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(auth);
+		return Objects.hash(very);
 	}
 
 	@Override
@@ -57,7 +61,7 @@ public class Auth {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		Auth other = (Auth) obj;
-		return Objects.equals(auth, other.auth);
+		Verify other = (Verify) obj;
+		return very == other.very;
 	}
 }

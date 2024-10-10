@@ -1,33 +1,36 @@
 package rccommerce.services;
 
 import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.Locale;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.context.MessageSource;
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
-import jakarta.persistence.EntityNotFoundException;
-import jakarta.validation.Valid;
+import com.fasterxml.jackson.databind.ser.std.StdArraySerializers.LongArraySerializer;
+
 import rccommerce.dto.OperatorDTO;
 import rccommerce.dto.OperatorMinDTO;
 import rccommerce.dto.UserMinDTO;
-import rccommerce.entities.Auth;
+import rccommerce.entities.Verify;
 import rccommerce.entities.Operator;
 import rccommerce.entities.Role;
-import rccommerce.repositories.AuthRepository;
+import rccommerce.entities.enums.Very;
+import rccommerce.repositories.VerifyRepository;
 import rccommerce.repositories.OperatorRepository;
 import rccommerce.repositories.RoleRepository;
-import rccommerce.services.exceptions.DatabaseException;
-import rccommerce.services.exceptions.IgnoredException;
+import rccommerce.services.exceptions.ForbiddenException;
 import rccommerce.services.exceptions.InvalidArgumentExecption;
-import rccommerce.services.exceptions.ResourceNotFoundException;
 import rccommerce.services.interfaces.GenericService;
-import rccommerce.services.util.Authentication;
+import rccommerce.services.util.VerifyService;
 
 @Service
 public class OperatorService  implements GenericService<Operator, OperatorDTO, OperatorMinDTO, Long>{
@@ -42,60 +45,17 @@ public class OperatorService  implements GenericService<Operator, OperatorDTO, O
 	private RoleRepository roleRepository;
 
 	@Autowired
-	private AuthRepository authRepository;
+	private VerifyRepository VerifyRepository;
 
 	@Autowired
-	private Authentication authentication;
+	private VerifyService VerifyService;
 	
-
-	public Page<OperatorMinDTO> searchOperator(@Valid OperatorMinDTO dto, Pageable pageable) {
-		authentication.authUser("READER", null);
-		
-		String name = dto.getName() != "" ? dto.getName():"";
-		String email =  dto.getEmail() != "" ? dto.getEmail():"";
-		
-		Page<Operator> result = repository.searchAll(name, email, pageable);
-		if (result.getContent().isEmpty()) {
-			throw new ResourceNotFoundException("Operador não encontrado");
-		}
-		//Page<OperatorMinDTO> result2 =  result.map(x -> new OperatorMinDTO(x));
-		return result.map(x -> new OperatorMinDTO(x));
-	}
-
-	public void copyDtoToEntity(OperatorDTO dto, Operator entity) {
-		UserMinDTO userLogged = userService.getMe();
-
-		entity.setName(dto.getName());
-		entity.setEmail(dto.getEmail());
-		entity.setCommission(dto.getCommission());
-		if (!dto.getPassword().isEmpty()) {
-			entity.setPassword(new BCryptPasswordEncoder().encode(dto.getPassword()));
-		}
-
-		if (!userLogged.getRoles().containsAll(List.of("ROLE_ADMIN"))) {
-			return;
-		}
-
-		entity.getAuths().clear();
-		for (String auth : dto.getAuths()) {
-			Auth result = authRepository.findByAuth(auth);
-			if (result == null) {
-				throw new InvalidArgumentExecption("Nível 'AUTH' de acesso inexistentes");
-			}
-			entity.addAuth(result);
-		}
-
-		if (dto.getRoles().isEmpty()) {
-			throw new InvalidArgumentExecption("Indicar pelo menos um nível de acesso");
-		}
-		entity.getRoles().clear();
-		for (String authority : dto.getRoles()) {
-			Role result = roleRepository.findByAuthority(authority);
-			if (result == null) {
-				throw new InvalidArgumentExecption("Nível 'ROLE' de acesso inexistentes");
-			}
-			entity.addRole(result);
-		}
+   @Autowired
+    private MessageSource messageSource;
+	
+	@Transactional(readOnly = true)
+	public Page<OperatorMinDTO> searchEntity(Long id, String name, String email, Pageable pageable) {
+		return searchAll(example(id, name, email), pageable);
 	}
 
 	@Override
@@ -107,34 +67,71 @@ public class OperatorService  implements GenericService<Operator, OperatorDTO, O
 	public Operator createEntity() {
 		return new Operator();
 	}
-
+	
 	@Override
-	public RuntimeException messageException(RuntimeException e) {
-
-		if (e.getClass().equals(NoSuchElementException.class)) {
-			return new ResourceNotFoundException("Operador não existe");
-		}
-
-		if (e.getClass().equals(DataIntegrityViolationException.class)) {
-			if (e.toString().contains("EMAIL NULLS FIRST")) {
-				return new DatabaseException("Email informado já existe");
-			}
-			return new DatabaseException("Operador com vínculos em outras tabelas, exclusão proibida");
-		}
-		
-		if (e.getClass().equals(EntityNotFoundException.class)) {
-			return new ResourceNotFoundException("Operador não encontrado");
-		}
-
-		return new IgnoredException("Erro ignorado");
+	public void UserVerification(Very very, Long id) {
+		VerifyService.veryUser(very, id);
 	}
 	
-
 	@Override
-	public void authentication(String auth, Long id) {
-		if (auth.equalsIgnoreCase("INSERT")) {
+	public String getTranslatedEntityName() {
+		// Pega a tradução do nome da entidade para "Client"
+        return messageSource.getMessage("entity.Operator", null, Locale.getDefault());
+	}
+	
+	public void copyDtoToEntity(OperatorDTO dto, Operator entity) {
+		UserMinDTO userLogged = userService.getMe();
+
+		entity.setName(dto.getName());
+		entity.setEmail(dto.getEmail().toLowerCase());
+		entity.setCommission(dto.getCommission());
+		if (!dto.getPassword().isEmpty()) {
+			entity.setPassword(new BCryptPasswordEncoder().encode(dto.getPassword()));
+		}
+
+		if (!userLogged.getRoles().containsAll(List.of("ROLE_ADMIN"))) {
 			return;
 		}
-		authentication.authUser(auth, id);		
+
+		entity.getVerified().clear();
+		for (Very very : dto.getVery()) {
+			Verify result = VerifyRepository.getReferenceById(very.getCode().longValue());
+			if (result == null) {
+				throw new InvalidArgumentExecption("Nível 'VERY' de acesso, inexistentes");
+			}
+			entity.addVerified(result);
+		}
+
+		if (dto.getRoles().isEmpty()) {
+			throw new InvalidArgumentExecption("Indicar pelo menos um nível de acesso");
+		}
+		entity.getRoles().clear();
+		for (String authority : dto.getRoles()) {
+			Role result = roleRepository.findByAuthority(authority);
+			if (result == null) {
+				throw new InvalidArgumentExecption("Nível 'ROLE' de acesso, inexistentes");
+			}
+			entity.addRole(result);
+		}
+	}
+	
+	private Example<Operator> example(Long id, String name, String email) {
+		Operator OperatorExample = createEntity();
+		if (id != null) {
+			OperatorExample.setId(id);
+		}
+		if (name != null && !name.isEmpty()) {
+			OperatorExample.setNameUnaccented(name);
+		}
+		if (email != null && !email.isEmpty()) {
+			OperatorExample.setEmail(email);
+		}
+
+		ExampleMatcher matcher = ExampleMatcher.matching()
+				.withMatcher("id", ExampleMatcher.GenericPropertyMatchers.exact())	
+				.withMatcher("nameUnaccented", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase())
+				.withMatcher("email", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase());
+
+		return Example.of(OperatorExample, matcher);
 	}
 }
