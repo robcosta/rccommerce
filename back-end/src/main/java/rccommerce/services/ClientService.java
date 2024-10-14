@@ -16,12 +16,12 @@ import org.springframework.transaction.annotation.Transactional;
 import rccommerce.dto.ClientDTO;
 import rccommerce.dto.ClientMinDTO;
 import rccommerce.entities.Client;
-import rccommerce.entities.enums.Very;
+import rccommerce.entities.enums.PermissionAuthority;
+import rccommerce.entities.enums.RoleAuthority;
 import rccommerce.repositories.ClientRepository;
+import rccommerce.repositories.PermissionRepository;
 import rccommerce.repositories.RoleRepository;
-import rccommerce.repositories.VerifyRepository;
 import rccommerce.services.interfaces.GenericService;
-import rccommerce.services.util.VerifyService;
 import rccommerce.util.AccentUtils;
 
 @Service
@@ -34,10 +34,7 @@ public class ClientService implements GenericService<Client, ClientDTO, ClientMi
 	private RoleRepository roleRepository;
 
 	@Autowired
-	private VerifyRepository verifyRepository;
-
-	@Autowired
-	private VerifyService verifyService;
+	private PermissionRepository permissionRepository;
 
 	@Autowired
 	private MessageSource messageSource;
@@ -58,12 +55,21 @@ public class ClientService implements GenericService<Client, ClientDTO, ClientMi
 	}
 
 	@Override
-	public void UserVerification(Very very, Long id) {
-		if (very.equals(Very.CREATE)) {
+	public void checkUserPermissions(PermissionAuthority authority, Long id, String className) {
+		// Lógica para permitir a inserção (CREATE) de qualquer cliente sem verificação de permissões
+		if (authority.equals(PermissionAuthority.PERMISSION_CREATE)) {
 			return;
 		}
-		verifyService.veryUser(very, id);
+		
+		 // Para os demais casos, chama o método da interface GenericService
+		GenericService.super.checkUserPermissions(authority, id, className);
 	}
+
+	@Override
+	public String getClassName() {
+		return getClass().getName();
+	}
+	
 	
 	@Override
 	public void copyDtoToEntity(ClientDTO dto, Client entity) {
@@ -74,9 +80,9 @@ public class ClientService implements GenericService<Client, ClientDTO, ClientMi
 		}
 		entity.setCpf(dto.getCpf());
 		entity.getRoles().clear();
-		entity.addRole(roleRepository.findByAuthority("ROLE_CLIENT"));
-		entity.getVerified().clear();
-		entity.addVerified(verifyRepository.getReferenceById(Very.NONE.getCode().longValue()));
+		entity.addRole(roleRepository.findByAuthority(RoleAuthority.ROLE_CLIENT.getName()));
+		entity.getPermissions().clear();
+		entity.addPermission(permissionRepository.findByAuthority(PermissionAuthority.PERMISSION_NONE.getName()));
 	}
 
 	@Override

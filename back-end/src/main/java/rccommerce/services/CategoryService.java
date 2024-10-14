@@ -15,10 +15,8 @@ import org.springframework.transaction.annotation.Transactional;
 import rccommerce.dto.CategoryDTO;
 import rccommerce.dto.CategoryMinDTO;
 import rccommerce.entities.Category;
-import rccommerce.entities.enums.Very;
 import rccommerce.repositories.CategoryRepository;
 import rccommerce.services.interfaces.GenericService;
-import rccommerce.services.util.VerifyService;
 import rccommerce.util.AccentUtils;
 
 @Service
@@ -26,9 +24,6 @@ public class CategoryService implements GenericService<Category, CategoryDTO, Ca
 
 	@Autowired
 	private CategoryRepository repository;
-
-	@Autowired
-	private VerifyService verifyService;
 	
     @Autowired
     private MessageSource messageSource;
@@ -47,10 +42,10 @@ public class CategoryService implements GenericService<Category, CategoryDTO, Ca
 	public Category createEntity() {
 		return new Category();
 	}
-
+	
 	@Override
-	public void UserVerification(Very very, Long id) {
-		verifyService.veryUser(very, id);
+	public String getClassName() {
+		return getClass().getName();
 	}
 	
 	@Override

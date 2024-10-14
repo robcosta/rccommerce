@@ -25,7 +25,6 @@ import rccommerce.repositories.SuplierRepository;
 import rccommerce.services.exceptions.DatabaseException;
 import rccommerce.services.exceptions.InvalidArgumentExecption;
 import rccommerce.services.exceptions.ResourceNotFoundException;
-import rccommerce.services.util.VerifyService;
 
 @Service
 public class ProductService {
@@ -41,9 +40,6 @@ public class ProductService {
 	
 	@Autowired
 	private StockRepository stockRepository;
-
-	@Autowired
-	private VerifyService VerifyService;
 
 	@Transactional(readOnly = true)
 	public Page<ProductMinDTO> findAll(String name, String reference, Pageable pageable) {

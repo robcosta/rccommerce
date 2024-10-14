@@ -12,25 +12,21 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-
-import com.fasterxml.jackson.databind.ser.std.StdArraySerializers.LongArraySerializer;
 
 import rccommerce.dto.OperatorDTO;
 import rccommerce.dto.OperatorMinDTO;
 import rccommerce.dto.UserMinDTO;
-import rccommerce.entities.Verify;
 import rccommerce.entities.Operator;
+import rccommerce.entities.Permission;
 import rccommerce.entities.Role;
-import rccommerce.entities.enums.Very;
-import rccommerce.repositories.VerifyRepository;
+import rccommerce.entities.enums.PermissionAuthority;
+import rccommerce.entities.enums.RoleAuthority;
 import rccommerce.repositories.OperatorRepository;
+import rccommerce.repositories.PermissionRepository;
 import rccommerce.repositories.RoleRepository;
-import rccommerce.services.exceptions.ForbiddenException;
 import rccommerce.services.exceptions.InvalidArgumentExecption;
 import rccommerce.services.interfaces.GenericService;
-import rccommerce.services.util.VerifyService;
 
 @Service
 public class OperatorService  implements GenericService<Operator, OperatorDTO, OperatorMinDTO, Long>{
@@ -45,14 +41,11 @@ public class OperatorService  implements GenericService<Operator, OperatorDTO, O
 	private RoleRepository roleRepository;
 
 	@Autowired
-	private VerifyRepository VerifyRepository;
+	private PermissionRepository permissionRepository;
 
-	@Autowired
-	private VerifyService VerifyService;
-	
    @Autowired
     private MessageSource messageSource;
-	
+   
 	@Transactional(readOnly = true)
 	public Page<OperatorMinDTO> searchEntity(Long id, String name, String email, Pageable pageable) {
 		return searchAll(example(id, name, email), pageable);
@@ -69,8 +62,8 @@ public class OperatorService  implements GenericService<Operator, OperatorDTO, O
 	}
 	
 	@Override
-	public void UserVerification(Very very, Long id) {
-		VerifyService.veryUser(very, id);
+	public String getClassName() {
+		return getClass().getName();
 	}
 	
 	@Override
@@ -89,17 +82,22 @@ public class OperatorService  implements GenericService<Operator, OperatorDTO, O
 			entity.setPassword(new BCryptPasswordEncoder().encode(dto.getPassword()));
 		}
 
-		if (!userLogged.getRoles().containsAll(List.of("ROLE_ADMIN"))) {
+		if (!userLogged.getRoles().containsAll(List.of(RoleAuthority.ROLE_ADMIN.getName()))) {
 			return;
 		}
 
-		entity.getVerified().clear();
-		for (Very very : dto.getVery()) {
-			Verify result = VerifyRepository.getReferenceById(very.getCode().longValue());
+		entity.getPermissions().clear();
+		if (dto.getPermissions().isEmpty()) {
+			Permission result = permissionRepository.findByAuthority(PermissionAuthority.PERMISSION_NONE.getName());
+			entity.addPermission(result);
+		}
+		
+		for (String permission : dto.getPermissions()) {
+			Permission result = permissionRepository.findByAuthority(permission);
 			if (result == null) {
-				throw new InvalidArgumentExecption("Nível 'VERY' de acesso, inexistentes");
+				throw new InvalidArgumentExecption("Permissão de acesso, inexistentes: " + permission);
 			}
-			entity.addVerified(result);
+			entity.addPermission(result);
 		}
 
 		if (dto.getRoles().isEmpty()) {
@@ -109,7 +107,7 @@ public class OperatorService  implements GenericService<Operator, OperatorDTO, O
 		for (String authority : dto.getRoles()) {
 			Role result = roleRepository.findByAuthority(authority);
 			if (result == null) {
-				throw new InvalidArgumentExecption("Nível 'ROLE' de acesso, inexistentes");
+				throw new InvalidArgumentExecption("Nível 'ROLE' de acesso: " + authority + ", inexistentes");
 			}
 			entity.addRole(result);
 		}

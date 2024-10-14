@@ -28,7 +28,7 @@ public class Client extends User implements Convertible<ClientDTO, ClientMinDTO>
 	public Client(Long id, String name, String email,String password, String cpf) {
 		super(id, name, email, password);
 		this.cpf = cpf;
-		super.roles.add(new Role(4L,"ROLE_CLIENT"));		
+		super.getRoles().add(new Role(4L,"ROLE_CLIENT"));		
 	}
 
 	public String getCpf() {

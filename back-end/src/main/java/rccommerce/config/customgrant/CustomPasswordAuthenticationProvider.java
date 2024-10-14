@@ -9,8 +9,6 @@ import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
@@ -32,28 +30,32 @@ import org.springframework.security.oauth2.server.authorization.token.OAuth2Toke
 import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenGenerator;
 import org.springframework.util.Assert;
 
+import rccommerce.entities.User;
+import rccommerce.services.UserService;
+
 public class CustomPasswordAuthenticationProvider implements AuthenticationProvider {
 
 	private static final String ERROR_URI = "https://datatracker.ietf.org/doc/html/rfc6749#section-5.2";
 	private final OAuth2AuthorizationService authorizationService;
-	private final UserDetailsService userDetailsService;
+	private final UserService userService;
 	private final OAuth2TokenGenerator<? extends OAuth2Token> tokenGenerator;
 	private final PasswordEncoder passwordEncoder;
+	
 	private String username = "";
 	private String password = "";
 	private Set<String> authorizedScopes = new HashSet<>();
 
 	public CustomPasswordAuthenticationProvider(OAuth2AuthorizationService authorizationService,
 			OAuth2TokenGenerator<? extends OAuth2Token> tokenGenerator, 
-			UserDetailsService userDetailsService, PasswordEncoder passwordEncoder) {
+			UserService userService, PasswordEncoder passwordEncoder) {
 		
 		Assert.notNull(authorizationService, "authorizationService cannot be null");
 		Assert.notNull(tokenGenerator, "TokenGenerator cannot be null");
-		Assert.notNull(userDetailsService, "UserDetailsService cannot be null");
+		Assert.notNull(userService, "UserDetailsService cannot be null");
 		Assert.notNull(passwordEncoder, "PasswordEncoder cannot be null");
 		this.authorizationService = authorizationService;
 		this.tokenGenerator = tokenGenerator;
-		this.userDetailsService = userDetailsService;
+		this.userService = userService;
 		this.passwordEncoder = passwordEncoder;
 	}
 	
@@ -66,9 +68,11 @@ public class CustomPasswordAuthenticationProvider implements AuthenticationProvi
 		username = customPasswordAuthenticationToken.getUsername();
 		password = customPasswordAuthenticationToken.getPassword();	
 		
-		UserDetails user = null;
+		User user = new User();
+		Long userId;
 		try {
-			user = userDetailsService.loadUserByUsername(username);
+			user = (User) userService.loadUserByUsername(username);    
+			userId = user.getId();  
 		} catch (UsernameNotFoundException e) {
 			throw new OAuth2AuthenticationException("Invalid credentials");
 		}
@@ -84,7 +88,7 @@ public class CustomPasswordAuthenticationProvider implements AuthenticationProvi
 		
 		//-----------Create a new Security Context Holder Context----------
 		OAuth2ClientAuthenticationToken oAuth2ClientAuthenticationToken = (OAuth2ClientAuthenticationToken) SecurityContextHolder.getContext().getAuthentication();
-		CustomUserAuthorities customPasswordUser = new CustomUserAuthorities(username, user.getAuthorities());
+		CustomUserAuthorities customPasswordUser = new CustomUserAuthorities(userId, username, user.getAuthorities());
 		oAuth2ClientAuthenticationToken.setDetails(customPasswordUser);
 		
 		var newcontext = SecurityContextHolder.createEmptyContext();

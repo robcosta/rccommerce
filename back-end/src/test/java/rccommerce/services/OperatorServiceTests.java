@@ -24,7 +24,7 @@ import rccommerce.dto.UserMinDTO;
 import rccommerce.entities.Verify;
 import rccommerce.entities.Operator;
 import rccommerce.entities.Role;
-import rccommerce.repositories.VerifyRepository;
+import rccommerce.repositories.PermissionRepository;
 import rccommerce.repositories.OperatorRepository;
 import rccommerce.repositories.RoleRepository;
 import rccommerce.services.exceptions.DatabaseException;
@@ -44,7 +44,7 @@ public class OperatorServiceTests {
 	private OperatorRepository repository;
 	
 	@Mock
-	private VerifyRepository authRepository;
+	private PermissionRepository authRepository;
 	
 	@Mock
 	private Verify authentication; 

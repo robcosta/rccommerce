@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import rccommerce.dto.UserMinDTO;
+import rccommerce.entities.Permission;
 import rccommerce.entities.Role;
 import rccommerce.entities.User;
 import rccommerce.projections.UserDetailsProjection;
@@ -31,16 +32,18 @@ public class UserService implements UserDetailsService {
 	@Override
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 
-		List<UserDetailsProjection> result = repository.searchUserAndRolesByEmail(username);
+		List<UserDetailsProjection> result = repository.searchUserRolesAndPermissionsByEmail(username);
 		if (result.size() == 0) {
 			throw new UsernameNotFoundException("Usuário não encontrado");
 		}
 
 		User user = new User();
+		user.setId(result.get(0).getUserId());
 		user.setEmail(result.get(0).getUsername());
 		user.setPassword(result.get(0).getPassword());
 		for (UserDetailsProjection projection : result) {
 			user.addRole(new Role(projection.getRoleId(), projection.getAuthority()));
+			user.addPermission(new Permission(projection.getPermissionId(), projection.getPermissionAuthority()));
 		}
 
 		return user;
@@ -77,7 +80,7 @@ public class UserService implements UserDetailsService {
 	protected User authenticated() {
 		try {
 			String username = customUserUtil.getLoggerUsername();
-			return repository.findByEmail(username).get();
+			return repository.searchEmail(username).get();
 		} catch (Exception e) {
 			throw new UsernameNotFoundException("Usuário não encontrado");
 		}

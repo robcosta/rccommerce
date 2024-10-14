@@ -15,13 +15,11 @@ import rccommerce.entities.OrderItem;
 import rccommerce.entities.Product;
 import rccommerce.entities.User;
 import rccommerce.entities.enums.OrderStatus;
-import rccommerce.entities.enums.Very;
 import rccommerce.repositories.ClientRepository;
 import rccommerce.repositories.OrderItemRepository;
 import rccommerce.repositories.OrderRepository;
 import rccommerce.repositories.ProductRepository;
 import rccommerce.services.exceptions.ResourceNotFoundException;
-import rccommerce.services.util.VerifyService;
 
 @Service
 public class OrderService {
@@ -41,12 +39,10 @@ public class OrderService {
 	@Autowired
 	private UserService userService;
 	
-	@Autowired
-	private VerifyService VerifyService;
-	
+
 	@Transactional(readOnly = true)
 	public OrderDTO findById(Long id) {
-		VerifyService.veryUser(Very.READER, null);
+//		CheckUserPermissions.authorityUser(PermissionAuthority.PERMISSION_READER,(Long) id);
 		Order result = repository.findById(id)
 				.orElseThrow(() -> new ResourceNotFoundException("Pedido não encontrado"));
 		return new OrderDTO(result);
@@ -57,7 +53,7 @@ public class OrderService {
 		Order order = new Order();		
 		User user = userService.authenticated();
 		Client client = virifyClient(user, dto);
-		VerifyService.veryUser(Very.CREATE, client.getId());		
+//		CheckUserPermissions.authorityUser(PermissionAuthority.PERMISSION_CREATE,client.getId());		
 		
 		order.setUser(user);
 		order.setMoment(Instant.now());

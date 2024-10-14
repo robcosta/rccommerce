@@ -12,6 +12,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -27,9 +28,7 @@ import rccommerce.util.AccentUtils;
 
 @SuppressWarnings("serial")
 @Entity
-@Table(name = "tb_user", indexes = {
-		@Index(name = "idx_user_name_unaccented", columnList = "nameUnaccented")
-})
+@Table(name = "tb_user", indexes = { @Index(name = "idx_user_name_unaccented", columnList = "nameUnaccented") })
 @Inheritance(strategy = InheritanceType.JOINED)
 public class User implements UserDetails {
 
@@ -38,18 +37,18 @@ public class User implements UserDetails {
 	private Long id;
 	private String name;
 	private String nameUnaccented;
-	
+
 	@Column(unique = true)
 	private String email;
 	private String password;
 
-	@ManyToMany
+	@ManyToMany(fetch = FetchType.EAGER)
 	@JoinTable(name = "tb_user_role", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
-	Set<Role> roles = new HashSet<>();
+	private Set<Role> roles = new HashSet<>();
 
-	@ManyToMany
-	@JoinTable(name = "tb_user_verify", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "verify_id"))
-	Set<Verify> verified = new HashSet<>();
+	@ManyToMany(fetch = FetchType.EAGER)
+	@JoinTable(name = "tb_user_permission", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "permission_id"))
+	private Set<Permission> permissions = new HashSet<>();
 
 	@OneToMany(mappedBy = "user")
 	private List<Order> orders = new ArrayList<>();
@@ -80,11 +79,11 @@ public class User implements UserDetails {
 		this.name = name;
 		setNameUnaccented(this.name);
 	}
-	
+
 	public String getNameUnaccented() {
 		return nameUnaccented;
 	}
-	
+
 	public void setNameUnaccented(String nameUnaccented) {
 		this.nameUnaccented = AccentUtils.removeAccents(nameUnaccented);
 	}
@@ -113,12 +112,12 @@ public class User implements UserDetails {
 		roles.add(role);
 	}
 
-	public Set<Verify> getVerified() {
-		return verified;
+	public Set<Permission> getPermissions() {
+		return permissions;
 	}
 
-	public void addVerified(Verify verify) {
-		verified.add(verify);
+	public void addPermission(Permission permission) {
+		this.permissions.add(permission);
 	}
 
 	public List<Order> getOrders() {
@@ -153,7 +152,15 @@ public class User implements UserDetails {
 
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {
-		return roles;
+		Set<GrantedAuthority> authorities = new HashSet<>();
+
+		// Adiciona os roles como GrantedAuthority
+		authorities.addAll(roles);
+
+		// Adiciona as permissions como GrantedAuthority
+		authorities.addAll(permissions);
+
+		return authorities;
 	}
 
 	@Override

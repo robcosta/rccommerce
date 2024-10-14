@@ -8,13 +8,13 @@ import com.fasterxml.jackson.annotation.JsonValue;
 
 import rccommerce.services.exceptions.InvalidArgumentExecption;
 
-public enum Very {
+public enum PermissionAuthority {
 
-	ALL(1), CREATE(2), READER(3), UPDATE(4), DELETE(5), NONE(6);
+	PERMISSION_ALL(1), PERMISSION_NONE(2), PERMISSION_CREATE(3), PERMISSION_READER(4), PERMISSION_UPDATE(5), PERMISSION_DELETE(6), PERMISSION_ROLE(7), PERMISSION_PERMISSION(8);
 
 	private final Integer code;
 
-	Very(int code) {
+	PermissionAuthority(int code) {
 		this.code = code;
 	}
 
@@ -22,7 +22,7 @@ public enum Very {
 		return code;
 	}
 
-	public static Optional<Very> searchCode(Integer code) {
+	public static Optional<PermissionAuthority> searchCode(Integer code) {
 		return Arrays.stream(values()).sequential().filter(t -> t.code.equals(code)).findFirst();
 	}
 	
@@ -32,12 +32,12 @@ public enum Very {
     }
 
     @JsonCreator
-    public static Very fromValue(String value) {
-        for (Very very : Very.values()) {
+    public static PermissionAuthority fromValue(String value) {
+        for (PermissionAuthority very : PermissionAuthority.values()) {
             if (very.name().equalsIgnoreCase(value)) {
                 return very;
             }
         }
-        throw new InvalidArgumentExecption("Um ou mais valores no campo 'very' não são válidos: " + value);
+        throw new InvalidArgumentExecption("Um ou mais valores no campo 'permission' não são válidos: " + value);
     }
 }

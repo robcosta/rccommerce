@@ -25,7 +25,7 @@ import rccommerce.dto.UserMinDTO;
 import rccommerce.entities.Verify;
 import rccommerce.entities.Client;
 import rccommerce.entities.Role;
-import rccommerce.repositories.VerifyRepository;
+import rccommerce.repositories.PermissionRepository;
 import rccommerce.repositories.ClientRepository;
 import rccommerce.repositories.RoleRepository;
 import rccommerce.services.exceptions.DatabaseException;
@@ -43,7 +43,7 @@ public class ClientServiceTests {
 	private ClientRepository repository;
 	
 	@Mock
-	private VerifyRepository authRepository;
+	private PermissionRepository authRepository;
 	
 	@Mock
 	private Verify authentication; 

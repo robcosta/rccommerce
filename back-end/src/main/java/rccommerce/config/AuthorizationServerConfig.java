@@ -15,7 +15,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
@@ -52,8 +52,9 @@ import com.nimbusds.jose.proc.SecurityContext;
 import rccommerce.config.customgrant.CustomPasswordAuthenticationConverter;
 import rccommerce.config.customgrant.CustomPasswordAuthenticationProvider;
 import rccommerce.config.customgrant.CustomUserAuthorities;
+import rccommerce.services.UserService;
 
-
+@EnableWebSecurity
 @Configuration
 public class AuthorizationServerConfig {
 
@@ -67,7 +68,7 @@ public class AuthorizationServerConfig {
 	private Integer jwtDurationSeconds;
 
 	@Autowired
-	private UserDetailsService userDetailsService;
+	private UserService userService;
 
 	@Bean
 	@Order(2)
@@ -79,7 +80,7 @@ public class AuthorizationServerConfig {
 		http.getConfigurer(OAuth2AuthorizationServerConfigurer.class)
 			.tokenEndpoint(tokenEndpoint -> tokenEndpoint
 				.accessTokenRequestConverter(new CustomPasswordAuthenticationConverter())
-				.authenticationProvider(new CustomPasswordAuthenticationProvider(authorizationService(), tokenGenerator(), userDetailsService, passwordEncoder())));
+				.authenticationProvider(new CustomPasswordAuthenticationProvider(authorizationService(), tokenGenerator(), userService, passwordEncoder())));
 
 		http.oauth2ResourceServer(oauth2ResourceServer -> oauth2ResourceServer.jwt(Customizer.withDefaults()));
 		// @formatter:on
@@ -158,6 +159,7 @@ public class AuthorizationServerConfig {
 			if (context.getTokenType().getValue().equals("access_token")) {
 				// @formatter:off
 				context.getClaims()
+					.claim("userId", user.getUserId())
 					.claim("authorities", authorities)
 					.claim("username", user.getUsername());
 				// @formatter:on

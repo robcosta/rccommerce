@@ -4,27 +4,30 @@ import java.util.Objects;
 
 import org.springframework.security.core.GrantedAuthority;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import rccommerce.entities.enums.RoleAuthority;
+import rccommerce.entities.enums.PermissionAuthority;
 
 @SuppressWarnings("serial")
 @Entity
-@Table(name = "tb_role")
-public class Role implements GrantedAuthority {
+@Table(name = "tb_permission")
+public class Permission implements GrantedAuthority {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String authority; // Ex: ROLE_SELLER, ROLE_OPERATOR
 
-    public Role() {}
+    @Column(nullable = false)
+    private String authority; // Ex: PERMISSION_CREATE, PERMISSION_DELETE
 
-    public Role(Long id, String authority) {
+    public Permission() {}
+
+    public Permission(Long id, String authority) {
         this.id = id;
         this.authority = authority;
     }
@@ -39,10 +42,14 @@ public class Role implements GrantedAuthority {
 
     @Override
     public String getAuthority() {
+        return authority; 
+    }
+
+    public String getPermissionAuthority() {
         return authority;
     }
 
-    public void setAuthority(RoleAuthority authority) {
+    public void setPermissionAuthority(PermissionAuthority authority) {
         this.authority = authority.getName();
     }
 
@@ -59,7 +66,7 @@ public class Role implements GrantedAuthority {
             return false;
         if (getClass() != obj.getClass())
             return false;
-        Role other = (Role) obj;
+        Permission other = (Permission) obj;
         return Objects.equals(id, other.id);
     }
 }
