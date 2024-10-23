@@ -47,9 +47,6 @@ public class OperatorServiceTests {
 	private PermissionRepository authRepository;
 	
 	@Mock
-	private Verify authentication; 
-	
-	@Mock
 	private RoleRepository roleRepository;
 
 	@Mock
@@ -91,7 +88,7 @@ public class OperatorServiceTests {
 		emptyNameOperator = "";
 		
 		
-		Mockito.doNothing().when(authentication).authUser(ArgumentMatchers.anyString(), ArgumentMatchers.anyLong());
+	//	Mockito.doNothing().when(authentication).authUser(ArgumentMatchers.anyString(), ArgumentMatchers.anyLong());
 		
 		Mockito.when(repository.getReferenceById(existsId)).thenReturn(operator);
 		Mockito.when(repository.saveAndFlush(ArgumentMatchers.any())).thenReturn(operator);	

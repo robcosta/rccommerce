@@ -7,7 +7,6 @@ import rccommerce.dto.ClientDTO;
 import rccommerce.dto.OperatorDTO;
 import rccommerce.dto.UserDTO;
 import rccommerce.dto.UserMinDTO;
-import rccommerce.entities.Verify;
 import rccommerce.entities.Client;
 import rccommerce.entities.Operator;
 import rccommerce.entities.Role;
@@ -34,11 +33,6 @@ public class FactoryUser {
 	public static Role createRoleClient() {
 		Role role = new Role(2L, "ROLE_CLIENT");
 		return role;
-	}
-	
-	public static Verify createAuth() {
-		Verify auth = new Verify(6L, "NONE");
-		return auth;
 	}
 	
 	public static UserDTO createUserDTO() {
@@ -71,7 +65,7 @@ public class FactoryUser {
 	public static Operator createOperator(User user) {
 		Operator operator = new Operator(user.getId(), user.getName(), user.getEmail(), user.getPassword(), 1.5);
 		operator.addRole(createRoleAdmin());
-		operator.addAuth(createAuth());
+	//	operator.addAuth(createAuth());
 		return operator;
 	}
 	
@@ -83,7 +77,7 @@ public class FactoryUser {
 	public static Client createClient() {
 		Client client = new Client(7L, "Ana Pink", "ana@gmail.com", "123456", "59395734019");
 		client.addRole(createRoleClient());
-		client.addAuth(createAuth());;
+	//	client.addAuth(createAuth());;
 		return client;
 	}
 	
@@ -128,6 +122,24 @@ class UserDetailsImpl implements UserDetailsProjection {
 	@Override
 	public String getAuthority() {
 		return authority;
+	}
+
+	@Override
+	public Long getUserId() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Long getPermissionId() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String getPermissionAuthority() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 	
 }
