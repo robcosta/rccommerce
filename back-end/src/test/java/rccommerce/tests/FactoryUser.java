@@ -9,6 +9,7 @@ import rccommerce.dto.UserDTO;
 import rccommerce.dto.UserMinDTO;
 import rccommerce.entities.Client;
 import rccommerce.entities.Operator;
+import rccommerce.entities.Permission;
 import rccommerce.entities.Role;
 import rccommerce.entities.User;
 import rccommerce.projections.UserDetailsProjection;
@@ -35,6 +36,16 @@ public class FactoryUser {
 		return role;
 	}
 	
+	public static Permission createPermissionAll() {
+		Permission permission = new Permission(1L, "PERMISSION_ALL");
+		return permission;
+	}
+
+	public static Permission createPermissionNone() {
+		Permission permission = new Permission(1L, "PERMISSION_NONE");
+		return permission;
+	}
+
 	public static UserDTO createUserDTO() {
 		return new UserDTO(createUser());
 	}
@@ -57,17 +68,19 @@ public class FactoryUser {
 		return list;	
 	}
 
-	public static Operator createOperator() {
+	public static Operator createOperatorAdmin() {
 		Operator operator = new Operator(7L, "Ana Pink", "ana@gmail.com", "123456", 1.5);
+		operator.addRole(createRoleAdmin());
+		operator.addPermission(createPermissionAll());
 		return operator;
 	}
 	
-	public static Operator createOperator(User user) {
-		Operator operator = new Operator(user.getId(), user.getName(), user.getEmail(), user.getPassword(), 1.5);
-		operator.addRole(createRoleAdmin());
-	//	operator.addAuth(createAuth());
-		return operator;
-	}
+	// public static Operator createOperator(User user) {
+	// 	Operator operator = new Operator(user.getId(), user.getName(), user.getEmail(), user.getPassword(), 1.5);
+	// 	operator.addRole(createRoleAdmin());
+	// 	operator.addPermission(createPermissionAll());
+	// 	return operator;
+	// }
 	
 	public static OperatorDTO createOperatorDTO(Operator operator) {
 		OperatorDTO operatorDto = new OperatorDTO(operator);
@@ -77,7 +90,7 @@ public class FactoryUser {
 	public static Client createClient() {
 		Client client = new Client(7L, "Ana Pink", "ana@gmail.com", "123456", "59395734019");
 		client.addRole(createRoleClient());
-	//	client.addAuth(createAuth());;
+		client.addPermission(createPermissionNone());
 		return client;
 	}
 	
@@ -85,7 +98,6 @@ public class FactoryUser {
 		ClientDTO clientDto = new ClientDTO(client);
 		return clientDto;
 	}
-
 }
 
 

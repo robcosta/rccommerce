@@ -1,11 +1,5 @@
 package rccommerce.services;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.when;
-
 import java.util.List;
 import java.util.Optional;
 
@@ -14,9 +8,14 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentMatchers;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.when;
 import org.springframework.context.MessageSource;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Example;
@@ -31,8 +30,6 @@ import rccommerce.dto.ClientDTO;
 import rccommerce.dto.ClientMinDTO;
 import rccommerce.entities.Client;
 import rccommerce.repositories.ClientRepository;
-import rccommerce.repositories.PermissionRepository;
-import rccommerce.repositories.RoleRepository;
 import rccommerce.services.exceptions.DatabaseException;
 import rccommerce.services.exceptions.ResourceNotFoundException;
 import rccommerce.tests.FactoryUser;
@@ -47,22 +44,19 @@ public class ClientServiceTests {
 	private ClientRepository repository;
 	
 	@Mock
-	private PermissionRepository authRepository;
-	
-	@Mock
-	private RoleRepository roleRepository;
-
-	@Mock
-	private UserService userService;
-	
-	@Mock
 	private MessageSource messageSource;
 	
-	private long existsId, nonExistsId;
+	private Long existsId, nonExistsId, dependentId;
 	private Client client;
 	private Pageable pageable;	
 	private ClientService serviceSpy;
 	private ClientDTO dto;
+
+	private ResourceNotFoundException assertNotFound;
+	private DatabaseException assertDatabase;
+
+	private String concat;
+
 	
 
 	@BeforeEach
@@ -70,13 +64,16 @@ public class ClientServiceTests {
 		client = FactoryUser.createClient();
 		dto = FactoryUser.createClientDTO(client);
 		pageable = PageRequest.of(0, 10);
-		existsId = dto.getId();
+		existsId = 7L;
 		nonExistsId = 100L;
+		dependentId = 3L;
 		
 		when(repository.getReferenceById(existsId)).thenReturn(client);
 		when(repository.saveAndFlush(any())).thenReturn(client);	
 		when(repository.existsById(existsId)).thenReturn(true);
-		doNothing().when(repository).deleteById(existsId);
+		when(repository.existsById(dependentId)).thenReturn(true);
+		when(repository.existsById(nonExistsId)).thenReturn(false);
+		
 
 		serviceSpy = Mockito.spy(service);
 		doNothing().when(serviceSpy).copyDtoToEntity(any(),any());
@@ -96,9 +93,9 @@ public class ClientServiceTests {
 
 	    // Assertivas
 	    Assertions.assertFalse(result.isEmpty());
-	    Assertions.assertEquals(result.getSize(), 3);
-	    Assertions.assertEquals(result.toList().get(0).getName(), client.getName());
-	    Assertions.assertEquals(result.toList().get(1).getEmail(), client.getEmail());
+	    Assertions.assertEquals(3, result.getSize());
+	    Assertions.assertEquals(client.getName(), result.toList().get(0).getName());
+	    Assertions.assertEquals(client.getEmail(), result.toList().get(1).getEmail());
 	}
 	
 	@Test
@@ -107,10 +104,9 @@ public class ClientServiceTests {
 	    
 	    when(repository.findAll(eq(example), eq(pageable))).thenReturn(Page.empty());
 	    
-	    Assertions.assertThrows(ResourceNotFoundException.class, () -> {
+	    assertNotFound = Assertions.assertThrows(ResourceNotFoundException.class, () -> {
 	    	serviceSpy.searchAll(example, pageable);
 		});
-	    
 	}
 	
 	@Test
@@ -119,16 +115,16 @@ public class ClientServiceTests {
 
 		ClientMinDTO result = serviceSpy.findById(existsId);
 
-		Assertions.assertEquals(result.getId(), existsId);
-		Assertions.assertEquals(result.getName(), client.getName());
-		Assertions.assertEquals(result.getEmail(), client.getEmail());
+		Assertions.assertEquals(existsId, result.getId());
+		Assertions.assertEquals(client.getName(), result.getName());
+		Assertions.assertEquals(client.getEmail(), result.getEmail());
 	}
 
 	@Test
 	public void findByIdShouldThrowResourceNotFoundExceptionWhenDoesNotExistsId() {
 		when(repository.findById(nonExistsId)).thenReturn(Optional.empty());
 
-		Assertions.assertThrows(ResourceNotFoundException.class, () -> {
+		assertNotFound = Assertions.assertThrows(ResourceNotFoundException.class, () -> {
 			serviceSpy.findById(nonExistsId);
 		});
 	}
@@ -138,17 +134,17 @@ public class ClientServiceTests {
 		ClientMinDTO result = serviceSpy.insert(dto);
 
 		Assertions.assertNotNull(result);
-		Assertions.assertEquals(result.getName(), client.getName());
-		Assertions.assertEquals(result.getEmail(), client.getEmail());
+		Assertions.assertEquals(client.getName(), result.getName());
+		Assertions.assertEquals(client.getEmail(), result.getEmail());
 	}
 	
 	@Test
 	public void insertShouldTrowDatabaseExceptionWhenEamilDoesNotUnique() {	
 		DataIntegrityViolationException e = new DataIntegrityViolationException("");
-		e.toString().concat("EMAIL NULLS FIRST");
+		concat = e.toString().concat("EMAIL NULLS FIRST");
 		Mockito.doThrow(e).when(repository).saveAndFlush(ArgumentMatchers.any());	
 		
-		Assertions.assertThrows(DatabaseException.class, () -> {
+		assertDatabase = Assertions.assertThrows(DatabaseException.class, () -> {
 			serviceSpy.insert(dto);
 		});
 	}
@@ -157,7 +153,7 @@ public class ClientServiceTests {
 	public void insertShouldTrowDatabaseExceptionWhenCpfDoesNotUnique() {		
 		Mockito.doThrow(DataIntegrityViolationException.class).when(repository).saveAndFlush(ArgumentMatchers.any());	
 		
-		Assertions.assertThrows(DatabaseException.class, () -> {
+		assertDatabase = Assertions.assertThrows(DatabaseException.class, () -> {
 			serviceSpy.insert(dto);
 		});
 	}
@@ -167,14 +163,15 @@ public class ClientServiceTests {
 		ClientMinDTO result = serviceSpy.update(dto, existsId);
 
 		Assertions.assertNotNull(result);
-		Assertions.assertEquals(result.getId(), existsId);
-		Assertions.assertEquals(result.getName(), client.getName());
+		Assertions.assertEquals(existsId, result.getId());
+		Assertions.assertEquals(client.getName(),result.getName());
 	}
 	
 	@Test
 	public void updateShouldTrowEntityNotFoundExceptionWhenNonExistsClient() {
 		Mockito.doThrow(EntityNotFoundException.class).when(repository).saveAndFlush(ArgumentMatchers.any());	
-		Assertions.assertThrows(ResourceNotFoundException.class, () -> {
+
+		assertNotFound = Assertions.assertThrows(ResourceNotFoundException.class, () -> {
 			serviceSpy.update(dto, nonExistsId);
 		});
 	}
@@ -182,10 +179,10 @@ public class ClientServiceTests {
 	@Test
 	public void updateShouldTrowDatabaseExceptionWhenEamilDoesNotUnique() {
 		DataIntegrityViolationException e = new DataIntegrityViolationException("");
-		e.toString().concat("EMAIL NULLS FIRST");
+		concat = e.toString().concat("EMAIL NULLS FIRST");
 	
 		Mockito.doThrow(e).when(repository).saveAndFlush(ArgumentMatchers.any());	
-		Assertions.assertThrows(DatabaseException.class, () -> {
+		assertDatabase = Assertions.assertThrows(DatabaseException.class, () -> {
 			serviceSpy.update(dto, existsId);
 		});
 	}
@@ -193,7 +190,7 @@ public class ClientServiceTests {
 	@Test
 	public void updateShouldTrowDatabaseExceptionWhenCpfDoesNotUnique() {
 		doThrow(DataIntegrityViolationException.class).when(repository).saveAndFlush(ArgumentMatchers.any());	
-		Assertions.assertThrows(DatabaseException.class, () -> {
+		assertDatabase = Assertions.assertThrows(DatabaseException.class, () -> {
 			serviceSpy.update(dto, existsId);
 		});
 		
@@ -201,18 +198,28 @@ public class ClientServiceTests {
 	
 	@Test 
 	public void deleteShouldDoNothingWhenIdExistsAndIdDoesNotDependent() {
+		doNothing().when(repository).deleteById(existsId);
 				
 		Assertions.assertDoesNotThrow(() -> {
 			serviceSpy.delete(existsId);
 		});
 	}
+
+	@Test
+    public void deleteShouldThrowResourceNotFoundExceptionWhenIdDoesNotExist() {
+        doThrow(DataIntegrityViolationException.class).when(repository).deleteById(dependentId);
+
+        assertNotFound = Assertions.assertThrows(ResourceNotFoundException.class, () -> {
+            serviceSpy.delete(nonExistsId);
+        });
+    }
 	
 	@Test 
 	public void deleteShouldTrowDataIntegrityViolationExceptionWhenIdDependent() {
-		doThrow(DataIntegrityViolationException.class).when(repository).deleteById(existsId);
+		doThrow(DataIntegrityViolationException.class).when(repository).deleteById(dependentId);
 		
-		Assertions.assertThrows(DatabaseException.class, () -> {
-			serviceSpy.delete(existsId);
+		assertDatabase = Assertions.assertThrows(DatabaseException.class, () -> {
+			serviceSpy.delete(dependentId);
 		});
 	}
 

@@ -33,7 +33,7 @@ public class UserService implements UserDetailsService {
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 
 		List<UserDetailsProjection> result = repository.searchUserRolesAndPermissionsByEmail(username);
-		if (result.size() == 0) {
+		if (result.isEmpty()) {
 			throw new UsernameNotFoundException("Usuário não encontrado");
 		}
 
