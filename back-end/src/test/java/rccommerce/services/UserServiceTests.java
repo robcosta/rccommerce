@@ -53,10 +53,6 @@ public class UserServiceTests {
     private List<UserDetailsProjection> userDetails;
     private UserService serviceSpy;
 
-    private ResourceNotFoundException assertNotFound;
-    private DatabaseException assertDatabase;
-    private UsernameNotFoundException assertUserNameNotFound;
-
     @BeforeEach
     void setUp() throws Exception {
         user = FactoryUser.createUser();
@@ -74,7 +70,7 @@ public class UserServiceTests {
         emptyNameUser = "";
 
         serviceSpy = Mockito.spy(service);
-        //Mockito.doNothing().when(serviceSpy).copyDtoToEntity(dto, user);
+        // Mockito.doNothing().when(serviceSpy).copyDtoToEntity(dto, user);
     }
 
     @Test
@@ -91,7 +87,7 @@ public class UserServiceTests {
     public void loadUserByUsernameShouldTrowUsernameNotFoundExceptionWhenDoesNotExistUser() {
         Mockito.when(repository.searchUserRolesAndPermissionsByEmail(nonExistsUsername)).thenReturn(List.of());
 
-        assertUserNameNotFound = Assertions.assertThrows(UsernameNotFoundException.class, () -> {
+        Assertions.assertThrows(UsernameNotFoundException.class, () -> {
             service.loadUserByUsername(nonExistsUsername);
         });
     }
@@ -112,7 +108,7 @@ public class UserServiceTests {
         Mockito.doThrow(ClassCastException.class).when(userUtil).getLoggerUsername();
         Mockito.when(repository.findByEmail(nonExistsUsername)).thenReturn(Optional.empty());
 
-        assertUserNameNotFound = Assertions.assertThrows(UsernameNotFoundException.class, () -> {
+        Assertions.assertThrows(UsernameNotFoundException.class, () -> {
             service.authenticated();
         });
     }
@@ -130,7 +126,8 @@ public class UserServiceTests {
     @Test
     public void getMeShouldThrowUsernameNotFoundExceptionWhenUserDoesNotAuthenticated() {
         Mockito.doThrow(UsernameNotFoundException.class).when(serviceSpy).authenticated();
-        assertUserNameNotFound = Assertions.assertThrows(UsernameNotFoundException.class, () -> {
+
+        Assertions.assertThrows(UsernameNotFoundException.class, () -> {
             service.getMe();
         });
     }
@@ -190,7 +187,7 @@ public class UserServiceTests {
         Mockito.when(repository.searchAll(nonExistsNameUser, emptyEmail, pageable))
                 .thenReturn(new PageImpl<>(List.of()));
 
-        assertNotFound = Assertions.assertThrows(ResourceNotFoundException.class, () -> {
+        Assertions.assertThrows(ResourceNotFoundException.class, () -> {
             service.findAll(nonExistsNameUser, emptyEmail, pageable);
         });
     }
@@ -200,7 +197,7 @@ public class UserServiceTests {
         Mockito.when(repository.searchAll(emptyNameUser, nonExistsEmail, pageable))
                 .thenReturn(new PageImpl<>(List.of()));
 
-        assertNotFound = Assertions.assertThrows(ResourceNotFoundException.class, () -> {
+        Assertions.assertThrows(ResourceNotFoundException.class, () -> {
             service.findAll(emptyNameUser, nonExistsEmail, pageable);
         });
     }
@@ -209,7 +206,8 @@ public class UserServiceTests {
     public void findAllShouldTrhowResouceNotFoundExceptionWhenDoesNotExistsNameAndEmail() {
         Mockito.when(repository.searchAll(nonExistsNameUser, nonExistsEmail, pageable))
                 .thenReturn(new PageImpl<>(List.of()));
-        assertNotFound = Assertions.assertThrows(ResourceNotFoundException.class, () -> {
+
+        Assertions.assertThrows(ResourceNotFoundException.class, () -> {
             service.findAll(nonExistsNameUser, nonExistsEmail, pageable);
         });
     }
@@ -231,7 +229,7 @@ public class UserServiceTests {
                 .when(repository)
                 .findById(nonExistsId);
 
-        assertNotFound = Assertions.assertThrows(ResourceNotFoundException.class, () -> {
+        Assertions.assertThrows(ResourceNotFoundException.class, () -> {
             service.findById(nonExistsId);
         });
     }
@@ -252,7 +250,8 @@ public class UserServiceTests {
         Mockito.doThrow(ResourceNotFoundException.class)
                 .when(repository)
                 .findByEmail(nonExistsEmail);
-       assertNotFound = Assertions.assertThrows(ResourceNotFoundException.class, () -> {
+
+        Assertions.assertThrows(ResourceNotFoundException.class, () -> {
             service.findByEmail(nonExistsEmail);
         });
     }

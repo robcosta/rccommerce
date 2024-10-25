@@ -35,9 +35,7 @@ public class ClientController {
 
 	@PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_OPERATOR', 'ROLE_SELLER', 'ROLE_CLIENT')")
 	@GetMapping(value = "/all")
-	public ResponseEntity<Page<ClientMinDTO>> findAll(
-
-			Pageable pageable) {
+	public ResponseEntity<Page<ClientMinDTO>> findAll(Pageable pageable) {
 		Page<ClientMinDTO> dto = service.findAll(pageable);
 		return ResponseEntity.ok(dto);
 	}
@@ -45,13 +43,13 @@ public class ClientController {
 	@PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_OPERATOR', 'ROLE_SELLER', 'ROLE_CLIENT')")
 	@GetMapping(value = "/search")
 	public ResponseEntity<Page<ClientMinDTO>> searchEntity(
-	        @ValidId
-	        @RequestParam(name = "id", defaultValue = "") String id,
+			@ValidId @RequestParam(name = "id", defaultValue = "") String id,
 			@RequestParam(name = "name", defaultValue = "") String name,
 			@RequestParam(name = "email", defaultValue = "") String email,
 			@RequestParam(name = "cpf", defaultValue = "") String cpf, Pageable pageable) {
 
-		Page<ClientMinDTO> pageDto = service.searchEntity(id.isEmpty() ? null: Long.parseLong(id), name, email, cpf, pageable);
+		Page<ClientMinDTO> pageDto = service.searchEntity(id.isEmpty() ? null : Long.parseLong(id), name, email, cpf,
+				pageable);
 		return ResponseEntity.ok(pageDto);
 	}
 
@@ -72,16 +70,17 @@ public class ClientController {
 	@PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_OPERATOR', 'ROLE_SELLER', 'ROLE_CLIENT')")
 	@PutMapping(value = "/{id}")
 	public ResponseEntity<ClientMinDTO> update(@Valid @RequestBody ClientDTO dto,
-			 @ValidId(checkSpecialValues = true) //Verifica se a String Id é Long, e também, se é '1L' ou '4L'
-			 @PathVariable String id) {
+			@ValidId(checkSpecialValues = true) // Verifica se a String Id é Long, e também, se é '1L' ou '4L'
+			@PathVariable String id) {
 		ClientMinDTO minDTO = service.update(dto, Long.parseLong(id));
 		return ResponseEntity.ok(minDTO);
 	}
 
 	@PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_OPERATOR', 'ROLE_SELLER', 'ROLE_CLIENT')")
 	@DeleteMapping(value = "/{id}")
-	public ResponseEntity<Void> delete(@ValidId(checkSpecialValues = true) //Verifica se a String Id é Long, e também, se é '1L' ou '4L' 
-			@PathVariable String id) {
+	public ResponseEntity<Void> delete(@ValidId(checkSpecialValues = true) // Verifica se a String Id é Long, e também,
+																			// se é '1L' ou '4L'
+	@PathVariable String id) {
 		service.delete(Long.parseLong(id));
 		return ResponseEntity.noContent().build();
 	}

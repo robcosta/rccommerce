@@ -32,15 +32,19 @@ INSERT INTO tb_operator(id, commission) VALUES (3, 0.0);
 
 INSERT INTO tb_user (name, name_unaccented, email, password) VALUES ('Venda ao Consumidor', 'Venda ao Consumidor', 'venda@gmail.com', '$2a$10$efAKHcdzfnBwg5yCvuiOMeiu8pB6TuvNayPjVAZpopc1Ijx95Wyu2');
 INSERT INTO tb_user (name, name_unaccented, email, password) VALUES ('Maria Yellow', 'Maria Yellow', 'maria@gmail.com','$2a$10$bPi3ofxG3lv/.M4WnzHnR.qj7S2c7sKVRINI7fteO0GYz0e/9YrZ6');
+INSERT INTO tb_user (name, name_unaccented, email, password) VALUES ('John Black', 'John Black', 'john@gmail.com','$2a$10$bPi3ofxG3lv/.M4WnzHnR.qj7S2c7sKVRINI7fteO0GYz0e/9YrZ6');
 
 INSERT INTO tb_user_role(user_id, role_id) VALUES(4,4)
 INSERT INTO tb_user_role(user_id, role_id) VALUES(5,4)
+INSERT INTO tb_user_role(user_id, role_id) VALUES(6,4)
 
 INSERT INTO tb_user_permission(user_id, permission_id) VALUES(4,6)
 INSERT INTO tb_user_permission(user_id, permission_id) VALUES(5,6)
+INSERT INTO tb_user_permission(user_id, permission_id) VALUES(6,6)
 
 INSERT INTO tb_client(id, cpf) VALUES (4, '73995808042');
 INSERT INTO tb_client(id, cpf) VALUES (5, '46311990083');
+INSERT INTO tb_client(id, cpf) VALUES (6, '83563189048');
 
 INSERT INTO tb_suplier(name, cnpj) VALUES ('Diversos','00000000000000'); 
 INSERT INTO tb_suplier(name, cnpj) VALUES ('Lojas FOO','28104874000108'); 
@@ -107,8 +111,8 @@ INSERT INTO tb_product_category (product_id, category_id) VALUES (24, 3);
 INSERT INTO tb_product_category (product_id, category_id) VALUES (25, 3);
 
 INSERT INTO tb_order (moment, status, client_id, user_id) VALUES (TIMESTAMP WITH TIME ZONE '2022-07-25T13:00:00Z', 1, 4, 2);
-INSERT INTO tb_order (moment, status, client_id, user_id) VALUES (TIMESTAMP WITH TIME ZONE '2022-07-29T15:50:00Z', 3, 5, 3);
-INSERT INTO tb_order (moment, status, client_id, user_id) VALUES (TIMESTAMP WITH TIME ZONE '2022-08-03T14:20:00Z', 0, 4, 3);
+INSERT INTO tb_order (moment, status, client_id, user_id) VALUES (TIMESTAMP WITH TIME ZONE '2022-07-29T15:50:00Z', 3, 5, 2);
+INSERT INTO tb_order (moment, status, client_id, user_id) VALUES (TIMESTAMP WITH TIME ZONE '2022-08-03T14:20:00Z', 0, 4, 1);
 
 INSERT INTO tb_order_item (order_id, product_id, quantity, price) VALUES (1, 1, 2.0, 90.5);
 INSERT INTO tb_order_item (order_id, product_id, quantity, price) VALUES (1, 3, 1.0, 1250.0);

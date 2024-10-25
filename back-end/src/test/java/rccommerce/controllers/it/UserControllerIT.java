@@ -28,14 +28,13 @@ public class UserControllerIT {
 
 	@Autowired
 	private TokenUtil tokenUtil;
-	
-	
+
 	private String adminToken, invalidToken;
 	private String userAdminEmail, userAdminPassword;
-	private String userName,userEmail;
+	private String userName, userEmail;
 
 	private long existingId, nonExistingId;
-	
+
 	private User user;
 
 	@BeforeEach
@@ -48,33 +47,33 @@ public class UserControllerIT {
 
 		adminToken = tokenUtil.obtainAccessToken(mockMvc, userAdminEmail, userAdminPassword);
 		invalidToken = adminToken + "xpto";
-		
+
 		user = FactoryUser.createUser();
 		user.addRole(FactoryUser.createRoleAdmin());
 		user.setId(null);
 	}
-	
+
 	@Test
 	public void getMeShouldReturnUserLoggedWhenValidToken() throws Exception {
-		
+
 		ResultActions resultActions = mockMvc.perform(get("/users/me")
 				.header("Authorization", "Bearer " + adminToken)
 				.accept(MediaType.APPLICATION_JSON));
-		
+
 		resultActions.andExpect(status().isOk());
 		resultActions.andExpect(jsonPath("$.id").value(1L));
 		resultActions.andExpect(jsonPath("$.name").value("Administrador"));
 		resultActions.andExpect(jsonPath("$.email").value("admin@gmail.com"));
-		resultActions.andExpect(jsonPath("$.roles[0]").value("ROLE_ADMIN"));		
+		resultActions.andExpect(jsonPath("$.roles[0]").value("ROLE_ADMIN"));
 	}
-	
+
 	@Test
 	public void getMeShouldUnauthorizedWhenInvalidToken() throws Exception {
-		
+
 		ResultActions resultActions = mockMvc.perform(get("/users/me")
 				.header("Authorization", "Bearer " + invalidToken)
 				.accept(MediaType.APPLICATION_JSON));
-		
+
 		resultActions.andExpect(status().isUnauthorized());
 	}
 
@@ -86,7 +85,7 @@ public class UserControllerIT {
 				.accept(MediaType.APPLICATION_JSON));
 
 		resultActions.andExpect(status().isOk());
-		resultActions.andExpect(jsonPath("$.content.size()").value(5));
+		resultActions.andExpect(jsonPath("$.content.size()").value(6));
 		resultActions.andExpect(jsonPath("$.content[0].id").value(1L));
 		resultActions.andExpect(jsonPath("$.content[0].name").value("Administrador"));
 		resultActions.andExpect(jsonPath("$.content[0].email").value("admin@gmail.com"));
@@ -108,7 +107,7 @@ public class UserControllerIT {
 		resultActions.andExpect(jsonPath("$.content[0].roles[0]").value("ROLE_SELLER"));
 
 	}
-	
+
 	@Test
 	public void findAllShouldReturnPageWhenValidTokenAndEmailParamIsNotEmptyNameParamIsEmpty() throws Exception {
 		userEmail = "alex@gmail.com";
@@ -136,11 +135,11 @@ public class UserControllerIT {
 
 	@Test
 	public void findByIdShoulReturUserMinDTOWhenValidTokenAndExistsId() throws Exception {
-		
+
 		ResultActions resultActions = mockMvc.perform(get("/users/{id}", existingId)
 				.header("Authorization", "Bearer " + adminToken)
 				.accept(MediaType.APPLICATION_JSON));
-		
+
 		resultActions.andExpect(status().isOk());
 		resultActions.andExpect(jsonPath("$.id").value(existingId));
 		resultActions.andExpect(jsonPath("$.name").value("Alex Blue"));
@@ -150,21 +149,21 @@ public class UserControllerIT {
 
 	@Test
 	public void findByIdShoulReturNotFoundWhenValidTokenAndDoesNotExistsId() throws Exception {
-		
+
 		ResultActions resultActions = mockMvc.perform(get("/users/{id}", nonExistingId)
 				.header("Authorization", "Bearer " + adminToken)
 				.accept(MediaType.APPLICATION_JSON));
-		
+
 		resultActions.andExpect(status().isNotFound());
 	}
-	
+
 	@Test
 	public void findByIdShoulReturUnaauthorizedWhenInvalidToken() throws Exception {
-		
+
 		ResultActions resultActions = mockMvc.perform(get("/users/{id}", existingId)
 				.header("Authorization", "Bearer " + invalidToken)
 				.accept(MediaType.APPLICATION_JSON));
-		
+
 		resultActions.andExpect(status().isUnauthorized());
 	}
 }
