@@ -11,7 +11,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import rccommerce.entities.enums.RoleAuthority;
 
-@SuppressWarnings("serial")
 @Entity
 @Table(name = "tb_role")
 public class Role implements GrantedAuthority {
@@ -22,7 +21,8 @@ public class Role implements GrantedAuthority {
 
     private String authority; // Ex: ROLE_SELLER, ROLE_OPERATOR
 
-    public Role() {}
+    public Role() {
+    }
 
     public Role(Long id, String authority) {
         this.id = id;

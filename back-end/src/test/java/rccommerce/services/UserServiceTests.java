@@ -24,7 +24,6 @@ import rccommerce.entities.User;
 import rccommerce.projections.UserDetailsProjection;
 import rccommerce.repositories.RoleRepository;
 import rccommerce.repositories.UserRepository;
-import rccommerce.services.exceptions.DatabaseException;
 import rccommerce.services.exceptions.ResourceNotFoundException;
 import rccommerce.tests.FactoryUser;
 import rccommerce.util.CustomUserUtil;

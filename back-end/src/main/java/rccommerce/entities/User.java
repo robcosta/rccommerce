@@ -26,7 +26,6 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import rccommerce.util.AccentUtils;
 
-@SuppressWarnings("serial")
 @Entity
 @Table(name = "tb_user", indexes = { @Index(name = "idx_user_name_unaccented", columnList = "nameUnaccented") })
 @Inheritance(strategy = InheritanceType.JOINED)

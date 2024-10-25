@@ -6,17 +6,16 @@ import rccommerce.dto.OperatorDTO;
 import rccommerce.dto.OperatorMinDTO;
 import rccommerce.services.interfaces.Convertible;
 
-@SuppressWarnings("serial")
 @Entity
 @Table(name = "tb_operator")
-public class Operator extends User implements Convertible<OperatorDTO, OperatorMinDTO>{
-	
+public class Operator extends User implements Convertible<OperatorDTO, OperatorMinDTO> {
+
 	private Double commission;
 
 	public Operator() {
 	}
 
-	public Operator(Long id, String name, String email,String password, Double commission) {
+	public Operator(Long id, String name, String email, String password, Double commission) {
 		super(id, name, email, password);
 		this.commission = commission;
 	}

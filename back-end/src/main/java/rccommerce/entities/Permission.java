@@ -12,7 +12,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import rccommerce.entities.enums.PermissionAuthority;
 
-@SuppressWarnings("serial")
 @Entity
 @Table(name = "tb_permission")
 public class Permission implements GrantedAuthority {
@@ -21,11 +20,11 @@ public class Permission implements GrantedAuthority {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-
     @Column(nullable = false)
     private String authority; // Ex: PERMISSION_CREATE, PERMISSION_DELETE
 
-    public Permission() {}
+    public Permission() {
+    }
 
     public Permission(Long id, String authority) {
         this.id = id;
@@ -42,7 +41,7 @@ public class Permission implements GrantedAuthority {
 
     @Override
     public String getAuthority() {
-        return authority; 
+        return authority;
     }
 
     public String getPermissionAuthority() {
