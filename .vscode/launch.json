@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-RccommerceApplication<rccommerce>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "rccommerce.RccommerceApplication",
+            "projectName": "rccommerce",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}

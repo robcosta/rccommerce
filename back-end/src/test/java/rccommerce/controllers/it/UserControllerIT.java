@@ -31,7 +31,7 @@ public class UserControllerIT {
 	
 	
 	private String adminToken, invalidToken;
-	private String adminUserName, adminPassword;
+	private String userAdminEmail, userAdminPassword;
 	private String userName,userEmail;
 
 	private long existingId, nonExistingId;
@@ -40,15 +40,13 @@ public class UserControllerIT {
 
 	@BeforeEach
 	void setUp() throws Exception {
-		userName = "Blue";
-		userEmail = "alex@gmail.com";
-		adminUserName = "admin@gmail.com";
-		adminPassword = "123456";
+		userAdminEmail = "admin@gmail.com";
+		userAdminPassword = "123456";
 
 		existingId = 3L;
 		nonExistingId = 100L;
 
-		adminToken = tokenUtil.obtainAccessToken(mockMvc, adminUserName, adminPassword);
+		adminToken = tokenUtil.obtainAccessToken(mockMvc, userAdminEmail, userAdminPassword);
 		invalidToken = adminToken + "xpto";
 		
 		user = FactoryUser.createUser();
@@ -98,7 +96,7 @@ public class UserControllerIT {
 
 	@Test
 	public void findAllShouldReturnPageWhenValidTokenAndNameParamIsNotEmptyEmailIsEmpty() throws Exception {
-
+		userName = "Alex Blue";
 		ResultActions resultActions = mockMvc.perform(get("/users?name={userName}", userName)
 				.header("Authorization", "Bearer " + adminToken)
 				.accept(MediaType.APPLICATION_JSON));
@@ -113,7 +111,7 @@ public class UserControllerIT {
 	
 	@Test
 	public void findAllShouldReturnPageWhenValidTokenAndEmailParamIsNotEmptyNameParamIsEmpty() throws Exception {
-
+		userEmail = "alex@gmail.com";
 		ResultActions resultActions = mockMvc.perform(get("/users?email={email}", userEmail)
 				.header("Authorization", "Bearer " + adminToken)
 				.accept(MediaType.APPLICATION_JSON));

@@ -44,7 +44,7 @@ public class ClientControllerIT {
 	private String existsClientName, existsClientEmail, existsClientCpf,existsEmail;
 	private String nonExistsClientName, nonExistsClientEmail, nonExistsClientCpf; 
 
-	private long existingId, nonExistingId;
+	private long existingId, nonExistingId, existingUpdateId;
 	
 	private Client client;
 	private ClientDTO clientDTO;
@@ -53,11 +53,11 @@ public class ClientControllerIT {
 	void setUp() throws Exception {
 		userAdminEmail = "admin@gmail.com";
 		userAdminPassword = "123456";
-		userClientEmail = "peter@gmail.com";
+		userClientEmail = "maria@gmail.com";
 		userClientPassword = "123456";
 		
-		existsClientName = "Peter Yellow";
-		existsClientEmail = "peter@gmail.com";
+		existsClientName = "Maria Yellow";
+		existsClientEmail = "maria@gmail.com";
 		existsClientCpf = "46311990083";
 		
 		nonExistsClientName = "Peter Black";
@@ -67,6 +67,7 @@ public class ClientControllerIT {
 		existsEmail = "bob@gmail.com";
 
 		existingId = 4L;
+		existingUpdateId = 5L;
 		nonExistingId = 100L;
 
 		adminToken = tokenUtil.obtainAccessToken(mockMvc, userAdminEmail, userAdminPassword);
@@ -78,24 +79,24 @@ public class ClientControllerIT {
 	}
 
 	@Test
-	public void findAllShouldREturnPageWhenValidTokenAndEmptyParams() throws Exception {
+	public void findAllShouldREturnPageWhenValidToken() throws Exception {
 
-		ResultActions resultActions = mockMvc.perform(get("/clients?sort=id")
+		ResultActions resultActions = mockMvc.perform(get("/clients/all?sort=id")
 				.header("Authorization", "Bearer " + adminToken)
 				.accept(MediaType.APPLICATION_JSON));
 
 		resultActions.andExpect(status().isOk());
 		resultActions.andExpect(jsonPath("$.content.size()").value(2));
 		resultActions.andExpect(jsonPath("$.content[0].id").value(4L));
-		resultActions.andExpect(jsonPath("$.content[0].name").value("John Red"));
-		resultActions.andExpect(jsonPath("$.content[0].email").value("john@gmail.com"));
+		resultActions.andExpect(jsonPath("$.content[0].name").value("Venda ao Consumidor"));
+		resultActions.andExpect(jsonPath("$.content[0].email").value("venda@gmail.com"));
 		resultActions.andExpect(jsonPath("$.content[0].roles[0]").value("ROLE_CLIENT"));
 	}
 
 	@Test
-	public void findAllShouldReturnPageWhenValidTokenAndNameParamExisting() throws Exception {
+	public void searchEntityShouldReturnPageWhenValidTokenAndNameParamExisting() throws Exception {
 
-		ResultActions resultActions = mockMvc.perform(get("/clients?name={name}", existsClientName)
+		ResultActions resultActions = mockMvc.perform(get("/clients/search?name={name}", existsClientName)
 				.header("Authorization", "Bearer " + adminToken)
 				.accept(MediaType.APPLICATION_JSON));
 
@@ -108,9 +109,24 @@ public class ClientControllerIT {
 	}
 	
 	@Test
-	public void findAllShouldReturnPageWhenValidTokenAndEmailParamExisting() throws Exception {
+	public void searchEntityShouldReturnPageWhenValidTokenAndEmailParamExisting() throws Exception {
 		
-		ResultActions resultActions = mockMvc.perform(get("/clients?email={email}", existsClientEmail)
+		ResultActions resultActions = mockMvc.perform(get("/clients/search?email={email}", existsClientEmail)
+				.header("Authorization", "Bearer " + adminToken)
+				.accept(MediaType.APPLICATION_JSON));
+
+		resultActions.andExpect(status().isOk());
+		resultActions.andExpect(jsonPath("$.content[0].id").value(5L));
+		resultActions.andExpect(jsonPath("$.content[0].name").value(existsClientName));
+		resultActions.andExpect(jsonPath("$.content[0].email").value(existsClientEmail));
+		resultActions.andExpect(jsonPath("$.content[0].roles[0]").value("ROLE_CLIENT"));
+		
+	}
+	
+	@Test
+	public void searchEntityShouldReturnPageWhenValidTokenAndCpfParamExisitng() throws Exception {
+		
+		ResultActions resultActions = mockMvc.perform(get("/clients/search?cpf={cpf}", existsClientCpf)
 				.header("Authorization", "Bearer " + adminToken)
 				.accept(MediaType.APPLICATION_JSON));
 		
@@ -123,24 +139,9 @@ public class ClientControllerIT {
 	}
 	
 	@Test
-	public void findAllShouldReturnPageWhenValidTokenAndCpfParamExisitng() throws Exception {
-		
-		ResultActions resultActions = mockMvc.perform(get("/clients?cpf={cpf}", existsClientCpf)
-				.header("Authorization", "Bearer " + adminToken)
-				.accept(MediaType.APPLICATION_JSON));
-		
-		resultActions.andExpect(status().isOk());
-		resultActions.andExpect(jsonPath("$.content[0].id").value(5L));
-		resultActions.andExpect(jsonPath("$.content[0].name").value(existsClientName));
-		resultActions.andExpect(jsonPath("$.content[0].email").value(existsClientEmail));
-		resultActions.andExpect(jsonPath("$.content[0].roles[0]").value("ROLE_CLIENT"));
-		
-	}
-	
-	@Test
-	public void findAllShouldReturnNotFoundWhenNameParamDoesNotExists() throws Exception {
+	public void searchEntityShouldReturnNotFoundWhenNameParamDoesNotExists() throws Exception {
 
-		ResultActions resultActions = mockMvc.perform(get("/clients?name={name}", nonExistsClientName)
+		ResultActions resultActions = mockMvc.perform(get("/clients/search?name={name}", nonExistsClientName)
 				.header("Authorization", "Bearer " + adminToken)
 				.accept(MediaType.APPLICATION_JSON));
 
@@ -148,9 +149,9 @@ public class ClientControllerIT {
 	}
 	
 	@Test
-	public void findAllShouldReturnNotFoundWhenEmailParamDoesNotExists() throws Exception {
+	public void searchEntityShouldReturnNotFoundWhenEmailParamDoesNotExists() throws Exception {
 		
-		ResultActions resultActions = mockMvc.perform(get("/clients?email={email}", nonExistsClientEmail)
+		ResultActions resultActions = mockMvc.perform(get("/clients/search?email={email}", nonExistsClientEmail)
 				.header("Authorization", "Bearer " + adminToken)
 				.accept(MediaType.APPLICATION_JSON));
 		
@@ -158,9 +159,9 @@ public class ClientControllerIT {
 	}
 	
 	@Test
-	public void findAllShouldReturnNotFoundWhenCpfParamDoesNotExists() throws Exception {
+	public void searchEntityShouldReturnNotFoundWhenCpfParamDoesNotExists() throws Exception {
 		
-		ResultActions resultActions = mockMvc.perform(get("/clients?cpf={cpf}", nonExistsClientCpf)
+		ResultActions resultActions = mockMvc.perform(get("/clients/search?cpf={cpf}", nonExistsClientCpf)
 				.header("Authorization", "Bearer " + adminToken)
 				.accept(MediaType.APPLICATION_JSON));
 		
@@ -168,9 +169,9 @@ public class ClientControllerIT {
 	}
 
 	@Test
-	public void findAllShouldReturnUnauthorizedWhenIvalidToken() throws Exception {
+	public void searchEntityShouldReturnUnauthorizedWhenIvalidToken() throws Exception {
 		
-		ResultActions resultActions = mockMvc.perform(get("/clients")
+		ResultActions resultActions = mockMvc.perform(get("/clients/search")
 				.header("Authorization", "Bearer " + invalidToken)
 				.accept(MediaType.APPLICATION_JSON));
 		
@@ -186,9 +187,9 @@ public class ClientControllerIT {
 		
 		resultActions.andExpect(status().isOk());
 		resultActions.andExpect(jsonPath("$.id").value(existingId));
-		resultActions.andExpect(jsonPath("$.name").value("John Red"));
+		resultActions.andExpect(jsonPath("$.name").value("Venda ao Consumidor"));
 		resultActions.andExpect(jsonPath("$.cpf").value("739.958.080-42"));
-		resultActions.andExpect(jsonPath("$.email").value("john@gmail.com"));
+		resultActions.andExpect(jsonPath("$.email").value("venda@gmail.com"));
 		resultActions.andExpect(jsonPath("$.roles[0]").value("ROLE_CLIENT"));
 	}
 
@@ -327,21 +328,35 @@ public class ClientControllerIT {
 		String expectedName =  client.getName();
 		String expectedEmail = client.getEmail();
 		
-		ResultActions resultActions = mockMvc.perform(put("/clients/{id}", existingId)
+		ResultActions resultActions = mockMvc.perform(put("/clients/{id}", existingUpdateId)
 				.header("Authorization", "Bearer " + adminToken)
 				.content(jsonBody)
 				.contentType(MediaType.APPLICATION_JSON)
 				.accept(MediaType.APPLICATION_JSON));
 		
 		resultActions.andExpect(status().isOk());
-		resultActions.andExpect(jsonPath("$.id").value(existingId));
+		resultActions.andExpect(jsonPath("$.id").value(existingUpdateId));
 		resultActions.andExpect(jsonPath("$.name").value(expectedName));
 		resultActions.andExpect(jsonPath("$.email").value(expectedEmail));
 		resultActions.andExpect(jsonPath("$.roles[0]").value("ROLE_CLIENT"));
 	}
 	
 	@Test
-	public void updateShouldReturnForbiddenWhenClientLoggedAndAllDataIsValid() throws Exception {
+	public void updateShouldReturnForbiddenWhenClientLoggedAndDataIsValidAndSelfId() throws Exception {
+		clientDTO = FactoryUser.createClientDTO(client);
+		String jsonBody = objectMapper.writeValueAsString(clientDTO);
+		
+		ResultActions resultActions = mockMvc.perform(put("/clients/{id}", existingUpdateId)
+				.header("Authorization", "Bearer " + clientToken)
+				.content(jsonBody)
+				.contentType(MediaType.APPLICATION_JSON)
+				.accept(MediaType.APPLICATION_JSON));
+		
+		resultActions.andExpect(status().isOk());
+	}
+
+	@Test
+	public void updateShouldReturnBadRequestWhenClientLoggedAndAllDataIsValidAndOtherId() throws Exception {
 		clientDTO = FactoryUser.createClientDTO(client);
 		String jsonBody = objectMapper.writeValueAsString(clientDTO);
 		
@@ -351,7 +366,7 @@ public class ClientControllerIT {
 				.contentType(MediaType.APPLICATION_JSON)
 				.accept(MediaType.APPLICATION_JSON));
 		
-		resultActions.andExpect(status().isForbidden());
+		resultActions.andExpect(status().isBadRequest());
 	}
 	
 	@Test
@@ -359,7 +374,7 @@ public class ClientControllerIT {
 		clientDTO = FactoryUser.createClientDTO(client);
 		String jsonBody = objectMapper.writeValueAsString(clientDTO);
 		
-		ResultActions resultActions = mockMvc.perform(put("/clients/{id}", existingId)
+		ResultActions resultActions = mockMvc.perform(put("/clients/{id}", existingUpdateId)
 				.header("Authorization", "Bearer " + invalidToken)
 				.content(jsonBody)
 				.contentType(MediaType.APPLICATION_JSON)
@@ -374,7 +389,7 @@ public class ClientControllerIT {
 		clientDTO = FactoryUser.createClientDTO(client);
 		String jsonBody = objectMapper.writeValueAsString(clientDTO);
 		
-		ResultActions resultActions = mockMvc.perform(put("/clients/{id}", existingId)
+		ResultActions resultActions = mockMvc.perform(put("/clients/{id}", existingUpdateId)
 				.header("Authorization", "Bearer " + adminToken)
 				.content(jsonBody)
 				.contentType(MediaType.APPLICATION_JSON)
@@ -389,7 +404,7 @@ public class ClientControllerIT {
 		clientDTO = FactoryUser.createClientDTO(client);
 		String jsonBody = objectMapper.writeValueAsString(clientDTO);
 		
-		ResultActions resultActions = mockMvc.perform(put("/clients/{id}", existingId)
+		ResultActions resultActions = mockMvc.perform(put("/clients/{id}", existingUpdateId)
 				.header("Authorization", "Bearer " + adminToken)
 				.content(jsonBody)
 				.contentType(MediaType.APPLICATION_JSON)
@@ -404,7 +419,7 @@ public class ClientControllerIT {
 		clientDTO = FactoryUser.createClientDTO(client);
 		String jsonBody = objectMapper.writeValueAsString(clientDTO);
 		
-		ResultActions resultActions = mockMvc.perform(put("/clients/{id}", existingId)
+		ResultActions resultActions = mockMvc.perform(put("/clients/{id}", existingUpdateId)
 				.header("Authorization", "Bearer " + adminToken)
 				.content(jsonBody)
 				.contentType(MediaType.APPLICATION_JSON)
@@ -419,7 +434,7 @@ public class ClientControllerIT {
 		clientDTO = FactoryUser.createClientDTO(client);
 		String jsonBody = objectMapper.writeValueAsString(clientDTO);
 		
-		ResultActions resultActions = mockMvc.perform(put("/clients/{id}", existingId)
+		ResultActions resultActions = mockMvc.perform(put("/clients/{id}", existingUpdateId)
 				.header("Authorization", "Bearer " + adminToken)
 				.content(jsonBody)
 				.contentType(MediaType.APPLICATION_JSON)
@@ -434,7 +449,7 @@ public class ClientControllerIT {
 		clientDTO = FactoryUser.createClientDTO(client);
 		String jsonBody = objectMapper.writeValueAsString(clientDTO);
 		
-		ResultActions resultActions = mockMvc.perform(put("/clients/{id}", existingId)
+		ResultActions resultActions = mockMvc.perform(put("/clients/{id}", existingUpdateId)
 				.header("Authorization", "Bearer " + adminToken)
 				.content(jsonBody)
 				.contentType(MediaType.APPLICATION_JSON)
@@ -448,7 +463,7 @@ public class ClientControllerIT {
 	void deleteShouldNoContentWhenAdminLoggedAndDoNotDeleteYourself() throws Exception {
 				
 		ResultActions result = 
-				mockMvc.perform(delete("/clients/{id}", existingId)
+				mockMvc.perform(delete("/clients/{id}", existingUpdateId)
 						.header("Authorization", "Bearer " + adminToken)
 						.accept(MediaType.APPLICATION_JSON));
 		
@@ -459,7 +474,7 @@ public class ClientControllerIT {
 	void deleteShouldUnauthorizedWhenInvalidToken() throws Exception {
 				
 		ResultActions result = 
-				mockMvc.perform(delete("/clients/{id}", existingId)
+				mockMvc.perform(delete("/clients/{id}", existingUpdateId)
 						.header("Authorization", "Bearer " + invalidToken)
 						.accept(MediaType.APPLICATION_JSON));
 		

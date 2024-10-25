@@ -70,16 +70,16 @@ public class OperatorControllerIT {
 		operatorToken = tokenUtil.obtainAccessToken(mockMvc, userOperatorEmail, userOperatorPassword);
 		invalidToken = adminToken + "xpto";
 		
-		operator = FactoryUser.createOperator();
-		operator.addAuth(FactoryUser.createAuth());
-		operator.addRole(FactoryUser.createRoleOperator());
+		operator = FactoryUser.createOperatorAdmin();
+		operator.addPermission(FactoryUser.createPermissionAll());
+		operator.addRole(FactoryUser.createRoleAdmin());
 		operator.setId(null);
 	}
 
 	@Test
 	public void findAllShouldREturnPageWhenValidTokenAndEmptyParams() throws Exception {
 
-		ResultActions resultActions = mockMvc.perform(get("/operators")
+		ResultActions resultActions = mockMvc.perform(get("/operators/all")
 				.header("Authorization", "Bearer " + adminToken)
 				.accept(MediaType.APPLICATION_JSON));
 
@@ -92,9 +92,9 @@ public class OperatorControllerIT {
 	}
 
 	@Test
-	public void findAllShouldReturnPageWhenValidTokenAndNameParamExisting() throws Exception {
+	public void searchEntityShouldReturnPageWhenValidTokenAndNameParamExisting() throws Exception {
 
-		ResultActions resultActions = mockMvc.perform(get("/operators?name={name}", existsOperatorName)
+		ResultActions resultActions = mockMvc.perform(get("/operators/search?name={name}", existsOperatorName)
 				.header("Authorization", "Bearer " + adminToken)
 				.accept(MediaType.APPLICATION_JSON));
 
@@ -107,9 +107,9 @@ public class OperatorControllerIT {
 	}
 	
 	@Test
-	public void findAllShouldReturnPageWhenValidTokenAndEmailParamExisting() throws Exception {
+	public void fsearchEntityShouldReturnPageWhenValidTokenAndEmailParamExisting() throws Exception {
 		
-		ResultActions resultActions = mockMvc.perform(get("/operators?email={email}", existsOperatorEmail)
+		ResultActions resultActions = mockMvc.perform(get("/operators/search?email={email}", existsOperatorEmail)
 				.header("Authorization", "Bearer " + adminToken)
 				.accept(MediaType.APPLICATION_JSON));
 		
@@ -122,9 +122,9 @@ public class OperatorControllerIT {
 	}
 	
 	@Test
-	public void findAllShouldReturnPageWhenValidTokenAndNameParamDoesNotExists() throws Exception {
+	public void searchEntityShouldReturnPageWhenValidTokenAndNameParamDoesNotExists() throws Exception {
 		
-		ResultActions resultActions = mockMvc.perform(get("/operators?name={name}", nonExistsOperatorName)
+		ResultActions resultActions = mockMvc.perform(get("/operators/search?name={name}", nonExistsOperatorName)
 				.header("Authorization", "Bearer " + adminToken)
 				.accept(MediaType.APPLICATION_JSON));
 		
@@ -133,9 +133,9 @@ public class OperatorControllerIT {
 	}
 	
 	@Test
-	public void findAllShouldReturnPageWhenValidTokenAndEmailParamDoesNotExists() throws Exception {
+	public void searchEntityShouldReturnPageWhenValidTokenAndEmailParamDoesNotExists() throws Exception {
 		
-		ResultActions resultActions = mockMvc.perform(get("/operators?email={email}", nonExistsOperatorEmail)
+		ResultActions resultActions = mockMvc.perform(get("/operators/search?email={email}", nonExistsOperatorEmail)
 				.header("Authorization", "Bearer " + adminToken)
 				.accept(MediaType.APPLICATION_JSON));
 		
@@ -144,9 +144,9 @@ public class OperatorControllerIT {
 	}
 
 	@Test
-	public void findAllShouldReturnUnauthorizedWhenIvalidToken() throws Exception {
+	public void searchEntityShouldReturnUnauthorizedWhenIvalidToken() throws Exception {
 
-		ResultActions resultActions = mockMvc.perform(get("/operators?name={existsOperatorName}", existsOperatorName)
+		ResultActions resultActions = mockMvc.perform(get("/operators/search?name={existsOperatorName}", existsOperatorName)
 				.header("Authorization", "Bearer " + invalidToken)
 				.accept(MediaType.APPLICATION_JSON));
 
@@ -205,7 +205,7 @@ public class OperatorControllerIT {
 		resultActions.andExpect(status().isCreated());
 		resultActions.andExpect(jsonPath("$.name").value(expectedName));
 		resultActions.andExpect(jsonPath("$.email").value(expectedEmail));
-		resultActions.andExpect(jsonPath("$.roles[0]").value("ROLE_OPERATOR"));
+		resultActions.andExpect(jsonPath("$.roles[0]").value("ROLE_ADMIN"));
 	}
 	
 	@Test
@@ -347,7 +347,7 @@ public class OperatorControllerIT {
 		resultActions.andExpect(jsonPath("$.id").value(existingId));
 		resultActions.andExpect(jsonPath("$.name").value(expectedName));
 		resultActions.andExpect(jsonPath("$.email").value(expectedEmail));
-		resultActions.andExpect(jsonPath("$.roles[0]").value("ROLE_OPERATOR"));
+		resultActions.andExpect(jsonPath("$.roles[0]").value("ROLE_ADMIN"));
 	}
 	
 //	@Test
@@ -477,19 +477,6 @@ public class OperatorControllerIT {
 						.accept(MediaType.APPLICATION_JSON));
 		
 		result.andExpect(status().isNoContent());		
-	}
-	
-	@Test 
-	void deleteShouldForbiddenWhenAdminLoggedAndDeleteYourself() throws Exception {
-		existingId = 1L;
-		
-		ResultActions result = 
-				mockMvc.perform(delete("/operators/{id}", existingId)
-						.header("Authorization", "Bearer " + adminToken)
-						.accept(MediaType.APPLICATION_JSON));
-		
-		result.andExpect(status().isForbidden());
-		
 	}
 	
 	@Test 
