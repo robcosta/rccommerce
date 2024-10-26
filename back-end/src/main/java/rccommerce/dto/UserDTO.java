@@ -6,9 +6,9 @@ import java.util.List;
 import org.springframework.security.core.GrantedAuthority;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import rccommerce.controllers.validators.EmailCustom;
-import rccommerce.controllers.validators.Password;
 import rccommerce.entities.Permission;
 import rccommerce.entities.User;
 
@@ -23,13 +23,11 @@ public class UserDTO {
 	@EmailCustom
 	private String email;
 
-	@Size(min = 4, max = 8, message = "Senha: mínimo de 4 e máximo de 8 caracteres.")
-	@Password(message = "Senha deve conter apenas números.")
+	@NotNull(message = "Campo 'password' requerido, mesmo que seja em branco")
 	private String password;
 
 	private List<String> roles = new ArrayList<>();
 
-//	@EnumExists(enumClass = PermissionAuthority.class, message = "Um ou mais valores no campo 'verifiedXXXXXX' não são válidos.")
 	private List<String> permissions = new ArrayList<>();
 
 	public UserDTO(Long id, String name, String email, String password) {

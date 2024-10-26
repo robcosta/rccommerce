@@ -1,9 +1,12 @@
 package rccommerce.dto;
 
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 import rccommerce.entities.Operator;
 
-public class OperatorDTO extends UserDTO{
+public class OperatorDTO extends UserDTO {
+
+	@NotNull(message = "Campo requerido")
 	@PositiveOrZero(message = "Comissão deve ter um valor zero ou positivo")
 	private Double commission;
 
@@ -20,5 +23,5 @@ public class OperatorDTO extends UserDTO{
 	public Double getCommission() {
 		return commission;
 	}
-	
+
 }

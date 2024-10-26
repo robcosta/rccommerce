@@ -1,6 +1,5 @@
 package rccommerce.services;
 
-import java.util.List;
 import java.util.Locale;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,18 +9,15 @@ import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import rccommerce.dto.OperatorDTO;
 import rccommerce.dto.OperatorMinDTO;
-import rccommerce.dto.UserMinDTO;
 import rccommerce.entities.Operator;
 import rccommerce.entities.Permission;
 import rccommerce.entities.Role;
 import rccommerce.entities.enums.PermissionAuthority;
-import rccommerce.entities.enums.RoleAuthority;
 import rccommerce.repositories.OperatorRepository;
 import rccommerce.repositories.PermissionRepository;
 import rccommerce.repositories.RoleRepository;
@@ -29,13 +25,10 @@ import rccommerce.services.exceptions.InvalidArgumentExecption;
 import rccommerce.services.interfaces.GenericService;
 
 @Service
-public class OperatorService  implements GenericService<Operator, OperatorDTO, OperatorMinDTO, Long>{
+public class OperatorService implements GenericService<Operator, OperatorDTO, OperatorMinDTO, Long> {
 
 	@Autowired
 	private OperatorRepository repository;
-
-	@Autowired
-	private UserService userService;
 
 	@Autowired
 	private RoleRepository roleRepository;
@@ -43,9 +36,9 @@ public class OperatorService  implements GenericService<Operator, OperatorDTO, O
 	@Autowired
 	private PermissionRepository permissionRepository;
 
-   @Autowired
-    private MessageSource messageSource;
-   
+	@Autowired
+	private MessageSource messageSource;
+
 	@Transactional(readOnly = true)
 	public Page<OperatorMinDTO> searchEntity(Long id, String name, String email, Pageable pageable) {
 		return searchAll(example(id, name, email), pageable);
@@ -60,30 +53,24 @@ public class OperatorService  implements GenericService<Operator, OperatorDTO, O
 	public Operator createEntity() {
 		return new Operator();
 	}
-	
+
 	@Override
 	public String getClassName() {
 		return getClass().getName();
 	}
-	
+
 	@Override
 	public String getTranslatedEntityName() {
 		// Pega a tradução do nome da entidade para "Client"
-        return messageSource.getMessage("entity.Operator", null, Locale.getDefault());
+		return messageSource.getMessage("entity.Operator", null, Locale.getDefault());
 	}
-	
-	public void copyDtoToEntity(OperatorDTO dto, Operator entity) {
-		UserMinDTO userLogged = userService.getMe();
 
+	public void copyDtoToEntity(OperatorDTO dto, Operator entity) {
 		entity.setName(dto.getName());
 		entity.setEmail(dto.getEmail().toLowerCase());
 		entity.setCommission(dto.getCommission());
-		if (!dto.getPassword().isEmpty()) {
-			entity.setPassword(new BCryptPasswordEncoder().encode(dto.getPassword()));
-		}
-
-		if (!userLogged.getRoles().containsAll(List.of(RoleAuthority.ROLE_ADMIN.getName()))) {
-			return;
+		if (dto.getPassword() != null && !dto.getPassword().isEmpty()) {
+			entity.setPassword(isValidPassword(dto.getPassword()));
 		}
 
 		entity.getPermissions().clear();
@@ -91,7 +78,7 @@ public class OperatorService  implements GenericService<Operator, OperatorDTO, O
 			Permission result = permissionRepository.findByAuthority(PermissionAuthority.PERMISSION_NONE.getName());
 			entity.addPermission(result);
 		}
-		
+
 		for (String permission : dto.getPermissions()) {
 			Permission result = permissionRepository.findByAuthority(permission);
 			if (result == null) {
@@ -112,7 +99,7 @@ public class OperatorService  implements GenericService<Operator, OperatorDTO, O
 			entity.addRole(result);
 		}
 	}
-	
+
 	private Example<Operator> example(Long id, String name, String email) {
 		Operator OperatorExample = createEntity();
 		if (id != null) {
@@ -126,7 +113,7 @@ public class OperatorService  implements GenericService<Operator, OperatorDTO, O
 		}
 
 		ExampleMatcher matcher = ExampleMatcher.matching()
-				.withMatcher("id", ExampleMatcher.GenericPropertyMatchers.exact())	
+				.withMatcher("id", ExampleMatcher.GenericPropertyMatchers.exact())
 				.withMatcher("nameUnaccented", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase())
 				.withMatcher("email", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase());
 

@@ -9,7 +9,6 @@ import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -56,12 +55,13 @@ public class ClientService implements GenericService<Client, ClientDTO, ClientMi
 
 	@Override
 	public void checkUserPermissions(PermissionAuthority authority, Long id, String className) {
-		// Lógica para permitir a inserção (CREATE) de qualquer cliente sem verificação de permissões
+		// Lógica para permitir a inserção (CREATE) de qualquer cliente sem verificação
+		// de permissões
 		if (authority.equals(PermissionAuthority.PERMISSION_CREATE)) {
 			return;
 		}
-		
-		 // Para os demais casos, chama o método da interface GenericService
+
+		// Para os demais casos, chama o método da interface GenericService
 		GenericService.super.checkUserPermissions(authority, id, className);
 	}
 
@@ -69,14 +69,13 @@ public class ClientService implements GenericService<Client, ClientDTO, ClientMi
 	public String getClassName() {
 		return getClass().getName();
 	}
-	
-	
+
 	@Override
 	public void copyDtoToEntity(ClientDTO dto, Client entity) {
 		entity.setName(dto.getName());
 		entity.setEmail(dto.getEmail().toLowerCase());
-		if (!dto.getPassword().isEmpty()) {
-			entity.setPassword(new BCryptPasswordEncoder().encode(dto.getPassword()));
+		if (dto.getPassword() != null && !dto.getPassword().isEmpty()) {
+			entity.setPassword(isValidPassword(dto.getPassword()));
 		}
 		entity.setCpf(dto.getCpf());
 		entity.getRoles().clear();
@@ -87,11 +86,12 @@ public class ClientService implements GenericService<Client, ClientDTO, ClientMi
 
 	@Override
 	public String getTranslatedEntityName() {
-		// Pega a tradução do nome da entidade para "Client" e aplicar nas mensagens de erro"
+		// Pega a tradução do nome da entidade para "Client" e aplicar nas mensagens de
+		// erro"
 		return messageSource.getMessage("entity.Client", null, Locale.getDefault());
 	}
 
-	private Example<Client> example(Long id,String name, String email, String cpf) {
+	private Example<Client> example(Long id, String name, String email, String cpf) {
 		Client clientExample = createEntity();
 		if (id != null) {
 			clientExample.setId(id);
@@ -107,7 +107,7 @@ public class ClientService implements GenericService<Client, ClientDTO, ClientMi
 		}
 
 		ExampleMatcher matcher = ExampleMatcher.matching()
-				.withMatcher("id", ExampleMatcher.GenericPropertyMatchers.exact())	
+				.withMatcher("id", ExampleMatcher.GenericPropertyMatchers.exact())
 				.withMatcher("nameUnaccented", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase())
 				.withMatcher("email", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase())
 				.withMatcher("cpf", ExampleMatcher.GenericPropertyMatchers.exact());

@@ -7,6 +7,7 @@ import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,6 +15,7 @@ import jakarta.persistence.EntityNotFoundException;
 import rccommerce.entities.enums.PermissionAuthority;
 import rccommerce.services.exceptions.DatabaseException;
 import rccommerce.services.exceptions.ForbiddenException;
+import rccommerce.services.exceptions.InvalidPasswordExecption;
 import rccommerce.services.exceptions.ResourceNotFoundException;
 import rccommerce.services.util.SecurityContextUtil;
 
@@ -170,6 +172,45 @@ public interface GenericService<T extends Convertible<DTO, MINDTO>, DTO, MINDTO,
 
 		// Se não tiver permissões, lançar exceção
 		throw new ForbiddenException("Usuário não tem permissão para acessar este recurso.");
+	}
+
+	default String isValidPassword(String password) {
+		StringBuilder msg = new StringBuilder("Senha inválida:");
+
+		// Verifica o tamanho mínimo
+		if (password == null || password.length() < 6) {
+			msg.append(" pelo menos 6 dígitos");
+		}
+
+		// Verifica os critérios usando expressões regulares
+		if (!password.matches(".*[A-Z].*")) {
+			msg.append(" pelo menos uma letra maiúscula");
+		}
+
+		if (!password.matches(".*[a-z].*")) {
+			msg.append(" pelo menos uma letra minúscula");
+		}
+
+		if (!password.matches(".*[0-9].*")) {
+			msg.append(" pelo menos um dígito");
+		}
+
+		if (!password.matches(".*[!@#$%^&*()\\-+=].*")) {
+			msg.append(" pelo menos um caractere especial");
+		}
+
+		// Lança exceção caso msg contenha erros
+		if (msg.length() > "Senha inválida:".length()) {
+			String finalMessage = msg.toString().trim()
+					.replaceAll("\\s+", " ") // Remove espaços em branco adicionais
+					.replaceAll("(\\w+)(?= pelo)", "$1,") // Adiciona vírgula antes de "pelo" se houver
+					+ "."; // Adiciona ponto final
+
+			throw new InvalidPasswordExecption(finalMessage);
+		}
+
+		// Retorna a senha encriptada se válida
+		return new BCryptPasswordEncoder().encode(password);
 	}
 
 }
