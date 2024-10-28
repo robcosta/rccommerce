@@ -292,7 +292,6 @@ public class ClientControllerIT {
 	@Test
 	public void insertShouldReturnUnprocessableEntityWhenInvalidPassword() throws Exception {
 		client.setPassword("12A34B");
-		;
 		client.addRole(FactoryUser.createRoleClient());
 		clientDTO = FactoryUser.createClientDTO(client);
 		String jsonBody = objectMapper.writeValueAsString(clientDTO);

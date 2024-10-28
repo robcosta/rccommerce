@@ -17,7 +17,7 @@ import rccommerce.projections.UserDetailsProjection;
 public class FactoryUser {
 
 	public static User createUser() {
-		User user = new User(6L, "Robert Black", "robert@gmail.com", "123456");
+		User user = new User(6L, "Robert Black", "robert@gmail.com", "Rc-1234");
 		return user;
 	}
 
@@ -70,7 +70,7 @@ public class FactoryUser {
 	}
 
 	public static Operator createOperatorAdmin() {
-		Operator operator = new Operator(7L, "Ana Pink", "ana@gmail.com", "123456", 1.5);
+		Operator operator = new Operator(7L, "Ana Pink", "ana@gmail.com", "An-1234", 1.5);
 		operator.addRole(createRoleAdmin());
 		operator.addPermission(createPermissionAll());
 		return operator;
@@ -90,7 +90,7 @@ public class FactoryUser {
 	}
 
 	public static Client createClient() {
-		Client client = new Client(7L, "Ana Pink", "ana@gmail.com", "123456", "59395734019");
+		Client client = new Client(7L, "Ana Pink", "ana@gmail.com", "An-1234", "59395734019");
 		client.addRole(createRoleClient());
 		client.addPermission(createPermissionNone());
 		return client;

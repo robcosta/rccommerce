@@ -9,6 +9,7 @@ import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -74,7 +75,7 @@ public class ClientService implements GenericService<Client, ClientDTO, ClientMi
 	public void copyDtoToEntity(ClientDTO dto, Client entity) {
 		entity.setName(dto.getName());
 		entity.setEmail(dto.getEmail().toLowerCase());
-		if (dto.getPassword() != null && !dto.getPassword().isEmpty()) {
+		if (!dto.getPassword().isEmpty()) {
 			entity.setPassword(isValidPassword(dto.getPassword()));
 		}
 		entity.setCpf(dto.getCpf());
