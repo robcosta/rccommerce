@@ -10,164 +10,193 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import rccommerce.dto.ProductDTO;
+import rccommerce.dto.ProductMinDTO;
+import rccommerce.services.interfaces.Convertible;
+import rccommerce.util.AccentUtils;
 
 @Entity
-@Table(name = "tb_product")
-public class Product {
+@Table(name = "tb_product", indexes = {
+    @Index(name = "idx_product_name_unaccented", columnList = "nameUnaccented")
+})
+public class Product implements Convertible<ProductDTO, ProductMinDTO> {
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-	@Column(unique = true)
-	private String name;
+    @Column(unique = true)
+    private String name;
+    private String nameUnaccented;
 
-	@Column(columnDefinition = "TEXT")
-	private String description;
-	private String unit;
-	private Double price;
-	private String imgUrl;
+    @Column(columnDefinition = "TEXT")
+    private String description;
+    private String unit;
+    private Double price;
+    private String imgUrl;
 
-	private Double quantity;
+    private Double quantity;
 
-	@Column(unique = true)
-	private String reference;
+    @Column(unique = true)
+    private String reference;
 
-	@ManyToOne
-	@JoinColumn(name = "suplier_id")
-	private Suplier suplier;
+    @ManyToOne
+    @JoinColumn(name = "suplier_id")
+    private Suplier suplier;
 
-	@ManyToMany
-	@JoinTable(name = "tb_product_category", joinColumns = @JoinColumn(name = "product_id"), inverseJoinColumns = @JoinColumn(name = "category_id"))
-	private Set<Category> categories = new HashSet<>();
+    @ManyToMany
+    @JoinTable(name = "tb_product_category", joinColumns = @JoinColumn(name = "product_id"), inverseJoinColumns = @JoinColumn(name = "category_id"))
+    private Set<Category> categories = new HashSet<>();
 
-	@OneToMany(mappedBy = "id.product")
-	private Set<OrderItem> items = new HashSet<>();
+    @OneToMany(mappedBy = "id.product")
+    private Set<OrderItem> items = new HashSet<>();
 
-	public Product() {
-	}
+    public Product() {
+    }
 
-	public Product(Long id, String name, String description, String unit, Double price, String imgUrl, Double quantity,
-			String reference, Suplier suplier) {
-		this.id = id;
-		this.name = name;
-		this.description = description;
-		this.unit = unit;
-		this.price = price;
-		this.imgUrl = imgUrl;
-		this.quantity = quantity;
-		this.reference = reference;
-		this.suplier = suplier;
-	}
+    public Product(Long id, String name, String description, String unit, Double price, String imgUrl, Double quantity,
+            String reference, Suplier suplier) {
+        this.id = id;
+        this.name = name;
+        this.description = description;
+        this.unit = unit;
+        this.price = price;
+        this.imgUrl = imgUrl;
+        this.quantity = quantity;
+        this.reference = reference;
+        this.suplier = suplier;
+    }
 
-	public Long getId() {
-		return id;
-	}
+    public Long getId() {
+        return id;
+    }
 
-	public void setId(Long id) {
-		this.id = id;
-	}
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-	public String getName() {
-		return name;
-	}
+    public String getName() {
+        return name;
+    }
 
-	public void setName(String name) {
-		this.name = name;
-	}
+    public void setName(String name) {
+        this.name = name;
+    }
 
-	public String getDescription() {
-		return description;
-	}
+    public String getNameUnaccented() {
+        return nameUnaccented;
+    }
 
-	public void setDescription(String description) {
-		this.description = description;
-	}
+    public void setNameUnaccented(String nameUnaccented) {
+        this.nameUnaccented = AccentUtils.removeAccents(nameUnaccented);
+    }
 
-	public String getUnit() {
-		return unit;
-	}
+    public String getDescription() {
+        return description;
+    }
 
-	public void setUnit(String unit) {
-		this.unit = unit;
-	}
+    public void setDescription(String description) {
+        this.description = description;
+    }
 
-	public Double getPrice() {
-		return price;
-	}
+    public String getUnit() {
+        return unit;
+    }
 
-	public void setPrice(Double price) {
-		this.price = price;
-	}
+    public void setUnit(String unit) {
+        this.unit = unit;
+    }
 
-	public String getImgUrl() {
-		return imgUrl;
-	}
+    public Double getPrice() {
+        return price;
+    }
 
-	public void setImgUrl(String imgUrl) {
-		this.imgUrl = imgUrl;
-	}
+    public void setPrice(Double price) {
+        this.price = price;
+    }
 
-	public Double getQuantity() {
-		return quantity;
-	}
+    public String getImgUrl() {
+        return imgUrl;
+    }
 
-	public void setQuantity(Double quantity) {
-		this.quantity = quantity;
-	}
+    public void setImgUrl(String imgUrl) {
+        this.imgUrl = imgUrl;
+    }
 
-	public String getReference() {
-		return reference;
-	}
+    public Double getQuantity() {
+        return quantity;
+    }
 
-	public void setReference(String reference) {
-		this.reference = reference;
-	}
+    public void setQuantity(Double quantity) {
+        this.quantity = quantity;
+    }
 
-	public Suplier getSuplier() {
-		return suplier;
-	}
+    public String getReference() {
+        return reference;
+    }
 
-	public void setSuplier(Suplier suplier) {
-		this.suplier = suplier;
-	}
+    public void setReference(String reference) {
+        this.reference = reference;
+    }
 
-	public Set<Category> getCategories() {
-		return categories;
-	}
+    public Suplier getSuplier() {
+        return suplier;
+    }
 
-	public void addCategory(Category category) {
-		categories.add(category);
-	}
+    public void setSuplier(Suplier suplier) {
+        this.suplier = suplier;
+    }
 
-	public Set<OrderItem> getItems() {
-		return items;
-	}
+    public Set<Category> getCategories() {
+        return categories;
+    }
 
-	public List<Order> getOrders() {
-		return items.stream().map(x -> x.gerOrder()).toList();
-	}
+    public void addCategory(Category category) {
+        categories.add(category);
+    }
 
-	@Override
-	public int hashCode() {
-		return Objects.hash(id);
-	}
+    public Set<OrderItem> getItems() {
+        return items;
+    }
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		Product other = (Product) obj;
-		return Objects.equals(id, other.id);
-	}
+    public List<Order> getOrders() {
+        return items.stream().map(x -> x.gerOrder()).toList();
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        Product other = (Product) obj;
+        return Objects.equals(id, other.id);
+    }
+
+    @Override
+    public ProductDTO convertDTO() {
+        return new ProductDTO(this);
+    }
+
+    @Override
+    public ProductMinDTO convertMinDTO() {
+        return new ProductMinDTO(this);
+    }
 }
