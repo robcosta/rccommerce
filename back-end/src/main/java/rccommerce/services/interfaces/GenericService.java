@@ -43,16 +43,6 @@ public interface GenericService<T extends Convertible<DTO, MINDTO>, DTO, MINDTO,
     }
 
     @Transactional(readOnly = true)
-    default Page<MINDTO> searchAll(Example<T> example, Pageable pageable) {
-        checkUserPermissions(PermissionAuthority.PERMISSION_READER, null, getClassName());
-        Page<T> result = getRepository().findAll(example, pageable);
-        if (result.isEmpty()) {
-            handleResourceNotFound();
-        }
-        return result.map(x -> x.convertMinDTO());
-    }
-
-    @Transactional(readOnly = true)
     default MINDTO findById(ID id) {
         checkUserPermissions(PermissionAuthority.PERMISSION_READER, (Long) id, getClassName());
 

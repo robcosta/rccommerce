@@ -15,7 +15,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentMatchers;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -24,7 +23,6 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import org.springframework.context.MessageSource;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -98,30 +96,28 @@ public class ClientServiceTests {
     }
 
     @Test
-    public void searchAllShouldReturnPagedClientMinDTO() {
-        Example<Client> example = Example.of(client);
-
+    public void searchEntityShouldReturnPagedClientMinDTO() {
         // Mockando o repositório com o Example correto
-        when(repository.findAll(eq(example), eq(pageable))).thenReturn(new PageImpl<>(List.of(client, client, client)));
+        // when(repository.findBy(eq(example), eq(query -> query.page(pageable)))).thenReturn(new PageImpl<>(List.of(client)));
+        when(repository.findBy(any(), any())).thenReturn(new PageImpl<>(List.of(client)));
 
         // Chamando o método do serviço com o Example real
-        Page<ClientMinDTO> result = serviceSpy.searchAll(example, pageable);
+        Page<ClientMinDTO> result = serviceSpy.searchEntity(client.getId(), client.getName(), client.getEmail(), client.getCpf(), pageable);
 
         // Assertivas
         assertFalse(result.isEmpty());
-        assertEquals(3, result.getSize());
+        assertEquals(1, result.getSize());
         assertEquals(client.getName(), result.toList().get(0).getName());
-        assertEquals(client.getEmail(), result.toList().get(1).getEmail());
+        assertEquals(client.getEmail(), result.toList().get(0).getEmail());
     }
 
     @Test
-    public void searchAllShouldThrowResourceNotFoundExceptionWhenNonExixtsClient() {
-        Example<Client> example = Example.of(client);
-
-        when(repository.findAll(eq(example), eq(pageable))).thenReturn(Page.empty());
+    public void searchEntityShouldThrowResourceNotFoundExceptionWhenNonExixtsClient() {
+        when(repository.findBy(any(), any())).thenReturn(Page.empty());
 
         assertThrows(ResourceNotFoundException.class, () -> {
-            serviceSpy.searchAll(example, pageable);
+            serviceSpy.searchEntity(nonExistsId, "", "", "", pageable);
+
         });
     }
 

@@ -4,12 +4,12 @@ import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.Assertions;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentMatchers;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -18,7 +18,6 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import org.springframework.context.MessageSource;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -85,28 +84,23 @@ public class OperatorServiceTests {
     }
 
     @Test
-    public void searchAllShouldReturnPagedOperatorMinDTO() {
-        Example<Operator> example = Example.of(operator);
+    public void searchEntityShouldReturnPagedOperatorMinDTO() {
+        when(repository.findBy(any(), any())).thenReturn(new PageImpl<>(List.of(operator)));
 
-        when(repository.findAll(eq(example), eq(pageable)))
-                .thenReturn(new PageImpl<>(List.of(operator, operator, operator)));
-
-        Page<OperatorMinDTO> result = serviceSpy.searchAll(example, pageable);
+        Page<OperatorMinDTO> result = serviceSpy.searchEntity(operator.getId(), operator.getName(), operator.getEmail(), pageable);
 
         Assertions.assertFalse(result.isEmpty());
-        Assertions.assertEquals(3, result.getSize());
+        Assertions.assertEquals(1, result.getSize());
         Assertions.assertEquals(operator.getName(), result.toList().get(0).getName());
-        Assertions.assertEquals(operator.getEmail(), result.toList().get(1).getEmail());
+        Assertions.assertEquals(operator.getEmail(), result.toList().get(0).getEmail());
     }
 
     @Test
-    public void searchAllShouldThrowResourceNotFoundExceptionWhenNonExixtsOperator() {
-        Example<Operator> example = Example.of(operator);
+    public void searchEntityShouldThrowResourceNotFoundExceptionWhenNonExixtsOperator() {
+        when(repository.findBy(any(), any())).thenReturn(Page.empty());
 
-        when(repository.findAll(eq(example), eq(pageable))).thenReturn(Page.empty());
-
-        Assertions.assertThrows(ResourceNotFoundException.class, () -> {
-            serviceSpy.searchAll(example, pageable);
+        assertThrows(ResourceNotFoundException.class, () -> {
+            serviceSpy.searchEntity(nonExistsId, "", "", pageable);
         });
     }
 
