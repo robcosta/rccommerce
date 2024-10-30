@@ -1,12 +1,5 @@
 package rccommerce.controllers.it;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +8,12 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -39,8 +38,8 @@ public class OperatorControllerIT {
 	private TokenUtil tokenUtil;
 	
 	
-	private String adminToken, operatorToken, invalidToken;
-	private String userAdminEmail, userAdminPassword, userOperatorEmail, userOperatorPassword;
+	private String adminToken, sellerToken, invalidToken;
+	private String userAdminEmail, userAdminPassword, userSellerEmail, userSellerPassword;
 	private String existsOperatorName, existsOperatorEmail, nonExistsOperatorName, nonExistsOperatorEmail, emailUnique;
 
 	private long existingId, nonExistingId;
@@ -52,8 +51,8 @@ public class OperatorControllerIT {
 	void setUp() throws Exception {
 		userAdminEmail = "admin@gmail.com";
 		userAdminPassword = "123456";
-		userOperatorEmail = "bob@gmail.com";
-		userOperatorPassword = "123456";
+		userSellerEmail = "alex@gmail.com";
+		userSellerPassword = "123456";
 		
 		existsOperatorName = "Alex Blue";
 		existsOperatorEmail = "alex@gmail.com";
@@ -67,7 +66,7 @@ public class OperatorControllerIT {
 		nonExistingId = 100L;
 
 		adminToken = tokenUtil.obtainAccessToken(mockMvc, userAdminEmail, userAdminPassword);
-		operatorToken = tokenUtil.obtainAccessToken(mockMvc, userOperatorEmail, userOperatorPassword);
+		sellerToken = tokenUtil.obtainAccessToken(mockMvc, userSellerEmail, userSellerPassword);
 		invalidToken = adminToken + "xpto";
 		
 		operator = FactoryUser.createOperatorAdmin();
@@ -214,7 +213,7 @@ public class OperatorControllerIT {
 		String jsonBody = objectMapper.writeValueAsString(operatorDTO);
 
 		ResultActions resultActions = mockMvc.perform(post("/operators")
-				.header("Authorization", "Bearer " + operatorToken)
+				.header("Authorization", "Bearer " + sellerToken)
 				.content(jsonBody)
 				.contentType(MediaType.APPLICATION_JSON)
 				.accept(MediaType.APPLICATION_JSON));
@@ -350,19 +349,19 @@ public class OperatorControllerIT {
 		resultActions.andExpect(jsonPath("$.roles[0]").value("ROLE_ADMIN"));
 	}
 	
-//	@Test
-//	public void updateShouldReturnForbiddenWhenOperatorLoggedAndDataIsValid() throws Exception {
-//		operatorDTO = FactoryUser.createOperatorDTO(operator);
-//		String jsonBody = objectMapper.writeValueAsString(operatorDTO);
-//	
-//		ResultActions resultActions = mockMvc.perform(put("/operators/{id}", existingId)
-//				.header("Authorization", "Bearer " + operatorToken)
-//				.content(jsonBody)
-//				.contentType(MediaType.APPLICATION_JSON)
-//				.accept(MediaType.APPLICATION_JSON));
-//		
-//		resultActions.andExpect(status().isForbidden());
-//	}
+	// @Test
+	// public void updateShouldReturnForbiddenWhenOperatorLoggedAndDataIsValid() throws Exception {
+	// 	operatorDTO = FactoryUser.createOperatorDTO(operator);
+	// 	String jsonBody = objectMapper.writeValueAsString(operatorDTO);
+	
+	// 	ResultActions resultActions = mockMvc.perform(put("/operators/{id}", existingId)
+	// 			.header("Authorization", "Bearer " + sellerToken)
+	// 			.content(jsonBody)
+	// 			.contentType(MediaType.APPLICATION_JSON)
+	// 			.accept(MediaType.APPLICATION_JSON));
+		
+	// 	resultActions.andExpect(status().isForbidden());
+	// }
 	
 	@Test
 	public void updateShouldReturnUnauthorizedWhenInvalidTokenAndAllDataIsValid() throws Exception {

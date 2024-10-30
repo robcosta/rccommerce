@@ -40,8 +40,5 @@ public class StockService {
 		}catch (EntityNotFoundException e) {
 			throw new ResourceNotFoundException("Produto não encontrado");
 		}
-		
-		return;
 	}
-
 }

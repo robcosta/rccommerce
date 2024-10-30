@@ -27,65 +27,63 @@ import rccommerce.services.CategoryService;
 
 @Validated
 @RestController
-@RequestMapping(value =  "/categories")
+@RequestMapping(value = "/categories")
 public class CategoryController {
-	
-	@Autowired
-	private CategoryService service;
-	
-	@PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_OPERATOR', 'ROLE_SELLER')")
-	@GetMapping
-	public ResponseEntity<Page<CategoryMinDTO>> findAll(Pageable pageable) {
-		Page<CategoryMinDTO> dto = service.findAll(pageable);
-		return ResponseEntity.ok(dto);
-	}
-	
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_OPERATOR', 'ROLE_SELLER')")
-	@GetMapping(value = "/search")
-	public ResponseEntity<Page<CategoryMinDTO>> searchEntity(
-			@ValidId
-	        @RequestParam(name = "id", defaultValue = "") String id,
-	        @RequestParam(name = "name", defaultValue = "") String name,
-	        Pageable pageable) {
-		
-		Page<CategoryMinDTO> dto = service.searchEntity(id.isEmpty() ? null: Long.parseLong(id), name, pageable);
-	    return ResponseEntity.ok(dto);
-	}
-	
-	@PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_OPERATOR', 'ROLE_SELLER')")
-	@GetMapping(value = "/{id}")
-	public ResponseEntity<CategoryMinDTO> findById(@ValidId @PathVariable String id) {
-		CategoryMinDTO dto = service.findById(Long.parseLong(id));
-		return ResponseEntity.ok(dto);
-	}
-	
+    @Autowired
+    private CategoryService service;
+
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_OPERATOR', 'ROLE_SELLER')")
+    @GetMapping
+    public ResponseEntity<Page<CategoryMinDTO>> findAll(Pageable pageable) {
+        Page<CategoryMinDTO> dto = service.findAll(pageable);
+        return ResponseEntity.ok(dto);
+    }
+
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_OPERATOR', 'ROLE_SELLER')")
+    @GetMapping(value = "/search")
+    public ResponseEntity<Page<CategoryMinDTO>> searchEntity(
+            @ValidId
+            @RequestParam(name = "id", defaultValue = "") String id,
+            @RequestParam(name = "name", defaultValue = "") String name,
+            Pageable pageable) {
+
+        Page<CategoryMinDTO> dto = service.searchEntity(id.isEmpty() ? null : Long.valueOf(id), name, pageable);
+        return ResponseEntity.ok(dto);
+    }
+
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_OPERATOR', 'ROLE_SELLER')")
+    @GetMapping(value = "/{id}")
+    public ResponseEntity<CategoryMinDTO> findById(@ValidId @PathVariable String id) {
+        CategoryMinDTO dto = service.findById(Long.valueOf(id));
+        return ResponseEntity.ok(dto);
+    }
+
 //	@GetMapping(value = "/name/{name}")
 //	public ResponseEntity<CategoryDTO> findByReference(@PathVariable String name) {
 //		CategoryDTO dto = service.findByName(name);
 //		return ResponseEntity.ok(dto);
 //	}
-	
-	@PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_OPERATOR', 'ROLE_SELLER')")
-	@PostMapping
-	public ResponseEntity<CategoryMinDTO> insert(@Valid @RequestBody CategoryDTO dto) {
-		CategoryMinDTO minDTO = service.insert(dto);
-		URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
-				.buildAndExpand(dto.getId()).toUri();
-		return ResponseEntity.created(uri).body(minDTO);
-	}
-	
-	@PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_OPERATOR', 'ROLE_SELLER')")
-	@PutMapping(value = "/{id}")
-	public ResponseEntity<CategoryMinDTO> update(@Valid @RequestBody CategoryDTO dto, @ValidId @PathVariable String id) {
-		CategoryMinDTO minDTO = service.update(dto, Long.parseLong(id));
-		return ResponseEntity.ok(minDTO);
-	}
-	
-	@PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_OPERATOR', 'ROLE_SELLER')")
-	@DeleteMapping(value = "/{id}")
-	public ResponseEntity<Void> delete(@ValidId @PathVariable String id) {
-		service.delete(Long.parseLong(id));
-		return ResponseEntity.noContent().build();
-	}
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_OPERATOR', 'ROLE_SELLER')")
+    @PostMapping
+    public ResponseEntity<CategoryMinDTO> insert(@Valid @RequestBody CategoryDTO dto) {
+        CategoryMinDTO minDTO = service.insert(dto);
+        URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
+                .buildAndExpand(dto.getId()).toUri();
+        return ResponseEntity.created(uri).body(minDTO);
+    }
+
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_OPERATOR', 'ROLE_SELLER')")
+    @PutMapping(value = "/{id}")
+    public ResponseEntity<CategoryMinDTO> update(@Valid @RequestBody CategoryDTO dto, @ValidId @PathVariable String id) {
+        CategoryMinDTO minDTO = service.update(dto, Long.valueOf(id));
+        return ResponseEntity.ok(minDTO);
+    }
+
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_OPERATOR', 'ROLE_SELLER')")
+    @DeleteMapping(value = "/{id}")
+    public ResponseEntity<Void> delete(@ValidId @PathVariable String id) {
+        service.delete(Long.valueOf(id));
+        return ResponseEntity.noContent().build();
+    }
 }

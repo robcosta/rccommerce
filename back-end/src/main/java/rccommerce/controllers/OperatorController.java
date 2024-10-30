@@ -27,62 +27,62 @@ import rccommerce.services.OperatorService;
 
 @Validated
 @RestController
-@RequestMapping(value =  "/operators")
+@RequestMapping(value = "/operators")
 public class OperatorController {
-	
-	@Autowired
-	private OperatorService service;
-	
-	@PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_OPERATOR', 'ROLE_SELLER')")
-	@GetMapping(value = "/all")
-	public ResponseEntity<Page<OperatorMinDTO>> findAll(
-			Pageable pageable) {
-		Page<OperatorMinDTO> dto = service.findAll(pageable);
-		return ResponseEntity.ok(dto);
-	}
-	
-@PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_OPERATOR', 'ROLE_SELLER', 'ROLE_CLIENT')")
-	@GetMapping(value = "/search")
-	public ResponseEntity<Page<OperatorMinDTO>> searchEntity(
-	        @ValidId
-	        @RequestParam(name = "id", defaultValue = "") String id,
-			@RequestParam(name = "name", defaultValue = "") String name,
-			@RequestParam(name = "email", defaultValue = "") String email,
-			Pageable pageable) {
-		Page<OperatorMinDTO> pageDto = service.searchEntity(id.isEmpty() ? null: Long.parseLong(id), name, email, pageable);
-		return ResponseEntity.ok(pageDto);
-	}
-	
-@PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_OPERATOR', 'ROLE_SELLER')")
-	@GetMapping(value = "/{id}")
-	public ResponseEntity<OperatorMinDTO> findById(@ValidId @PathVariable String id) {
-		OperatorMinDTO dto = service.findById(Long.parseLong(id));
-		return ResponseEntity.ok(dto);
-	}
-	
-@PreAuthorize("hasAnyRole('ROLE_ADMIN')")
-	@PostMapping
-	public ResponseEntity<OperatorMinDTO> insert(@Valid @RequestBody OperatorDTO dto) {
-		OperatorMinDTO minDTO = service.insert(dto);
-		URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
-				.buildAndExpand(dto.getId()).toUri();
-		return ResponseEntity.created(uri).body(minDTO);
-	}
-	
-@PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_OPERATOR', 'ROLE_SELLER')")
-	@PutMapping(value = "/{id}")
-	public ResponseEntity<OperatorMinDTO> update(@Valid @RequestBody OperatorDTO dto, 
-			 @ValidId(checkSpecialValues = true) //Verifica se a String Id é Long, e também, se é '1L' ou '4L'
-			@PathVariable String id) {
-		OperatorMinDTO minDTO = service.update(dto, Long.parseLong(id));
-		return ResponseEntity.ok(minDTO);
-	}
-	
-	@PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_OPERATOR', 'ROLE_SELLER')")
-	@DeleteMapping(value = "/{id}")
-	public ResponseEntity<Void> delete( @ValidId(checkSpecialValues = true) //Verifica se a String Id é Long, e também, se é '1L' ou '4L'
-		@PathVariable String id) {
-		service.delete(Long.parseLong(id));
-		return ResponseEntity.noContent().build();
-	}
+
+    @Autowired
+    private OperatorService service;
+
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_OPERATOR', 'ROLE_SELLER')")
+    @GetMapping(value = "/all")
+    public ResponseEntity<Page<OperatorMinDTO>> findAll(
+            Pageable pageable) {
+        Page<OperatorMinDTO> dto = service.findAll(pageable);
+        return ResponseEntity.ok(dto);
+    }
+
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_OPERATOR', 'ROLE_SELLER', 'ROLE_CLIENT')")
+    @GetMapping(value = "/search")
+    public ResponseEntity<Page<OperatorMinDTO>> searchEntity(
+            @ValidId
+            @RequestParam(name = "id", defaultValue = "") String id,
+            @RequestParam(name = "name", defaultValue = "") String name,
+            @RequestParam(name = "email", defaultValue = "") String email,
+            Pageable pageable) {
+        Page<OperatorMinDTO> pageMinDto = service.searchEntity(id.isEmpty() ? null : Long.valueOf(id), name, email, pageable);
+        return ResponseEntity.ok(pageMinDto);
+    }
+
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_OPERATOR', 'ROLE_SELLER')")
+    @GetMapping(value = "/{id}")
+    public ResponseEntity<OperatorMinDTO> findById(@ValidId @PathVariable String id) {
+        OperatorMinDTO dto = service.findById(Long.valueOf(id));
+        return ResponseEntity.ok(dto);
+    }
+
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN')")
+    @PostMapping
+    public ResponseEntity<OperatorMinDTO> insert(@Valid @RequestBody OperatorDTO dto) {
+        OperatorMinDTO minDTO = service.insert(dto);
+        URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
+                .buildAndExpand(dto.getId()).toUri();
+        return ResponseEntity.created(uri).body(minDTO);
+    }
+
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_OPERATOR', 'ROLE_SELLER')")
+    @PutMapping(value = "/{id}")
+    public ResponseEntity<OperatorMinDTO> update(@Valid @RequestBody OperatorDTO dto,
+            @ValidId(checkSpecialValues = true) //Verifica se a String Id é Long, e também, se é '1L' ou '4L'
+            @PathVariable String id) {
+        OperatorMinDTO minDTO = service.update(dto, Long.valueOf(id));
+        return ResponseEntity.ok(minDTO);
+    }
+
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_OPERATOR', 'ROLE_SELLER')")
+    @DeleteMapping(value = "/{id}")
+    public ResponseEntity<Void> delete(@ValidId(checkSpecialValues = true) //Verifica se a String Id é Long, e também, se é '1L' ou '4L'
+            @PathVariable String id) {
+        service.delete(Long.valueOf(id));
+        return ResponseEntity.noContent().build();
+    }
 }
