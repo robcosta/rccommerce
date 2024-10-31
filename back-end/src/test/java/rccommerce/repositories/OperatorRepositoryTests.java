@@ -8,7 +8,11 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import jakarta.persistence.EntityNotFoundException;
 import rccommerce.entities.Operator;
@@ -17,152 +21,182 @@ import rccommerce.tests.FactoryUser;
 @DataJpaTest
 public class OperatorRepositoryTests {
 
-	@Autowired
-	private OperatorRepository repository;
+    @Autowired
+    private OperatorRepository repository;
 
-	private long existingId, nonExistingId;
-	private String existsName, existsEmail;;
-	private String nonExistsName, nonExistsEmail;
-	private Operator operator;
-	private long totalOperator;
+    private Long existingId, nonExistingId, adminId;
+    private String existsName, existsEmail;
+    private String nonExistsEmail;
+    private Operator operator, operatorExample;
+    private Long totalOperator;
+    private Example<Operator> exampleOperator;
+    private ExampleMatcher matcher;
+    private Pageable pageable;
 
-	@BeforeEach
-	void SetUp() throws Exception {
-		existingId = 3L;
-		nonExistingId = 100L;
-		existsName = "Administrador";
-		nonExistsName = "Richard Balck";
-		existsEmail = "admin@gmail.com";
-		nonExistsEmail = "richard@gmail.com";
-		operator = FactoryUser.createOperatorAdmin();
-		totalOperator = repository.count();
-	}
+    @BeforeEach
+    void SetUp() throws Exception {
+        existingId = 3L;
+        adminId = 1L;
+        nonExistingId = 100L;
+        existsName = "Administrador";
+        existsEmail = "admin@gmail.com";
+        nonExistsEmail = "richard@gmail.com";
+        operator = FactoryUser.createOperatorAdmin();
+        operatorExample = FactoryUser.createNewOperator();
+        totalOperator = repository.count();
+        pageable = PageRequest.of(0, 10);
+        matcher = ExampleMatcher.matching();
+    }
 
-	@Test
-	public void deleteShouldDeleteObjectWhenIdExists() {
-		repository.deleteById(existingId);
+    @Test
+    public void deleteShouldDeleteObjectWhenIdExists() {
+        repository.deleteById(existingId);
 
-		Optional<Operator> result = repository.findById(existingId);
+        Optional<Operator> result = repository.findById(existingId);
 
-		Assertions.assertFalse(result.isPresent());
-		Assertions.assertEquals(totalOperator - 1, repository.count());
-	}
+        Assertions.assertFalse(result.isPresent());
+        Assertions.assertEquals(totalOperator - 1, repository.count());
+    }
 
-	@Test
-	public void saveShouldPersistWithAutoincrementWhenIdIsNull() {
-		operator.setId(null);
+    @Test
+    public void saveShouldPersistWithAutoincrementWhenIdIsNull() {
+        operator.setId(null);
 
-		Operator result = repository.save(operator);
+        Operator result = repository.save(operator);
 
-		Assertions.assertNotNull(result.getId());
-		Assertions.assertEquals(totalOperator + 1L, repository.count());
-	}
+        Assertions.assertNotNull(result.getId());
+        Assertions.assertEquals(totalOperator + 1L, repository.count());
+    }
 
-	@Test
-	public void saveShouldThrowDataIntegrityViolationExceptionWhenEmailAlreadyExists() {
-		Assertions.assertThrows(DataIntegrityViolationException.class, () -> {
-			operator.setId(null);
-			operator.setEmail(existsEmail);
-			repository.save(operator);
-		});
-	}
+    @Test
+    public void saveShouldThrowDataIntegrityViolationExceptionWhenEmailAlreadyExists() {
+        operator.setId(null);
+        operator.setEmail(existsEmail);
 
-	@Test
-	public void updateShouldUpdateOperatorWhenIdExists() {
-		operator.setId(existingId);
-		operator.setName("Anthony");
+        Assertions.assertThrows(DataIntegrityViolationException.class, () -> {
+            repository.saveAndFlush(operator);
+        });
+    }
 
-		Operator result = repository.saveAndFlush(operator);
+    @Test
+    public void updateShouldUpdateOperatorWhenIdExists() {
+        operator = repository.getReferenceById(existingId);
+        operator.setName("Anthony");
 
-		Assertions.assertEquals(existingId, result.getId());
-		Assertions.assertEquals("Anthony", result.getName());
-	}
+        Operator result = repository.saveAndFlush(operator);
 
-	@Test
-	public void updateShouldThrowEntityNotFoundExceptionWhenNonExistsId() {
-		Assertions.assertThrows(EntityNotFoundException.class, () -> {
-			Operator result = repository.getReferenceById(nonExistingId);
-			result.setName("Paul");
-			repository.saveAndFlush(result);
-		});
-	}
+        Assertions.assertEquals(existingId, result.getId());
+        Assertions.assertEquals("Anthony", result.getName());
+    }
 
-	@Test
-	public void updateShouldThrowDataIntegrityViolationExceptionWhenEmailAlreadyExists() {
-		Assertions.assertThrows(DataIntegrityViolationException.class, () -> {
-			Operator result = repository.getReferenceById(existingId);
-			result.setEmail(existsEmail);
-			repository.saveAndFlush(result);
-		});
-	}
+    @Test
+    public void updateShouldThrowEntityNotFoundExceptionWhenNonExistsId() {
 
-	@Test
-	public void findByIdShouldOptionalOperatorWhenExixtID() {
-		Optional<Operator> result = repository.findById(existingId);
+        Assertions.assertThrows(EntityNotFoundException.class, () -> {
+            Operator result = repository.getReferenceById(nonExistingId);
+            result.setName("Paul");
+            repository.saveAndFlush(result);
+        });
+    }
 
-		Assertions.assertNotNull(result);
-		Assertions.assertEquals(existingId, result.get().getId());
-	}
+    @Test
+    public void updateShouldThrowDataIntegrityViolationExceptionWhenEmailAlreadyExists() {
 
-	@Test
-	public void findByIdShouldObjectEmptyWhenNonExixtId() {
-		Optional<Operator> result = repository.findById(nonExistingId);
+        Assertions.assertThrows(DataIntegrityViolationException.class, () -> {
+            Operator result = repository.getReferenceById(existingId);
+            result.setEmail(existsEmail);
+            repository.saveAndFlush(result);
+        });
+    }
 
-		Assertions.assertTrue(result.isEmpty());
-	}
+    @Test
+    public void findByIdShouldOptionalOperatorWhenExixtID() {
+        Optional<Operator> result = repository.findById(existingId);
 
-	@Test
-	public void searchAllShouldReturnOperatorsWhenEmptyNameAndEmail() {
-		Page<Operator> result = repository.searchAll("", "", null);
+        Assertions.assertNotNull(result);
+        Assertions.assertEquals(existingId, result.get().getId());
+    }
 
-		Assertions.assertNotNull(result);
-		Assertions.assertEquals(repository.count(), result.getContent().size());
-	}
+    @Test
+    public void findByIdShouldObjectEmptyWhenNonExixtId() {
+        Optional<Operator> result = repository.findById(nonExistingId);
 
-	@Test
-	public void searchAllShouldReturnOperatorWhenExistsNameAndEmailIsEmpty() {
-		Page<Operator> result = repository.searchAll(existsName, "", null);
+        Assertions.assertTrue(result.isEmpty());
+    }
 
-		Assertions.assertNotNull(result);
-		Assertions.assertEquals(existsName, result.getContent().get(0).getName());
-	}
+    @Test
+    public void findByShouldReturnPageOperatorsWhenNullIdEmptyNameAndEmailAndCpf() {
+        matcher.withIgnorePaths("id")
+                .withIgnorePaths("nameUnaccented")
+                .withIgnorePaths("email");
 
-	@Test
-	public void searchAllShouldReturnOperatorWhenExistsEmailAndNameIsEmpty() {
-		Page<Operator> result = repository.searchAll("", existsEmail, null);
+        exampleOperator = Example.of(operatorExample, matcher);
 
-		Assertions.assertNotNull(result);
-		Assertions.assertEquals(existsEmail, result.getContent().get(0).getEmail());
-	}
+        Page<Operator> result = repository.findBy(exampleOperator, query -> query.page(pageable));
 
-	@Test
-	public void searchAllShouldReturnOperatorWhenExistNameAndExistsEmail() {
-		Page<Operator> result = repository.searchAll(existsName, existsEmail, null);
+        Assertions.assertNotNull(result);
+        Assertions.assertEquals(totalOperator, result.getContent().size());
+    }
 
-		Assertions.assertNotNull(result);
-		Assertions.assertEquals(existsName, result.getContent().get(0).getName());
-		Assertions.assertEquals(existsEmail, result.getContent().get(0).getEmail());
-	}
+    @Test
+    public void findByShouldReturnOperatorWhenExistsIdEmptyNameAndEmail() {
+        operatorExample.setId(adminId);
+        matcher.withMatcher("id", ExampleMatcher.GenericPropertyMatchers.exact())
+                .withIgnorePaths("nameUnaccented")
+                .withIgnorePaths("email");
 
-	@Test
-	public void searchAllShouldObjectEmptyWhenNonExistNameAndEmailIsEmpty() {
-		Page<Operator> result = repository.searchAll(nonExistsName, "", null);
+        exampleOperator = Example.of(operatorExample, matcher);
 
-		Assertions.assertTrue(result.isEmpty());
-	}
+        Page<Operator> result = repository.findBy(exampleOperator, query -> query.page(pageable));
 
-	@Test
-	public void searchAllShouldObjectEmptyWhenNonExistEmailAndNameIsEmpty() {
-		Page<Operator> result = repository.searchAll("", nonExistsName, null);
+        Assertions.assertNotNull(result);
+        Assertions.assertEquals(adminId, result.getContent().size());
+        Assertions.assertEquals(existsName, result.getContent().get(0).getName());
+    }
 
-		Assertions.assertTrue(result.isEmpty());
-	}
+    @Test
+    public void findByShouldReturnOperatorWhenExistsNameAndNullIdEmptyEmail() {
+        operatorExample.setNameUnaccented(existsName);
+        matcher.withIgnorePaths("id")
+                .withMatcher("nameUnaccented", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase())
+                .withIgnorePaths("email");
+        exampleOperator = Example.of(operatorExample, matcher);
 
-	@Test
-	public void searchAllShouldObjectEmptyWhenNonExistNameAndNonExistsEmail() {
-		Page<Operator> result = repository.searchAll(nonExistsName, nonExistsEmail, null);
+        Page<Operator> result = repository.findBy(exampleOperator, query -> query.page(pageable));
 
-		Assertions.assertTrue(result.isEmpty());
-	}
+        Assertions.assertNotNull(result);
+        Assertions.assertEquals(1, result.getContent().size());
+        Assertions.assertEquals(existsName, result.getContent().get(0).getName());
+        Assertions.assertEquals(adminId, result.getContent().get(0).getId());
+    }
 
+    @Test
+    public void findByShouldReturnOperatorWhenExistsEmailAndNullIdEmptyName() {
+        operatorExample.setEmail(existsEmail);
+        matcher.withIgnorePaths("id")
+                .withIgnorePaths("nameUnaccented")
+                .withMatcher("email", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase());
+
+        exampleOperator = Example.of(operatorExample, matcher);
+
+        Page<Operator> result = repository.findBy(exampleOperator, query -> query.page(pageable));
+
+        Assertions.assertNotNull(result);
+        Assertions.assertEquals(1, result.getContent().size());
+        Assertions.assertEquals(existsEmail, result.getContent().get(0).getEmail());
+    }
+
+    @Test
+    public void findByShouldReturnPageEmptyWhenInvalidAnyParameter() {
+        operatorExample.setEmail(nonExistsEmail);
+        matcher.withIgnorePaths("id")
+                .withIgnorePaths("nameUnaccented")
+                .withMatcher("email", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase());
+        exampleOperator = Example.of(operatorExample, matcher);
+
+        Page<Operator> result = repository.findBy(exampleOperator, query -> query.page(pageable));
+
+        Assertions.assertNotNull(result);
+        Assertions.assertEquals(0, result.getContent().size());
+    }
 }

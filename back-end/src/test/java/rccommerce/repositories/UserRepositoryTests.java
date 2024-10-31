@@ -8,127 +8,227 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
+import jakarta.persistence.EntityNotFoundException;
 import rccommerce.entities.User;
 import rccommerce.projections.UserDetailsProjection;
+import rccommerce.tests.FactoryUser;
 
 @DataJpaTest
 public class UserRepositoryTests {
 
-	@Autowired
-	private UserRepository repository;
+    @Autowired
+    private UserRepository repository;
 
-	private long existingId, nonExistingId;
-	private String existsName, existsEmail;
-	private String nonExistsName, nonExistsEmail;
+    private Long existingId, nonExistingId, adminId, totalUser;
+    private String existsName, existsEmail;
+    private String nonExistsName, nonExistsEmail;
+    private Example<User> exampleUser;
+    private ExampleMatcher matcher;
+    private Pageable pageable;
+    private User user, userExample;
 
-	@BeforeEach
-	void SetUp() throws Exception {
-		existingId = 1L;
-		nonExistingId = 100L;
-		existsName = "Administrador";
-		nonExistsName = "Richard";
-		existsEmail = "admin@gmail.com";
-		nonExistsEmail = "richard@gmail.com";
-	}
+    @BeforeEach
+    void SetUp() throws Exception {
+        existingId = 3L;
+        adminId = 1L;
+        nonExistingId = 100L;
+        existsName = "Administrador";
+        existsEmail = "admin@gmail.com";
+        nonExistsName = "Richard";
+        nonExistsEmail = "richard@gmail.com";
+        user = FactoryUser.createUser();
+        userExample = FactoryUser.createNewUser();
+        totalUser = repository.count();
+        pageable = PageRequest.of(0, 10);
+        matcher = ExampleMatcher.matching();
+    }
 
-	@Test
-	public void findByIdShouldOptionalUserWhenExixtID() {
-		Optional<User> result = repository.findById(existingId);
+    @Test
+    public void deleteShouldDeleteObjectWhenIdExists() {
+        repository.deleteById(existingId);
 
-		Assertions.assertNotNull(result);
-		Assertions.assertEquals(existingId, result.get().getId());
-	}
+        Optional<User> result = repository.findById(existingId);
 
-	@Test
-	public void findByIdShouldObjectEmptyWhenNonExixtId() {
-		Optional<User> result = repository.findById(nonExistingId);
+        Assertions.assertFalse(result.isPresent());
+        Assertions.assertEquals(totalUser - 1, repository.count());
+    }
 
-		Assertions.assertTrue(result.isEmpty());
-	}
+    @Test
+    public void saveShouldPersistWithAutoincrementWhenIdIsNull() {
+        user.setId(null);
 
-	@Test
-	public void searchUserAndRolesByEmailShouldLoggedUserWhenExistUser() {
-		List<UserDetailsProjection> result = repository.searchUserRolesAndPermissionsByEmail(existsEmail);
+        User result = repository.save(user);
 
-		Assertions.assertNotNull(result);
-		Assertions.assertEquals(existsEmail, result.get(0).getUsername());
-	}
+        Assertions.assertNotNull(result.getId());
+        Assertions.assertEquals(totalUser + 1L, repository.count());
+    }
 
-	@Test
-	public void searchUserAndRolesByEmailShouObjectEmptyWhenNonExistUser() {
-		List<UserDetailsProjection> result = repository.searchUserRolesAndPermissionsByEmail(nonExistsEmail);
+    @Test
+    public void saveShouldThrowDataIntegrityViolationExceptionWhenEmailAlreadyExists() {
+        user.setId(null);
+        user.setEmail(existsEmail);
 
-		Assertions.assertTrue(result.isEmpty());
-	}
+        Assertions.assertThrows(DataIntegrityViolationException.class, () -> {
+            repository.saveAndFlush(user);
+        });
+    }
 
-	@Test
-	public void findByEmailShouldOptionalUserWhenExixtID() {
-		Optional<User> result = repository.findByEmail(existsEmail);
+    @Test
+    public void updateShouldUserWhenIdExists() {
+        user = repository.getReferenceById(existingId);
+        user.setName("Anthony");
 
-		Assertions.assertNotNull(result);
-		Assertions.assertEquals(existsEmail, result.get().getEmail());
-	}
+        User result = repository.saveAndFlush(user);
 
-	@Test
-	public void findByEmailShouldObjectEmptyWhenNonExixtId() {
-		Optional<User> result = repository.findByEmail(nonExistsEmail);
+        Assertions.assertEquals(existingId, result.getId());
+        Assertions.assertEquals("Anthony", result.getName());
+    }
 
-		Assertions.assertTrue(result.isEmpty());
-	}
+    @Test
+    public void updateShouldThrowEntityNotFoundExceptionWhenNonExistsId() {
 
-	@Test
-	public void searchAllShouldReturnUsersWhenEmptyNameAndEmail() {
-		Page<User> result = repository.searchAll("", "", null);
+        Assertions.assertThrows(EntityNotFoundException.class, () -> {
+            User result = repository.getReferenceById(nonExistingId);
+            result.setName("Paul");
+            repository.saveAndFlush(result);
+        });
+    }
 
-		Assertions.assertNotNull(result);
-		Assertions.assertEquals(repository.count(), result.getContent().size());
-	}
+    @Test
+    public void updateShouldThrowDataIntegrityViolationExceptionWhenEmailAlreadyExists() {
 
-	@Test
-	public void searchAllShouldReturnUserWhenExistsNameAndEmailIsEmpty() {
-		Page<User> result = repository.searchAll(existsName, "", null);
+        Assertions.assertThrows(DataIntegrityViolationException.class, () -> {
+            User result = repository.getReferenceById(existingId);
+            result.setEmail(existsEmail);
+            repository.saveAndFlush(result);
+        });
+    }
 
-		Assertions.assertNotNull(result);
-		Assertions.assertEquals(existsName, result.getContent().get(0).getName());
-	}
+    @Test
+    public void findByIdShouldOptionalUserWhenExixtID() {
+        Optional<User> result = repository.findById(existingId);
 
-	@Test
-	public void searchAllShouldReturnUserWhenExistsEmailAndNameIsEmpty() {
-		Page<User> result = repository.searchAll("", existsEmail, null);
+        Assertions.assertNotNull(result);
+        Assertions.assertEquals(existingId, result.get().getId());
+    }
 
-		Assertions.assertNotNull(result);
-		Assertions.assertEquals(existsEmail, result.getContent().get(0).getEmail());
-	}
+    @Test
+    public void findByIdShouldObjectEmptyWhenNonExixtId() {
+        Optional<User> result = repository.findById(nonExistingId);
 
-	@Test
-	public void searchAllShouldReturnUserWhenExistNameAndExistsEmail() {
-		Page<User> result = repository.searchAll(existsName, existsEmail, null);
+        Assertions.assertTrue(result.isEmpty());
+    }
 
-		Assertions.assertNotNull(result);
-		Assertions.assertEquals(existsName, result.getContent().get(0).getName());
-		Assertions.assertEquals(existsEmail, result.getContent().get(0).getEmail());
-	}
+    @Test
+    public void searchUserAndRolesByEmailShouldLoggedUserWhenExistUser() {
+        List<UserDetailsProjection> result = repository.searchUserRolesAndPermissionsByEmail(existsEmail);
 
-	@Test
-	public void searchAllShouldObjectEmptyWhenNonExistNameAndEmailIsEmpty() {
-		Page<User> result = repository.searchAll(nonExistsName, "", null);
+        Assertions.assertNotNull(result);
+        Assertions.assertEquals(existsEmail, result.get(0).getUsername());
+    }
 
-		Assertions.assertTrue(result.isEmpty());
-	}
+    @Test
+    public void searchUserAndRolesByEmailShouObjectEmptyWhenNonExistUser() {
+        List<UserDetailsProjection> result = repository.searchUserRolesAndPermissionsByEmail(nonExistsEmail);
 
-	@Test
-	public void searchAllShouldObjectEmptyWhenNonExistEmailAndNameIsEmpty() {
-		Page<User> result = repository.searchAll("", nonExistsName, null);
+        Assertions.assertTrue(result.isEmpty());
+    }
 
-		Assertions.assertTrue(result.isEmpty());
-	}
+    @Test
+    public void findByEmailShouldOptionalUserWhenExixtID() {
+        Optional<User> result = repository.findByEmail(existsEmail);
 
-	@Test
-	public void searchAllShouldObjectEmptyWhenNonExistNameAndNonExistsEmail() {
-		Page<User> result = repository.searchAll(nonExistsName, nonExistsEmail, null);
+        Assertions.assertNotNull(result);
+        Assertions.assertEquals(existsEmail, result.get().getEmail());
+    }
 
-		Assertions.assertTrue(result.isEmpty());
-	}
+    @Test
+    public void findByEmailShouldObjectEmptyWhenNonExixtId() {
+        Optional<User> result = repository.findByEmail(nonExistsEmail);
+
+        Assertions.assertTrue(result.isEmpty());
+    }
+
+    @Test
+    public void findByShouldReturnPageUsersWhenNullIdEmptyNameAndEmailAndCpf() {
+        matcher.withIgnorePaths("id")
+                .withIgnorePaths("nameUnaccented")
+                .withIgnorePaths("email");
+
+        exampleUser = Example.of(userExample, matcher);
+
+        Page<User> result = repository.findBy(exampleUser, query -> query.page(pageable));
+
+        Assertions.assertNotNull(result);
+        Assertions.assertEquals((long) totalUser, result.getContent().size());
+    }
+
+    @Test
+    public void findByShouldReturnUserWhenExistsIdEmptyNameAndEmail() {
+        userExample.setId(adminId);
+        matcher.withMatcher("id", ExampleMatcher.GenericPropertyMatchers.exact())
+                .withIgnorePaths("nameUnaccented")
+                .withIgnorePaths("email");
+
+        exampleUser = Example.of(userExample, matcher);
+
+        Page<User> result = repository.findBy(exampleUser, query -> query.page(pageable));
+
+        Assertions.assertNotNull(result);
+        Assertions.assertEquals((long) adminId, result.getContent().size());
+        Assertions.assertEquals(existsName, result.getContent().get(0).getName());
+    }
+
+    @Test
+    public void findByShouldReturnUserWhenExistsNameAndNullIdEmptyEmail() {
+        userExample.setNameUnaccented(existsName);
+        matcher.withIgnorePaths("id")
+                .withMatcher("nameUnaccented", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase())
+                .withIgnorePaths("email");
+        exampleUser = Example.of(userExample, matcher);
+
+        Page<User> result = repository.findBy(exampleUser, query -> query.page(pageable));
+
+        Assertions.assertNotNull(result);
+        Assertions.assertEquals(1, result.getContent().size());
+        Assertions.assertEquals(existsName, result.getContent().get(0).getName());
+        Assertions.assertEquals(adminId, result.getContent().get(0).getId());
+    }
+
+    @Test
+    public void findByShouldReturnUserWhenExistsEmailAndNullIdEmptyName() {
+        userExample.setEmail(existsEmail);
+        matcher.withIgnorePaths("id")
+                .withIgnorePaths("nameUnaccented")
+                .withMatcher("email", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase());
+
+        exampleUser = Example.of(userExample, matcher);
+
+        Page<User> result = repository.findBy(exampleUser, query -> query.page(pageable));
+
+        Assertions.assertNotNull(result);
+        Assertions.assertEquals(1, result.getContent().size());
+        Assertions.assertEquals(existsEmail, result.getContent().get(0).getEmail());
+    }
+
+    @Test
+    public void findByShouldReturnPageEmptyWhenInvalidAnyParameter() {
+        userExample.setEmail(nonExistsEmail);
+        matcher.withIgnorePaths("id")
+                .withIgnorePaths("nameUnaccented")
+                .withMatcher("email", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase());
+        exampleUser = Example.of(userExample, matcher);
+
+        Page<User> result = repository.findBy(exampleUser, query -> query.page(pageable));
+
+        Assertions.assertNotNull(result);
+        Assertions.assertEquals(0, result.getContent().size());
+    }
 }

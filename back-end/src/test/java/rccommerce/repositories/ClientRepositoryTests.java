@@ -8,7 +8,11 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import jakarta.persistence.EntityNotFoundException;
 import rccommerce.entities.Client;
@@ -17,170 +21,199 @@ import rccommerce.tests.FactoryUser;
 @DataJpaTest
 public class ClientRepositoryTests {
 
-	@Autowired
-	private ClientRepository repository;
+    @Autowired
+    private ClientRepository repository;
 
-	private long existingId, nonExistingId;
-	private String existsName, existsEmail, existsCpf;
-	private String nonExistsName, nonExistsEmail, nonExistsCPF;
-	private Client client;
-	private long totalClient;
+    private long existingId, nonExistingId;
+    private String existsName, existsEmail, existsCpf;
+    private String nonExistsCPF;
+    private Client client, clientExample;
+    private long totalClient;
+    private Example<Client> exampleClient;
+    private ExampleMatcher matcher;
+    private Pageable pageable;
 
-	@BeforeEach
-	void SetUp() throws Exception {
-		existingId = 6L;
-		nonExistingId = 100L;
-		existsName = "Maria Yellow";
-		nonExistsName = "Richard Green";
-		existsEmail = "maria@gmail.com";
-		nonExistsEmail = "richard@gmail.com";
-		existsCpf = "46311990083";
-		nonExistsCPF = "00000000000";
-		client = FactoryUser.createClient();
-		totalClient = repository.count();
-	}
+    @BeforeEach
+    void SetUp() throws Exception {
+        existingId = 5L;
+        nonExistingId = 100L;
+        existsName = "Maria Yellow";
+        existsEmail = "maria@gmail.com";
+        existsCpf = "46311990083";
+        nonExistsCPF = "00000000000";
+        client = FactoryUser.createClient();
+        clientExample = FactoryUser.createNewClient();
+        pageable = PageRequest.of(0, 10);
+        totalClient = repository.count();
+        matcher = ExampleMatcher.matching();
+    }
 
-	@Test
-	public void deleteShouldDeleteObjectWhenIdExists() {
-		repository.deleteById(existingId);
+    @Test
+    public void deleteShouldDeleteObjectWhenIdExists() {
+        repository.deleteById(6L);
 
-		Optional<Client> result = repository.findById(existingId);
+        Optional<Client> result = repository.findById(6L);
 
-		Assertions.assertFalse(result.isPresent());
-		Assertions.assertEquals(totalClient - 1L, repository.count());
-	}
+        Assertions.assertFalse(result.isPresent());
+        Assertions.assertEquals(totalClient - 1L, repository.count());
+    }
 
-	@Test
-	public void saveShouldPersistWithAutoincrementWhenIdIsNull() {
-		client.setId(null);
+    @Test
+    public void saveShouldPersistWithAutoincrementWhenIdIsNull() {
+        client.setId(null);
 
-		Client result = repository.save(client);
+        Client result = repository.save(client);
 
-		Assertions.assertNotNull(result.getId());
-		Assertions.assertEquals(totalClient + 1L, repository.count());
-	}
+        Assertions.assertNotNull(result.getId());
+        Assertions.assertEquals(totalClient + 1L, repository.count());
+    }
 
-	@Test
-	public void saveShouldThrowDataIntegrityViolationExceptionWhenEmailAlreadyExists() {
-		Assertions.assertThrows(DataIntegrityViolationException.class, () -> {
-			client.setId(null);
-			client.setEmail(existsEmail);
-			repository.save(client);
-		});
-	}
+    @Test
+    public void saveShouldThrowDataIntegrityViolationExceptionWhenEmailAlreadyExists() {
+        client.setId(null);
+        client.setEmail(existsEmail);
 
-	@Test
-	public void updateShouldUpdateClientWhenIdExists() {
-		client.setId(existingId);
-		client.setName("Anthony");
+        Assertions.assertThrows(DataIntegrityViolationException.class, () -> {
+            repository.save(client);
+        });
+    }
 
-		Client result = repository.saveAndFlush(client);
+    @Test
+    public void updateShouldUpdateClientWhenIdExists() {
+        client.setId(existingId);
+        client.setName("Anthony");
 
-		Assertions.assertEquals(existingId, result.getId());
-		Assertions.assertEquals("Anthony", result.getName());
-	}
+        Client result = repository.saveAndFlush(client);
 
-	@Test
-	public void updateShouldThrowEntityNotFoundExceptionWhenNonExistsId() {
-		Assertions.assertThrows(EntityNotFoundException.class, () -> {
-			Client result = repository.getReferenceById(nonExistingId);
-			result.setName("Paul");
-			repository.saveAndFlush(result);
-		});
-	}
+        Assertions.assertEquals(existingId, result.getId());
+        Assertions.assertEquals("Anthony", result.getName());
+    }
 
-	@Test
-	public void updateShouldThrowDataIntegrityViolationExceptionWhenEmailAlreadyExists() {
-		Assertions.assertThrows(DataIntegrityViolationException.class, () -> {
-			Client result = repository.getReferenceById(existingId);
-			result.setEmail(existsEmail);
-			repository.saveAndFlush(result);
-		});
-	}
+    @Test
+    public void updateShouldThrowEntityNotFoundExceptionWhenNonExistsId() {
 
-	@Test
-	public void findByIdShouldOptionalClientWhenExixtID() {
-		Optional<Client> result = repository.findById(existingId);
+        Assertions.assertThrows(EntityNotFoundException.class, () -> {
+            Client result = repository.getReferenceById(nonExistingId);
+            result.setName("Paul");
+            repository.saveAndFlush(result);
+        });
+    }
 
-		Assertions.assertNotNull(result);
-		Assertions.assertEquals(existingId, result.get().getId());
-	}
+    @Test
+    public void updateShouldThrowDataIntegrityViolationExceptionWhenEmailAlreadyExists() {
+        Client result = repository.getReferenceById(6L);
+        result.setEmail(existsEmail);
 
-	@Test
-	public void findByIdShouldObjectEmptyWhenNonExixtId() {
-		Optional<Client> result = repository.findById(nonExistingId);
+        Assertions.assertThrows(DataIntegrityViolationException.class, () -> {
+            repository.saveAndFlush(result);
+        });
+    }
 
-		Assertions.assertTrue(result.isEmpty());
-	}
+    @Test
+    public void findByIdShouldOptionalClientWhenExixtID() {
+        Optional<Client> result = repository.findById(existingId);
 
-	@Test
-	public void searchAllShouldReturnClientsWhenEmptyNameAndEmailAndCpf() {
-		Page<Client> result = repository.searchAll("", "", "", null);
+        Assertions.assertNotNull(result);
+        Assertions.assertEquals(existingId, result.get().getId());
+    }
 
-		Assertions.assertNotNull(result);
-		Assertions.assertEquals(repository.count(), result.getContent().size());
-	}
+    @Test
+    public void findByIdShouldObjectEmptyWhenNonExixtId() {
+        Optional<Client> result = repository.findById(nonExistingId);
 
-	@Test
-	public void searchAllShouldReturnClientWhenExistsNameAndEmptyEmailAndCpf() {
-		Page<Client> result = repository.searchAll(existsName, "", "", null);
+        Assertions.assertTrue(result.isEmpty());
+    }
 
-		Assertions.assertNotNull(result);
-		Assertions.assertEquals(existsName, result.getContent().get(0).getName());
-	}
+    @Test
+    public void findByShouldReturnPageClientsWhenNullIdEmptyNameAndEmailAndCpf() {
+        matcher.withIgnorePaths("id")
+                .withIgnorePaths("nameUnaccented")
+                .withIgnorePaths("email")
+                .withIgnorePaths("cpf");
+        exampleClient = Example.of(clientExample, matcher);
 
-	@Test
-	public void searchAllShouldReturnClientWhenExistsEmailAndNameIsEmpty() {
-		Page<Client> result = repository.searchAll("", existsEmail, "", null);
+        Page<Client> result = repository.findBy(exampleClient, query -> query.page(pageable));
 
-		Assertions.assertNotNull(result);
-		Assertions.assertEquals(existsEmail, result.getContent().get(0).getEmail());
-	}
+        Assertions.assertNotNull(result);
+        Assertions.assertEquals(totalClient, result.getContent().size());
+    }
 
-	@Test
-	public void searchAllShouldReturnClientWhenExistsCpfAndEmptyNameAndEmail() {
-		Page<Client> result = repository.searchAll("", "", existsCpf, null);
+    @Test
+    public void findByShouldReturnClientWhenExistsIdEmptyNameEmailAndCpf() {
+        clientExample.setId(existingId);
+        matcher.withMatcher("id", ExampleMatcher.GenericPropertyMatchers.exact())
+                .withIgnorePaths("nameUnaccented")
+                .withIgnorePaths("email")
+                .withIgnorePaths("cpf");
+        exampleClient = Example.of(clientExample, matcher);
 
-		Assertions.assertNotNull(result);
-		Assertions.assertEquals(existsCpf, result.getContent().get(0).getCpf());
-	}
+        Page<Client> result = repository.findBy(exampleClient, query -> query.page(pageable));
 
-	@Test
-	public void searchAllShouldReturnClientWhenExistNameAndEmailAndCpf() {
-		Page<Client> result = repository.searchAll(existsName, existsEmail, existsCpf, null);
+        Assertions.assertNotNull(result);
+        Assertions.assertEquals(1, result.getContent().size());
+        Assertions.assertEquals(existsName, result.getContent().get(0).getName());
+    }
 
-		Assertions.assertNotNull(result);
-		Assertions.assertEquals(existsName, result.getContent().get(0).getName());
-		Assertions.assertEquals(existsEmail, result.getContent().get(0).getEmail());
-		Assertions.assertEquals(existsCpf, result.getContent().get(0).getCpf());
-	}
+    @Test
+    public void findByShouldReturnClientWhenExistsNameAndNullIdEmptyEmailAndCpf() {
+        clientExample.setNameUnaccented(existsName);
+        matcher.withIgnorePaths("id")
+                .withMatcher("nameUnaccented", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase())
+                .withIgnorePaths("email")
+                .withIgnorePaths("cpf");
+        exampleClient = Example.of(clientExample, matcher);
 
-	@Test
-	public void searchAllShouldObjectEmptyWhenNonExistNameAndEmptyEmailAndCpf() {
-		Page<Client> result = repository.searchAll(nonExistsName, "", "", null);
+        Page<Client> result = repository.findBy(exampleClient, query -> query.page(pageable));
 
-		Assertions.assertTrue(result.isEmpty());
-	}
+        Assertions.assertNotNull(result);
+        Assertions.assertEquals(1, result.getContent().size());
+        Assertions.assertEquals(existsName, result.getContent().get(0).getName());
+    }
 
-	@Test
-	public void searchAllShouldObjectEmptyWhenNonExistEmailAndEmptyNameAndCpf() {
-		Page<Client> result = repository.searchAll("", nonExistsName, "", null);
+    @Test
+    public void findByShouldReturnClientWhenExistsEmailAndNullIdEmptyNameAndCpf() {
+        clientExample.setEmail(existsEmail);
+        matcher.withIgnorePaths("id")
+                .withIgnorePaths("nameUnaccented")
+                .withMatcher("email", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase())
+                .withIgnorePaths("cpf");
+        exampleClient = Example.of(clientExample, matcher);
 
-		Assertions.assertTrue(result.isEmpty());
-	}
+        Page<Client> result = repository.findBy(exampleClient, query -> query.page(pageable));
 
-	@Test
-	public void searchAllShouldObjectEmptyWhenNonExistCpfAndEmptyNameAndEmail() {
-		Page<Client> result = repository.searchAll("", "", nonExistsCPF, null);
+        Assertions.assertNotNull(result);
+        Assertions.assertEquals(1, result.getContent().size());
+        Assertions.assertEquals(existsEmail, result.getContent().get(0).getEmail());
+    }
 
-		Assertions.assertTrue(result.isEmpty());
-	}
+    @Test
+    public void findByShouldReturnClientWhenExistsCpfAndNullIdEmptyNameAndEmail() {
+        clientExample.setCpf(existsCpf);
+        matcher.withIgnorePaths("id")
+                .withIgnorePaths("nameUnaccented")
+                .withIgnorePaths("email")
+                .withMatcher("cpf", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase());
+        exampleClient = Example.of(clientExample, matcher);
 
-	@Test
-	public void searchAllShouldObjectEmptyWhenNonExistNameAndEmailAndCpf() {
-		Page<Client> result = repository.searchAll(nonExistsName, nonExistsEmail, nonExistsCPF, null);
+        Page<Client> result = repository.findBy(exampleClient, query -> query.page(pageable));
 
-		Assertions.assertTrue(result.isEmpty());
-	}
+        Assertions.assertNotNull(result);
+        Assertions.assertEquals(1, result.getContent().size());
+        Assertions.assertEquals(existsCpf, result.getContent().get(0).getCpf());
+    }
 
+    @Test
+    public void findByShouldReturnPageEmptyWhenInvalidAnyParameter() {
+        clientExample.setCpf(nonExistsCPF);
+        matcher.withIgnorePaths("id")
+                .withIgnorePaths("nameUnaccented")
+                .withIgnorePaths("email")
+                .withMatcher("cpf", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase());
+        exampleClient = Example.of(clientExample, matcher);
+
+        Page<Client> result = repository.findBy(exampleClient, query -> query.page(pageable));
+
+        Assertions.assertNotNull(result);
+        Assertions.assertEquals(0, result.getContent().size());
+    }
 }

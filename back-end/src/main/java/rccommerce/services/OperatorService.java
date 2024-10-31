@@ -65,6 +65,7 @@ public class OperatorService implements GenericService<Operator, OperatorDTO, Op
         return messageSource.getMessage("entity.Operator", null, Locale.getDefault());
     }
 
+    @Override
     public void copyDtoToEntity(OperatorDTO dto, Operator entity) {
         entity.setName(dto.getName());
         entity.setEmail(dto.getEmail().toLowerCase());

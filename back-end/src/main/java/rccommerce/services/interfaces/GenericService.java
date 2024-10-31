@@ -123,6 +123,9 @@ public interface GenericService<T extends Convertible<DTO, MINDTO>, DTO, MINDTO,
         if (e.toString().contains("CPF NULLS FIRST")) {
             throw new DatabaseException("CPF informado já existe");
         }
+        if (e.toString().contains("CNPJ NULLS FIRST")) {
+            throw new DatabaseException("CNPJ informado já existe");
+        }
         throw new DatabaseException(getTranslatedEntityName() + " com vínculos em outras tabelas, exclusão proibida");
     }
 

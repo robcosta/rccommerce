@@ -1,93 +1,83 @@
 package rccommerce.services;
 
+import java.util.Locale;
+
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.context.MessageSource;
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import rccommerce.dto.SuplierDTO;
 import rccommerce.dto.SuplierMinDTO;
 import rccommerce.entities.Suplier;
 import rccommerce.repositories.SuplierRepository;
-import rccommerce.services.exceptions.DatabaseException;
-import rccommerce.services.exceptions.ResourceNotFoundException;
+import rccommerce.services.interfaces.GenericService;
+import rccommerce.util.AccentUtils;
 
 @Service
-public class SuplierService {
+public class SuplierService implements GenericService<Suplier, SuplierDTO, SuplierMinDTO, Long> {
 
-	@Autowired
-	private SuplierRepository repository;
+    @Autowired
+    private SuplierRepository repository;
 
+    @Autowired
+    private MessageSource messageSource;
 
+    @Transactional(readOnly = true)
+    public Page<SuplierMinDTO> searchEntity(Long id, String name, String cnpj, Pageable pageable) {
+        return findBy(example(id, name, cnpj), pageable);
+    }
 
-	@Transactional(readOnly = true)
-	public Page<SuplierMinDTO> findAll(String name, String cnpj, Pageable pageable) {
-	//	authentication.authUser("READER", null);
-		
-		Page<Suplier> result = repository.searchAll(name, cnpj, pageable);
-		if (result.getContent().isEmpty()) {
-			throw new ResourceNotFoundException("Fornecedor não encontrado");
-		}
-		return result.map(x -> new SuplierMinDTO(x));
-	}
+    @Override
+    public void copyDtoToEntity(SuplierDTO dto, Suplier entity) {
+        entity.setName(dto.getName());
+        entity.setCnpj(dto.getCnpj());
+    }
 
-	@Transactional(readOnly = true)
-	public SuplierDTO findById(Long id) {
-//		authentication.authUser("READER", null);
-		
-		Suplier result = repository.findById(id)
-				.orElseThrow(() -> new ResourceNotFoundException("Fornecedor não encontrado"));
-		return new SuplierDTO(result);
-	}
-	
+    @Override
+    public JpaRepository<Suplier, Long> getRepository() {
+        return repository;
+    }
 
-	@Transactional
-	public SuplierDTO insert(SuplierDTO dto) {
-//		authentication.authUser("CREATE", null);
+    @Override
+    public Suplier createEntity() {
+        return new Suplier();
+    }
 
-		try {
-			Suplier entity = new Suplier();
-			copyDtoToEntity(dto, entity);
-			entity = repository.saveAndFlush(entity);
-			return new SuplierDTO(entity);
-		} catch (DataIntegrityViolationException e) {
-				throw new DatabaseException("CNPJ informado já cadastrado");
-		}
-	}
+    @Override
+    public String getClassName() {
+        return getClass().getName();
+    }
 
-	@Transactional
-	public SuplierDTO update(SuplierDTO dto, Long id) {
-//		authentication.authUser("UPDATE", id);
-		
-		try {
-			Suplier entity = repository.getReferenceById(id);
-			copyDtoToEntity(dto, entity);
-			entity = repository.saveAndFlush(entity);
-			return new SuplierDTO(entity);
-		} catch (DataIntegrityViolationException e) {
-			throw new DatabaseException("Nome do fornecedor informado já existe");
-		}
-	}
+    @Override
+    public String getTranslatedEntityName() {
+        // Pega a tradução do nome da entidade para "Fornecedor" e aplicar nas mensagens de
+        // erro"
+        return messageSource.getMessage("entity.Suplier", null, Locale.getDefault());
+    }
 
-	@Transactional(propagation = Propagation.SUPPORTS)
-	public void delete(Long id) {
-//		authentication.authUser("DELETE", id);
+    private Example<Suplier> example(Long id, String name, String cnpj) {
+        Suplier suplierExample = createEntity();
+        if (id != null) {
+            suplierExample.setId(id);
+        }
+        if (name != null && !name.isEmpty()) {
+            suplierExample.setNameUnaccented(AccentUtils.removeAccents(name));
+        }
+        if (cnpj != null && !cnpj.isEmpty()) {
+            suplierExample.setCnpj(cnpj);
+        }
 
-		if (!repository.existsById(id)) {
-			throw new ResourceNotFoundException("Fornecedor não encontrado");
-		}
-		try {
-			repository.deleteById(id);
-		} catch (DataIntegrityViolationException e) {
-			throw new DatabaseException("Fornecedor - Erro de integridade no banco de dados");
-		}
-	}
+        ExampleMatcher matcher = ExampleMatcher.matching()
+                .withMatcher("id", ExampleMatcher.GenericPropertyMatchers.exact())
+                .withMatcher("nameUnaccented", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase())
+                .withMatcher("cpf", ExampleMatcher.GenericPropertyMatchers.exact());
 
-	void copyDtoToEntity(SuplierDTO dto, Suplier entity) {
-		entity.setName(dto.getName());	
-		entity.setCnpj(dto.getCnpj());
-	}
+        return Example.of(suplierExample, matcher);
+    }
 }

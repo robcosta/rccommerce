@@ -46,12 +46,12 @@ INSERT INTO tb_client(id, cpf) VALUES (4, '73995808042');
 INSERT INTO tb_client(id, cpf) VALUES (5, '46311990083');
 INSERT INTO tb_client(id, cpf) VALUES (6, '83563189048');
 
-INSERT INTO tb_suplier(name, cnpj) VALUES ('Diversos','00000000000000'); 
-INSERT INTO tb_suplier(name, cnpj) VALUES ('Lojas FOO','28104874000108'); 
-INSERT INTO tb_suplier(name, cnpj) VALUES ('Inova Tech','40543322000100'); 
-INSERT INTO tb_suplier(name, cnpj) VALUES ('Soluções Nexus','36687922000166'); 
-INSERT INTO tb_suplier(name, cnpj) VALUES ('Nova Onda','49557765000116'); 
-INSERT INTO tb_suplier(name, cnpj) VALUES ('PixelPower','85994937000182'); 
+INSERT INTO tb_suplier(name,name_unaccented,cnpj) VALUES ('Diversos','Diversos','00000000000000'); 
+INSERT INTO tb_suplier(name,name_unaccented,cnpj) VALUES ('Lojas FOO','Lojas FOO','28104874000108'); 
+INSERT INTO tb_suplier(name,name_unaccented,cnpj) VALUES ('Inova Tech','Inova Tech','40543322000100'); 
+INSERT INTO tb_suplier(name,name_unaccented,cnpj) VALUES ('Soluções Nexus','Solucoes Nexus','36687922000166'); 
+INSERT INTO tb_suplier(name,name_unaccented,cnpj) VALUES ('Nova Onda','Nova Onda','49557765000116'); 
+INSERT INTO tb_suplier(name,name_unaccented,cnpj) VALUES ('PixelPower','PixelPower','85994937000182'); 
 
 INSERT INTO tb_category(name, name_unaccented) VALUES ('LIVROS', 'LIVROS');
 INSERT INTO tb_category(name, name_unaccented) VALUES ('ELETRÔNICOS', 'ELETRONICOS');

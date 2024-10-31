@@ -16,140 +16,151 @@ import rccommerce.projections.UserDetailsProjection;
 
 public class FactoryUser {
 
-	public static User createUser() {
-		User user = new User(6L, "Robert Black", "robert@gmail.com", "Rc-1234");
-		return user;
-	}
+    public static User createUser() {
+        User user = new User(6L, "Robert Black", "robert@gmail.com", "Rc-1234");
+        return user;
+    }
 
-	public static Role createRoleAdmin() {
-		Role role = new Role(1L, "ROLE_ADMIN");
-		return role;
-	}
+    public static User createNewUser() {
+        return new User();
+    }
 
-	public static Role createRoleOperator() {
-		Role role = new Role(3L, "ROLE_OPERATOR");
-		return role;
-	}
+    public static Role createRoleAdmin() {
+        Role role = new Role(1L, "ROLE_ADMIN");
+        return role;
+    }
 
-	public static Role createRoleClient() {
-		Role role = new Role(2L, "ROLE_CLIENT");
-		return role;
-	}
+    public static Role createRoleOperator() {
+        Role role = new Role(3L, "ROLE_OPERATOR");
+        return role;
+    }
 
-	public static Permission createPermissionAll() {
-		Permission permission = new Permission(1L, "PERMISSION_ALL");
-		return permission;
-	}
+    public static Role createRoleClient() {
+        Role role = new Role(2L, "ROLE_CLIENT");
+        return role;
+    }
 
-	public static Permission createPermissionNone() {
-		Permission permission = new Permission(1L, "PERMISSION_NONE");
-		return permission;
-	}
+    public static Permission createPermissionAll() {
+        Permission permission = new Permission(1L, "PERMISSION_ALL");
+        return permission;
+    }
 
-	public static UserDTO createUserDTO() {
-		return new UserDTO(createUser());
-	}
+    public static Permission createPermissionNone() {
+        Permission permission = new Permission(1L, "PERMISSION_NONE");
+        return permission;
+    }
 
-	public static UserDTO createUserDTO(User user) {
-		return new UserDTO(user);
-	}
+    public static UserDTO createUserDTO() {
+        return new UserDTO(createUser());
+    }
 
-	public static UserMinDTO createUserMinDTO() {
-		return new UserMinDTO(createUser());
-	}
+    public static UserDTO createUserDTO(User user) {
+        return new UserDTO(user);
+    }
 
-	public static UserMinDTO createUserMinDTO(User user) {
-		return new UserMinDTO(user);
-	}
+    public static UserMinDTO createUserMinDTO() {
+        return new UserMinDTO(createUser());
+    }
 
-	public static List<UserDetailsProjection> createUserDetails() {
-		List<UserDetailsProjection> list = new ArrayList<>();
-		list.add(new UserDetailsImpl("robert@gmail.com", "$2a$10$Adpk5tdO8yFkIX.6IspH.OTF0dOxx2D9kx3drL6q4/1uLhoB/Ahze",
-				1L, "ROLE_CLIENT"));
-		return list;
-	}
+    public static UserMinDTO createUserMinDTO(User user) {
+        return new UserMinDTO(user);
+    }
 
-	public static Operator createOperatorAdmin() {
-		Operator operator = new Operator(7L, "Ana Pink", "ana@gmail.com", "An-1234", 1.5);
-		operator.addRole(createRoleAdmin());
-		operator.addPermission(createPermissionAll());
-		return operator;
-	}
+    public static List<UserDetailsProjection> createUserDetails() {
+        List<UserDetailsProjection> list = new ArrayList<>();
+        list.add(new UserDetailsImpl("robert@gmail.com", "$2a$10$Adpk5tdO8yFkIX.6IspH.OTF0dOxx2D9kx3drL6q4/1uLhoB/Ahze",
+                1L, "ROLE_CLIENT"));
+        return list;
+    }
 
-	// public static Operator createOperator(User user) {
-	// Operator operator = new Operator(user.getId(), user.getName(),
-	// user.getEmail(), user.getPassword(), 1.5);
-	// operator.addRole(createRoleAdmin());
-	// operator.addPermission(createPermissionAll());
-	// return operator;
-	// }
+    public static Operator createOperatorAdmin() {
+        Operator operator = new Operator(7L, "Ana Pink", "ana@gmail.com", "An-1234", 1.5);
+        operator.addRole(createRoleAdmin());
+        operator.addPermission(createPermissionAll());
+        return operator;
+    }
 
-	public static OperatorDTO createOperatorDTO(Operator operator) {
-		OperatorDTO operatorDto = new OperatorDTO(operator);
-		return operatorDto;
-	}
+    public static Operator createNewOperator() {
+        return new Operator();
+    }
 
-	public static Client createClient() {
-		Client client = new Client(7L, "Ana Pink", "ana@gmail.com", "An-1234", "59395734019");
-		client.addRole(createRoleClient());
-		client.addPermission(createPermissionNone());
-		return client;
-	}
+    // public static Operator createOperator(User user) {
+    // Operator operator = new Operator(user.getId(), user.getName(),
+    // user.getEmail(), user.getPassword(), 1.5);
+    // operator.addRole(createRoleAdmin());
+    // operator.addPermission(createPermissionAll());
+    // return operator;
+    // }
+    public static OperatorDTO createOperatorDTO(Operator operator) {
+        OperatorDTO operatorDto = new OperatorDTO(operator);
+        return operatorDto;
+    }
 
-	public static ClientDTO createClientDTO(Client client) {
-		ClientDTO clientDto = new ClientDTO(client);
-		return clientDto;
-	}
+    public static Client createClient() {
+        Client client = new Client(7L, "Ana Pink", "ana@gmail.com", "An-1234", "59395734019");
+        client.addRole(createRoleClient());
+        client.addPermission(createPermissionNone());
+        return client;
+    }
+
+    public static Client createNewClient() {
+        return new Client();
+    }
+
+    public static ClientDTO createClientDTO(Client client) {
+        ClientDTO clientDto = new ClientDTO(client);
+        return clientDto;
+    }
 }
 
 // Classe auxilar para implementação de uma instância de UserDetailsProjection
 class UserDetailsImpl implements UserDetailsProjection {
 
-	private String username;
-	private String password;
-	private Long roleId;
-	private String authority;
+    private String username;
+    private String password;
+    private Long roleId;
+    private String authority;
 
-	public UserDetailsImpl(String username, String password, Long roleId, String authority) {
-		this.username = username;
-		this.password = password;
-		this.roleId = roleId;
-		this.authority = authority;
-	}
+    public UserDetailsImpl(String username, String password, Long roleId, String authority) {
+        this.username = username;
+        this.password = password;
+        this.roleId = roleId;
+        this.authority = authority;
+    }
 
-	@Override
-	public String getUsername() {
-		return username;
-	}
+    @Override
+    public String getUsername() {
+        return username;
+    }
 
-	@Override
-	public String getPassword() {
-		return password;
-	}
+    @Override
+    public String getPassword() {
+        return password;
+    }
 
-	@Override
-	public Long getRoleId() {
-		return roleId;
-	}
+    @Override
+    public Long getRoleId() {
+        return roleId;
+    }
 
-	@Override
-	public String getAuthority() {
-		return authority;
-	}
+    @Override
+    public String getAuthority() {
+        return authority;
+    }
 
-	@Override
-	public Long getUserId() {
-		return null;
-	}
+    @Override
+    public Long getUserId() {
+        return null;
+    }
 
-	@Override
-	public Long getPermissionId() {
-		return null;
-	}
+    @Override
+    public Long getPermissionId() {
+        return null;
+    }
 
-	@Override
-	public String getPermissionAuthority() {
-		return null;
-	}
+    @Override
+    public String getPermissionAuthority() {
+        return null;
+    }
 
 }
