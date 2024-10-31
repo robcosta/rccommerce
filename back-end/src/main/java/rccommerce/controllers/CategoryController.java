@@ -34,7 +34,7 @@ public class CategoryController {
     private CategoryService service;
 
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_OPERATOR', 'ROLE_SELLER')")
-    @GetMapping
+    @GetMapping(value = "/all")
     public ResponseEntity<Page<CategoryMinDTO>> findAll(Pageable pageable) {
         Page<CategoryMinDTO> dto = service.findAll(pageable);
         return ResponseEntity.ok(dto);
