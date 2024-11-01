@@ -18,15 +18,15 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import rccommerce.dto.CategoryDTO;
-import rccommerce.entities.Category;
-import rccommerce.tests.FactoryCategory;
+import rccommerce.dto.SuplierDTO;
+import rccommerce.entities.Suplier;
+import rccommerce.tests.FactorySuplier;
 import rccommerce.tests.TokenUtil;
 
 @SpringBootTest
 @AutoConfigureMockMvc
 @Transactional
-public class CategoryControllerIT {
+public class SuplierControllerIT {
 
     @Autowired
     private MockMvc mockMvc;
@@ -39,91 +39,91 @@ public class CategoryControllerIT {
 
     private String adminToken, invalidToken;
     private String userAdminEmail, userAdminPassword;
-    private String existsCategoryName;
-    private String nonExistsCategoryName;
+    private String existsSuplierName;
+    private String nonExistsSuplierName;
 
     private long existingId, nonExistingId, existingUpdateId;
-    private Integer countCategory;
-    private Category category;
-    private CategoryDTO categoryDTO;
+    private Integer countSuplier;
+    private Suplier suplier;
+    private SuplierDTO suplierDTO;
 
     @BeforeEach
     void setUp() throws Exception {
         userAdminEmail = "admin@gmail.com";
         userAdminPassword = "123456";
 
-        existsCategoryName = "LIVROS";
+        existsSuplierName = "Diversos";
 
-        nonExistsCategoryName = "MESA";
+        nonExistsSuplierName = "Outro";
 
         existingId = 1L;
         existingUpdateId = 3L;
         nonExistingId = 100L;
-        countCategory = 3;
+        countSuplier = 6;
 
         adminToken = tokenUtil.obtainAccessToken(mockMvc, userAdminEmail, userAdminPassword);
         invalidToken = adminToken + "xpto";
 
-        category = FactoryCategory.createCategory();
+        suplier = FactorySuplier.createSuplier();
     }
 
     @Test
     public void findAllShouldREturnPageWhenValidToken() throws Exception {
 
-        ResultActions resultActions = mockMvc.perform(get("/categories/all?sort=id")
+        ResultActions resultActions = mockMvc.perform(get("/supliers/all?sort=id")
                 .header("Authorization", "Bearer " + adminToken)
                 .accept(MediaType.APPLICATION_JSON));
 
         resultActions.andExpect(status().isOk());
-        resultActions.andExpect(jsonPath("$.content.size()").value(countCategory));
+        resultActions.andExpect(jsonPath("$.content.size()").value(countSuplier));
         resultActions.andExpect(jsonPath("$.content[0].id").value(existingId));
-        resultActions.andExpect(jsonPath("$.content[0].name").value(existsCategoryName));
+        resultActions.andExpect(jsonPath("$.content[0].name").value(existsSuplierName));
     }
 
     @Test
     public void searchEntityShouldReturnPageWhenValidTokenParamEmpty() throws Exception {
 
-        ResultActions resultActions = mockMvc.perform(get("/categories/search?id={id}&name={name}", "", "")
+        ResultActions resultActions = mockMvc.perform(get("/supliers/search?id={id}&name={name}", "", "")
                 .header("Authorization", "Bearer " + adminToken)
                 .accept(MediaType.APPLICATION_JSON));
 
         resultActions.andExpect(status().isOk());
-        resultActions.andExpect(jsonPath("$.content.size()").value(countCategory));
+        resultActions.andExpect(jsonPath("$.content.size()").value(countSuplier));
         resultActions.andExpect(jsonPath("$.content[0].id").value(existingId));
-        resultActions.andExpect(jsonPath("$.content[0].name").value(existsCategoryName));
+        resultActions.andExpect(jsonPath("$.content[0].name").value(existsSuplierName));
     }
 
     @Test
     public void searchEntityShouldReturnPageWhenValidTokenAndIdParamExisting() throws Exception {
 
-        ResultActions resultActions = mockMvc.perform(get("/categories/search?id={id}", existingId)
+        ResultActions resultActions = mockMvc.perform(get("/supliers/search?id={id}", existingId)
                 .header("Authorization", "Bearer " + adminToken)
                 .accept(MediaType.APPLICATION_JSON));
 
         resultActions.andExpect(status().isOk());
         resultActions.andExpect(jsonPath("$.content.size()").value(1));
         resultActions.andExpect(jsonPath("$.content[0].id").value(existingId));
-        resultActions.andExpect(jsonPath("$.content[0].name").value(existsCategoryName));
+        resultActions.andExpect(jsonPath("$.content[0].name").value(existsSuplierName));
     }
 
     @Test
     public void searchEntityShouldReturnPageWhenValidTokenAndNameParamExisting() throws Exception {
 
-        ResultActions resultActions = mockMvc.perform(get("/categories/search?name={name}", existsCategoryName)
+        ResultActions resultActions = mockMvc.perform(get("/supliers/search?name={name}", existsSuplierName)
                 .header("Authorization", "Bearer " + adminToken)
                 .accept(MediaType.APPLICATION_JSON));
 
         resultActions.andExpect(status().isOk());
         resultActions.andExpect(jsonPath("$.content.size()").value(1));
         resultActions.andExpect(jsonPath("$.content[0].id").value(existingId));
-        resultActions.andExpect(jsonPath("$.content[0].name").value(existsCategoryName));
+        resultActions.andExpect(jsonPath("$.content[0].name").value(existsSuplierName));
 
     }
 
     @Test
     public void searchEntityShouldReturnNotFoundWhenIdParamDoesNotExists() throws Exception {
 
-        ResultActions resultActions = mockMvc.perform(get("/categories/search?name={name}", nonExistingId)
+        ResultActions resultActions = mockMvc.perform(get("/supliers/search?name={name}", nonExistingId)
                 .header("Authorization", "Bearer " + adminToken)
                 .accept(MediaType.APPLICATION_JSON));
 
@@ -133,7 +133,7 @@ public class CategoryControllerIT {
     @Test
     public void searchEntityShouldReturnUnauthorizedWhenIvalidToken() throws Exception {
 
-        ResultActions resultActions = mockMvc.perform(get("/categories/search")
+        ResultActions resultActions = mockMvc.perform(get("/supliers/search")
                 .header("Authorization", "Bearer " + invalidToken)
                 .accept(MediaType.APPLICATION_JSON));
 
@@ -141,21 +141,21 @@ public class CategoryControllerIT {
     }
 
     @Test
-    public void findByIdShoulReturCategoryMinDTOWhenValidTokenAndExistsId() throws Exception {
+    public void findByIdShoulReturSuplierMinDTOWhenValidTokenAndExistsId() throws Exception {
 
-        ResultActions resultActions = mockMvc.perform(get("/categories/{id}", existingId)
+        ResultActions resultActions = mockMvc.perform(get("/supliers/{id}", existingId)
                 .header("Authorization", "Bearer " + adminToken)
                 .accept(MediaType.APPLICATION_JSON));
 
         resultActions.andExpect(status().isOk());
         resultActions.andExpect(jsonPath("$.id").value(existingId));
-        resultActions.andExpect(jsonPath("$.name").value(existsCategoryName));
+        resultActions.andExpect(jsonPath("$.name").value(existsSuplierName));
     }
 
     @Test
     public void findByIdShoulReturNotFoundWhenValidTokenAndDoesNotExistsId() throws Exception {
 
-        ResultActions resultActions = mockMvc.perform(get("/categories/{id}", nonExistingId)
+        ResultActions resultActions = mockMvc.perform(get("/supliers/{id}", nonExistingId)
                 .header("Authorization", "Bearer " + adminToken)
                 .accept(MediaType.APPLICATION_JSON));
 
@@ -165,7 +165,7 @@ public class CategoryControllerIT {
     @Test
     public void findByIdShoulReturUnaauthorizedWhenInvalidToken() throws Exception {
 
-        ResultActions resultActions = mockMvc.perform(get("/categories/{id}", existingId)
+        ResultActions resultActions = mockMvc.perform(get("/supliers/{id}", existingId)
                 .header("Authorization", "Bearer " + invalidToken)
                 .accept(MediaType.APPLICATION_JSON));
 
@@ -173,13 +173,13 @@ public class CategoryControllerIT {
     }
 
     @Test
-    public void insertShouldReturnCategoryMinDTOWhenAllDataIsValid() throws Exception {
-        categoryDTO = FactoryCategory.createCategoryDTO();
-        String jsonBody = objectMapper.writeValueAsString(categoryDTO);
+    public void insertShouldReturnSuplierMinDTOWhenAllDataIsValid() throws Exception {
+        suplierDTO = FactorySuplier.createSuplierDTO();
+        String jsonBody = objectMapper.writeValueAsString(suplierDTO);
 
-        String expectedName = category.getName();
+        String expectedName = suplier.getName();
 
-        ResultActions resultActions = mockMvc.perform(post("/categories")
+        ResultActions resultActions = mockMvc.perform(post("/supliers")
                 .header("Authorization", "Bearer " + adminToken)
                 .content(jsonBody)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -191,11 +191,11 @@ public class CategoryControllerIT {
 
     @Test
     public void insertShouldReturnBadRequestWhenDataIsValidAndNameDoesNotUnique() throws Exception {
-        category.setName(existsCategoryName);
-        categoryDTO = FactoryCategory.createCategoryDTO(category);
-        String jsonBody = objectMapper.writeValueAsString(categoryDTO);
+        suplier.setName(existsSuplierName);
+        suplierDTO = FactorySuplier.createSuplierDTO(suplier);
+        String jsonBody = objectMapper.writeValueAsString(suplierDTO);
 
-        ResultActions resultActions = mockMvc.perform(post("/categories")
+        ResultActions resultActions = mockMvc.perform(post("/supliers")
                 .header("Authorization", "Bearer " + adminToken)
                 .content(jsonBody)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -207,11 +207,11 @@ public class CategoryControllerIT {
 
     @Test
     public void insertShouldReturnUnprocessableEntityWhenInvalidName() throws Exception {
-        category.setName("Ro");
-        categoryDTO = FactoryCategory.createCategoryDTO(category);
-        String jsonBody = objectMapper.writeValueAsString(categoryDTO);
+        suplier.setName("Ro");
+        suplierDTO = FactorySuplier.createSuplierDTO(suplier);
+        String jsonBody = objectMapper.writeValueAsString(suplierDTO);
 
-        ResultActions resultActions = mockMvc.perform(post("/categories")
+        ResultActions resultActions = mockMvc.perform(post("/supliers")
                 .header("Authorization", "Bearer " + adminToken)
                 .content(jsonBody)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -223,11 +223,11 @@ public class CategoryControllerIT {
 
     @Test
     public void insertShouldReturnUnauthorizedWhenExistsName() throws Exception {
-        category.setName(existsCategoryName);
-        categoryDTO = FactoryCategory.createCategoryDTO(category);
-        String jsonBody = objectMapper.writeValueAsString(categoryDTO);
+        suplier.setName(existsSuplierName);
+        suplierDTO = FactorySuplier.createSuplierDTO(suplier);
+        String jsonBody = objectMapper.writeValueAsString(suplierDTO);
 
-        ResultActions resultActions = mockMvc.perform(post("/categories")
+        ResultActions resultActions = mockMvc.perform(post("/supliers")
                 .header("Authorization", "Bearer " + invalidToken)
                 .content(jsonBody)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -237,13 +237,13 @@ public class CategoryControllerIT {
     }
 
     @Test
-    public void updateShouldReturnCategoryMinDTOWhenAdminLoggedAndAllDataIsValid() throws Exception {
-        categoryDTO = FactoryCategory.createCategoryDTO(category);
-        String jsonBody = objectMapper.writeValueAsString(categoryDTO);
+    public void updateShouldReturnSuplierMinDTOWhenAdminLoggedAndAllDataIsValid() throws Exception {
+        suplierDTO = FactorySuplier.createSuplierDTO(suplier);
+        String jsonBody = objectMapper.writeValueAsString(suplierDTO);
 
-        String expectedName = category.getName();
+        String expectedName = suplier.getName();
 
-        ResultActions resultActions = mockMvc.perform(put("/categories/{id}", existingUpdateId)
+        ResultActions resultActions = mockMvc.perform(put("/supliers/{id}", existingUpdateId)
                 .header("Authorization", "Bearer " + adminToken)
                 .content(jsonBody)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -256,10 +256,10 @@ public class CategoryControllerIT {
 
     @Test
     public void updateShouldReturnUnauthorizedWhenInvalidTokenAndAllDataIsValid() throws Exception {
-        categoryDTO = FactoryCategory.createCategoryDTO(category);
-        String jsonBody = objectMapper.writeValueAsString(categoryDTO);
+        suplierDTO = FactorySuplier.createSuplierDTO(suplier);
+        String jsonBody = objectMapper.writeValueAsString(suplierDTO);
 
-        ResultActions resultActions = mockMvc.perform(put("/categories/{id}", existingUpdateId)
+        ResultActions resultActions = mockMvc.perform(put("/supliers/{id}", existingUpdateId)
                 .header("Authorization", "Bearer " + invalidToken)
                 .content(jsonBody)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -270,11 +270,11 @@ public class CategoryControllerIT {
 
     @Test
     public void updateShouldReturnBadRequestWhenDataIsValidAndNameDoesNotUnique() throws Exception {
-        category.setName(existsCategoryName);
-        categoryDTO = FactoryCategory.createCategoryDTO(category);
-        String jsonBody = objectMapper.writeValueAsString(categoryDTO);
+        suplier.setName(existsSuplierName);
+        suplierDTO = FactorySuplier.createSuplierDTO(suplier);
+        String jsonBody = objectMapper.writeValueAsString(suplierDTO);
 
-        ResultActions resultActions = mockMvc.perform(put("/categories/{id}", existingUpdateId)
+        ResultActions resultActions = mockMvc.perform(put("/supliers/{id}", existingUpdateId)
                 .header("Authorization", "Bearer " + adminToken)
                 .content(jsonBody)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -285,11 +285,11 @@ public class CategoryControllerIT {
 
     @Test
     public void updateShouldReturnUnprocessableEntityWhenAdminLoggedAndInvalidName() throws Exception {
-        category.setName("Co");
-        categoryDTO = FactoryCategory.createCategoryDTO(category);
-        String jsonBody = objectMapper.writeValueAsString(categoryDTO);
+        suplier.setName("Co");
+        suplierDTO = FactorySuplier.createSuplierDTO(suplier);
+        String jsonBody = objectMapper.writeValueAsString(suplierDTO);
 
-        ResultActions resultActions = mockMvc.perform(put("/categories/{id}", existingUpdateId)
+        ResultActions resultActions = mockMvc.perform(put("/supliers/{id}", existingUpdateId)
                 .header("Authorization", "Bearer " + adminToken)
                 .content(jsonBody)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -301,7 +301,7 @@ public class CategoryControllerIT {
     @Test
     void deleteShouldNoContentWhenAdminLoggedAndExistsId() throws Exception {
 
-        ResultActions result = mockMvc.perform(delete("/categories/{id}", existingId)
+        ResultActions result = mockMvc.perform(delete("/supliers/{id}", existingId)
                 .header("Authorization", "Bearer " + adminToken)
                 .accept(MediaType.APPLICATION_JSON));
 
@@ -311,7 +311,7 @@ public class CategoryControllerIT {
     @Test
     void deleteShouldUnauthorizedWhenInvalidToken() throws Exception {
 
-        ResultActions result = mockMvc.perform(delete("/categories/{id}", existingId)
+        ResultActions result = mockMvc.perform(delete("/supliers/{id}", existingId)
                 .header("Authorization", "Bearer " + invalidToken)
                 .accept(MediaType.APPLICATION_JSON));
 
@@ -321,7 +321,7 @@ public class CategoryControllerIT {
     @Test
     void deleteShouldNotFoundWhenAdminLoggedAndDoesNotExisitsId() throws Exception {
 
-        ResultActions result = mockMvc.perform(delete("/categories/{id}", nonExistingId)
+        ResultActions result = mockMvc.perform(delete("/supliers/{id}", nonExistingId)
                 .header("Authorization", "Bearer " + adminToken)
                 .accept(MediaType.APPLICATION_JSON));
 

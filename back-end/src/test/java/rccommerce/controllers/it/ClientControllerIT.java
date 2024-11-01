@@ -1,12 +1,5 @@
 package rccommerce.controllers.it;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +8,12 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -38,7 +37,7 @@ public class ClientControllerIT {
     @Autowired
     private TokenUtil tokenUtil;
 
-    private String adminToken, clientToken, invalidToken;
+    private String adminToken, clientToken, invalidToken, roleClient;
     private String userAdminEmail, userAdminPassword, userClientEmail, userClientPassword;
     private String existsClientName, existsClientEmail, existsClientCpf, existsEmail;
     private String nonExistsClientName, nonExistsClientEmail, nonExistsClientCpf;
@@ -74,7 +73,7 @@ public class ClientControllerIT {
         invalidToken = adminToken + "xpto";
 
         client = FactoryUser.createClient();
-        // client.setId(null);
+        roleClient = "ROLE_CLIENT";
     }
 
     @Test
@@ -89,7 +88,7 @@ public class ClientControllerIT {
         resultActions.andExpect(jsonPath("$.content[0].id").value(4L));
         resultActions.andExpect(jsonPath("$.content[0].name").value("Venda ao Consumidor"));
         resultActions.andExpect(jsonPath("$.content[0].email").value("venda@gmail.com"));
-        resultActions.andExpect(jsonPath("$.content[0].roles[0]").value("ROLE_CLIENT"));
+        resultActions.andExpect(jsonPath("$.content[0].roles[0]").value(roleClient));
     }
 
     @Test
@@ -103,7 +102,7 @@ public class ClientControllerIT {
         resultActions.andExpect(jsonPath("$.content[0].id").value(existingUpdateId));
         resultActions.andExpect(jsonPath("$.content[0].name").value(existsClientName));
         resultActions.andExpect(jsonPath("$.content[0].email").value(existsClientEmail));
-        resultActions.andExpect(jsonPath("$.content[0].roles[0]").value("ROLE_CLIENT"));
+        resultActions.andExpect(jsonPath("$.content[0].roles[0]").value(roleClient));
         resultActions.andExpect(jsonPath("$.totalElements").value(3));
     }
 
@@ -118,7 +117,7 @@ public class ClientControllerIT {
         resultActions.andExpect(jsonPath("$.content[0].id").value(existingUpdateId));
         resultActions.andExpect(jsonPath("$.content[0].name").value(existsClientName));
         resultActions.andExpect(jsonPath("$.content[0].email").value(existsClientEmail));
-        resultActions.andExpect(jsonPath("$.content[0].roles[0]").value("ROLE_CLIENT"));
+        resultActions.andExpect(jsonPath("$.content[0].roles[0]").value(roleClient));
 
     }
 
@@ -133,7 +132,7 @@ public class ClientControllerIT {
         resultActions.andExpect(jsonPath("$.content[0].id").value(5L));
         resultActions.andExpect(jsonPath("$.content[0].name").value(existsClientName));
         resultActions.andExpect(jsonPath("$.content[0].email").value(existsClientEmail));
-        resultActions.andExpect(jsonPath("$.content[0].roles[0]").value("ROLE_CLIENT"));
+        resultActions.andExpect(jsonPath("$.content[0].roles[0]").value(roleClient));
 
     }
 
@@ -148,7 +147,7 @@ public class ClientControllerIT {
         resultActions.andExpect(jsonPath("$.content[0].id").value(5L));
         resultActions.andExpect(jsonPath("$.content[0].name").value(existsClientName));
         resultActions.andExpect(jsonPath("$.content[0].email").value(existsClientEmail));
-        resultActions.andExpect(jsonPath("$.content[0].roles[0]").value("ROLE_CLIENT"));
+        resultActions.andExpect(jsonPath("$.content[0].roles[0]").value(roleClient));
 
     }
 
@@ -163,7 +162,7 @@ public class ClientControllerIT {
         resultActions.andExpect(jsonPath("$.content[0].id").value(5L));
         resultActions.andExpect(jsonPath("$.content[0].name").value(existsClientName));
         resultActions.andExpect(jsonPath("$.content[0].email").value(existsClientEmail));
-        resultActions.andExpect(jsonPath("$.content[0].roles[0]").value("ROLE_CLIENT"));
+        resultActions.andExpect(jsonPath("$.content[0].roles[0]").value(roleClient));
 
     }
 
@@ -219,7 +218,7 @@ public class ClientControllerIT {
         resultActions.andExpect(jsonPath("$.name").value("Venda ao Consumidor"));
         resultActions.andExpect(jsonPath("$.cpf").value("739.958.080-42"));
         resultActions.andExpect(jsonPath("$.email").value("venda@gmail.com"));
-        resultActions.andExpect(jsonPath("$.roles[0]").value("ROLE_CLIENT"));
+        resultActions.andExpect(jsonPath("$.roles[0]").value(roleClient));
     }
 
     @Test
@@ -258,7 +257,7 @@ public class ClientControllerIT {
         resultActions.andExpect(status().isCreated());
         resultActions.andExpect(jsonPath("$.name").value(expectedName));
         resultActions.andExpect(jsonPath("$.email").value(expectedEmail));
-        resultActions.andExpect(jsonPath("$.roles[0]").value("ROLE_CLIENT"));
+        resultActions.andExpect(jsonPath("$.roles[0]").value(roleClient));
     }
 
     @Test
@@ -367,7 +366,7 @@ public class ClientControllerIT {
         resultActions.andExpect(jsonPath("$.id").value(existingUpdateId));
         resultActions.andExpect(jsonPath("$.name").value(expectedName));
         resultActions.andExpect(jsonPath("$.email").value(expectedEmail));
-        resultActions.andExpect(jsonPath("$.roles[0]").value("ROLE_CLIENT"));
+        resultActions.andExpect(jsonPath("$.roles[0]").value(roleClient));
     }
 
     @Test

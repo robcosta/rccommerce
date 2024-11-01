@@ -1,12 +1,5 @@
 package rccommerce.controllers.it;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +8,12 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -38,12 +37,12 @@ public class OperatorControllerIT {
     @Autowired
     private TokenUtil tokenUtil;
 
-    private String adminToken, sellerToken, invalidToken;
-    private String userAdminEmail, userAdminPassword, userSellerEmail, userSellerPassword;
+    private String adminToken, sellerToken, invalidToken, roleAdmin, roleSeller;
+    private String userAdminEmail, userAdminPassword, nameAdmin, userSellerEmail, userSellerPassword;
     private String existsOperatorName, existsOperatorEmail, nonExistsOperatorName, nonExistsOperatorEmail, emailUnique;
 
-    private long existingId, nonExistingId;
-
+    private long existingId, nonExistingId, idAdmin;
+    private Integer sizeOperator;
     private Operator operator;
     private OperatorDTO operatorDTO;
 
@@ -63,7 +62,13 @@ public class OperatorControllerIT {
         emailUnique = "bob@gmail.com";
 
         existingId = 3L;
+        roleSeller = "ROLE_SELLER";
         nonExistingId = 100L;
+        idAdmin = 1L;
+        nameAdmin = "Administrador";
+        roleAdmin = "ROLE_ADMIN";
+
+        sizeOperator = 3;
 
         adminToken = tokenUtil.obtainAccessToken(mockMvc, userAdminEmail, userAdminPassword);
         sellerToken = tokenUtil.obtainAccessToken(mockMvc, userSellerEmail, userSellerPassword);
@@ -83,11 +88,11 @@ public class OperatorControllerIT {
                 .accept(MediaType.APPLICATION_JSON));
 
         resultActions.andExpect(status().isOk());
-        resultActions.andExpect(jsonPath("$.content.size()").value(3));
+        resultActions.andExpect(jsonPath("$.content.size()").value(sizeOperator));
         resultActions.andExpect(jsonPath("$.content[0].id").value(1L));
-        resultActions.andExpect(jsonPath("$.content[0].name").value("Administrador"));
-        resultActions.andExpect(jsonPath("$.content[0].email").value("admin@gmail.com"));
-        resultActions.andExpect(jsonPath("$.content[0].roles[0]").value("ROLE_ADMIN"));
+        resultActions.andExpect(jsonPath("$.content[0].name").value(nameAdmin));
+        resultActions.andExpect(jsonPath("$.content[0].email").value(userAdminEmail));
+        resultActions.andExpect(jsonPath("$.content[0].roles[0]").value(roleAdmin));
     }
 
     @Test
@@ -98,11 +103,11 @@ public class OperatorControllerIT {
                 .accept(MediaType.APPLICATION_JSON));
 
         resultActions.andExpect(status().isOk());
-        resultActions.andExpect(jsonPath("$.totalElements").value(3));
+        resultActions.andExpect(jsonPath("$.totalElements").value(sizeOperator));
         resultActions.andExpect(jsonPath("$.content[0].id").value(1L));
-        resultActions.andExpect(jsonPath("$.content[0].name").value("Administrador"));
-        resultActions.andExpect(jsonPath("$.content[0].email").value("admin@gmail.com"));
-        resultActions.andExpect(jsonPath("$.content[0].roles[0]").value("ROLE_ADMIN"));
+        resultActions.andExpect(jsonPath("$.content[0].name").value(nameAdmin));
+        resultActions.andExpect(jsonPath("$.content[0].email").value(userAdminEmail));
+        resultActions.andExpect(jsonPath("$.content[0].roles[0]").value(roleAdmin));
     }
 
     @Test
@@ -114,9 +119,9 @@ public class OperatorControllerIT {
 
         resultActions.andExpect(status().isOk());
         resultActions.andExpect(jsonPath("$.content[0].id").value(1L));
-        resultActions.andExpect(jsonPath("$.content[0].name").value("Administrador"));
-        resultActions.andExpect(jsonPath("$.content[0].email").value("admin@gmail.com"));
-        resultActions.andExpect(jsonPath("$.content[0].roles[0]").value("ROLE_ADMIN"));
+        resultActions.andExpect(jsonPath("$.content[0].name").value(nameAdmin));
+        resultActions.andExpect(jsonPath("$.content[0].email").value(userAdminEmail));
+        resultActions.andExpect(jsonPath("$.content[0].roles[0]").value(roleAdmin));
 
     }
 
@@ -129,9 +134,9 @@ public class OperatorControllerIT {
 
         resultActions.andExpect(status().isOk());
         resultActions.andExpect(jsonPath("$.content[0].id").value(3L));
-        resultActions.andExpect(jsonPath("$.content[0].name").value("Alex Blue"));
-        resultActions.andExpect(jsonPath("$.content[0].email").value("alex@gmail.com"));
-        resultActions.andExpect(jsonPath("$.content[0].roles[0]").value("ROLE_SELLER"));
+        resultActions.andExpect(jsonPath("$.content[0].name").value(existsOperatorName));
+        resultActions.andExpect(jsonPath("$.content[0].email").value(existsOperatorEmail));
+        resultActions.andExpect(jsonPath("$.content[0].roles[0]").value(roleSeller));
 
     }
 
@@ -144,9 +149,9 @@ public class OperatorControllerIT {
 
         resultActions.andExpect(status().isOk());
         resultActions.andExpect(jsonPath("$.content[0].id").value(3L));
-        resultActions.andExpect(jsonPath("$.content[0].name").value("Alex Blue"));
-        resultActions.andExpect(jsonPath("$.content[0].email").value("alex@gmail.com"));
-        resultActions.andExpect(jsonPath("$.content[0].roles[0]").value("ROLE_SELLER"));
+        resultActions.andExpect(jsonPath("$.content[0].name").value(existsOperatorName));
+        resultActions.andExpect(jsonPath("$.content[0].email").value(existsOperatorEmail));
+        resultActions.andExpect(jsonPath("$.content[0].roles[0]").value(roleSeller));
 
     }
 
@@ -191,9 +196,9 @@ public class OperatorControllerIT {
 
         resultActions.andExpect(status().isOk());
         resultActions.andExpect(jsonPath("$.id").value(existingId));
-        resultActions.andExpect(jsonPath("$.name").value("Alex Blue"));
-        resultActions.andExpect(jsonPath("$.email").value("alex@gmail.com"));
-        resultActions.andExpect(jsonPath("$.roles[0]").value("ROLE_SELLER"));
+        resultActions.andExpect(jsonPath("$.name").value(existsOperatorName));
+        resultActions.andExpect(jsonPath("$.email").value(existsOperatorEmail));
+        resultActions.andExpect(jsonPath("$.roles[0]").value(roleSeller));
     }
 
     @Test
@@ -234,7 +239,7 @@ public class OperatorControllerIT {
         resultActions.andExpect(status().isCreated());
         resultActions.andExpect(jsonPath("$.name").value(expectedName));
         resultActions.andExpect(jsonPath("$.email").value(expectedEmail));
-        resultActions.andExpect(jsonPath("$.roles[0]").value("ROLE_ADMIN"));
+        resultActions.andExpect(jsonPath("$.roles[0]").value(roleAdmin));
     }
 
     @Test
@@ -376,7 +381,7 @@ public class OperatorControllerIT {
         resultActions.andExpect(jsonPath("$.id").value(existingId));
         resultActions.andExpect(jsonPath("$.name").value(expectedName));
         resultActions.andExpect(jsonPath("$.email").value(expectedEmail));
-        resultActions.andExpect(jsonPath("$.roles[0]").value("ROLE_ADMIN"));
+        resultActions.andExpect(jsonPath("$.roles[0]").value(roleAdmin));
     }
 
     // @Test

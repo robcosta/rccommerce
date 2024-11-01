@@ -40,9 +40,10 @@ public class Suplier implements Convertible<SuplierDTO, SuplierMinDTO> {
     public Suplier() {
     }
 
-    public Suplier(Long id, String name) {
+    public Suplier(Long id, String name, String cnpj) {
         this.id = id;
         this.name = name;
+        this.cnpj = cnpj;
     }
 
     public Long getId() {
