@@ -1,92 +1,171 @@
 package rccommerce.services;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.ExampleMatcher;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.persistence.EntityNotFoundException;
 import rccommerce.dto.OrderDTO;
 import rccommerce.dto.OrderItemDTO;
+import rccommerce.dto.OrderMinDTO;
 import rccommerce.entities.Client;
 import rccommerce.entities.Order;
 import rccommerce.entities.OrderItem;
+import rccommerce.entities.Payment;
 import rccommerce.entities.Product;
 import rccommerce.entities.User;
 import rccommerce.entities.enums.OrderStatus;
+import rccommerce.entities.enums.PaymentType;
 import rccommerce.repositories.ClientRepository;
 import rccommerce.repositories.OrderItemRepository;
 import rccommerce.repositories.OrderRepository;
 import rccommerce.repositories.ProductRepository;
 import rccommerce.services.exceptions.ResourceNotFoundException;
+import rccommerce.services.interfaces.GenericService;
+import rccommerce.services.util.SecurityContextUtil;
 
 @Service
-public class OrderService {
-	
-	@Autowired
-	private OrderRepository repository;
-	
-	@Autowired
-	private ProductRepository productRepository;
-	
-	@Autowired
-	private ClientRepository clientRepository;
-	
-	@Autowired
-	private OrderItemRepository orderItemRepository;
-	
-	@Autowired
-	private UserService userService;
-	
+public class OrderService implements GenericService<Order, OrderDTO, OrderMinDTO, Long> {
 
-	@Transactional(readOnly = true)
-	public OrderDTO findById(Long id) {
-//		CheckUserPermissions.authorityUser(PermissionAuthority.PERMISSION_READER,(Long) id);
-		Order result = repository.findById(id)
-				.orElseThrow(() -> new ResourceNotFoundException("Pedido não encontrado"));
-		return new OrderDTO(result);
-	}
-	
-	@Transactional
-	public OrderDTO insert(OrderDTO dto) {
-		Order order = new Order();		
-		User user = userService.authenticated();
-		Client client = virifyClient(user, dto);
-//		CheckUserPermissions.authorityUser(PermissionAuthority.PERMISSION_CREATE,client.getId());		
-		
-		order.setUser(user);
-		order.setMoment(Instant.now());
-		order.setStatus(OrderStatus.WAITING_PAYMENT);
+    @Autowired
+    private OrderRepository repository;
 
-		
-		order.setClient(client);
-		
-		for(OrderItemDTO itemDto : dto.getItems()) {
-			try {
-				Product product = productRepository.getReferenceById(itemDto.getProductId());
-				OrderItem item = new OrderItem(order, product, itemDto.getQuantity(), product.getPrice());
-				order.getItems().add(item);
-			}catch (EntityNotFoundException e) {
-				throw new ResourceNotFoundException("Produto não encontrado");
-			}
-		}
-		
-		repository.save(order);
-		orderItemRepository.saveAll(order.getItems());
-		return new OrderDTO(order);
-	}
+    @Autowired
+    private ProductRepository productRepository;
 
-	private Client virifyClient(User user, OrderDTO dto) {
-		if(user instanceof Client) {
-			return (Client) user;
-		}
-				
-		if(dto.getClient().getId() == null) {
-			return clientRepository.getReferenceById(4L);
-		}
-	
-		return  clientRepository.findById(dto.getClient().getId())
-				.orElseThrow(() -> new ResourceNotFoundException("Cliente não encontrado."));
-	}
+    @Autowired
+    private ClientRepository clientRepository;
+
+    @Autowired
+    private OrderItemRepository orderItemRepository;
+
+    @Autowired
+    private MessageSource messageSource;
+
+    @Transactional(readOnly = true)
+    public Page<OrderMinDTO> searchEntity(Long id, String status, String payment, String user, String client, Pageable pageable) {
+        return findBy(example(id, status, payment, user, client), pageable);
+    }
+
+    //Necessário para atualizar o OrderItem
+    @Override
+    @Transactional
+    public OrderMinDTO insert(OrderDTO dto) {
+        List<OrderItem> orderItens = new ArrayList<>();
+        OrderMinDTO orderMinDto = GenericService.super.insert(dto);
+        Order order = new Order();
+        order.setId(orderMinDto.getId());
+
+        for (OrderItemDTO orderItemDto : orderMinDto.getItens()) {
+            Product product = new Product();
+            product.setId(orderItemDto.getProductId());
+            orderItens.add(new OrderItem(order, product, orderItemDto.getQuantity(), orderItemDto.getPrice()));
+        }
+
+        orderItemRepository.saveAllAndFlush(orderItens);
+        return orderMinDto;
+    }
+
+    @Override
+    public JpaRepository<Order, Long> getRepository() {
+        return repository;
+    }
+
+    @Override
+    public void copyDtoToEntity(OrderDTO dto, Order entity) {
+        Long userId = SecurityContextUtil.getUserId(); // Obtém o ID do usuário autenticado        
+        User user = new User();
+        user.setId(userId);
+        entity.setUser(user);
+
+        entity.setClient(virifyClient(entity.getUser(), dto));
+        entity.setMoment(Instant.now());
+        entity.setStatus(OrderStatus.WAITING_PAYMENT);
+        entity.setPayment(null);
+
+        for (OrderItemDTO itemDto : dto.getItens()) {
+            try {
+                Product product = productRepository.getReferenceById(itemDto.getProductId());
+                entity.addItens(new OrderItem(entity, product, itemDto.getQuantity(), product.getPrice()));
+            } catch (EntityNotFoundException e) {
+                throw new ResourceNotFoundException("Produtode id: '" + itemDto.getProductId() + "' não encontrado");
+            }
+        }
+    }
+
+    @Override
+    public Order createEntity() {
+        return new Order();
+    }
+
+    @Override
+    public String getClassName() {
+        return getClass().getName();
+    }
+
+    @Override
+    public String getTranslatedEntityName() {
+        return messageSource.getMessage("entity.Order", null, Locale.getDefault());
+    }
+
+    private Example<Order> example(Long id, String status, String payment, String user, String client) {
+        Order orderExample = createEntity();
+        if (id != null) {
+            orderExample.setId(id);
+        }
+        if (status != null && !status.isEmpty()) {
+            orderExample.setStatus(OrderStatus.fromValue(status));
+        }
+        if (payment != null && !payment.isEmpty()) {
+            Payment entity = new Payment();
+            entity.setPaymentType(PaymentType.fromValue(payment));
+            orderExample.setPayment(entity);
+        }
+        if (user != null && !user.isEmpty()) {
+            User entity = new User();
+            entity.setNameUnaccented(user);
+            orderExample.setUser(entity);
+        }
+        if (client != null && !client.isEmpty()) {
+            Client entity = new Client();
+            entity.setNameUnaccented(client);
+            orderExample.setClient(entity);
+        }
+
+        ExampleMatcher matcher = ExampleMatcher.matching()
+                .withMatcher("id", ExampleMatcher.GenericPropertyMatchers.exact())
+                .withMatcher("status", ExampleMatcher.GenericPropertyMatchers.exact())
+                .withMatcher("payment", ExampleMatcher.GenericPropertyMatchers.exact())
+                .withMatcher("user.nameUnaccented", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase())
+                .withMatcher("client.nameUnaccented", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase());
+        return Example.of(orderExample, matcher);
+    }
+
+    private Client virifyClient(User user, OrderDTO dto) {
+
+        if (user instanceof Client clientUser) {
+            return clientUser;
+        }
+
+        if (dto.getClient().getId() == null) {
+            Client client = new Client();
+            client.setId(4L);
+            //return clientRepository.getReferenceById(4L);
+            return client;
+        }
+
+        return clientRepository.findById(dto.getClient().getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Cliente não encontrado."));
+    }
 }

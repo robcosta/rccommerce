@@ -9,7 +9,7 @@ import rccommerce.entities.Order;
 import rccommerce.entities.OrderItem;
 import rccommerce.entities.enums.OrderStatus;
 
-public class OrderDTO {
+public class OrderMinDTO {
 
     private Long id;
     private Instant moment;
@@ -22,7 +22,7 @@ public class OrderDTO {
     @NotEmpty(message = "Deve ter pelo menos um item")
     private List<OrderItemDTO> itens = new ArrayList<>();
 
-    public OrderDTO(Long id, Instant moment, OrderStatus status, UserOrderDTO User, ClientOrderDTO client, PaymentDTO payment) {
+    public OrderMinDTO(Long id, Instant moment, OrderStatus status, UserOrderDTO User, ClientOrderDTO client, PaymentDTO payment) {
         this.id = id;
         this.moment = moment;
         this.status = status;
@@ -31,7 +31,7 @@ public class OrderDTO {
         this.payment = payment;
     }
 
-    public OrderDTO(Order entity) {
+    public OrderMinDTO(Order entity) {
         id = entity.getId();
         moment = entity.getMoment();
         status = entity.getStatus();

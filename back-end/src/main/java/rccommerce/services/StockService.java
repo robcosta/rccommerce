@@ -25,7 +25,7 @@ public class StockService {
     private ProductRepository productRepository;
 
     @Transactional
-    public void saveteStock(User user, Product product, Instant moment, Double qttMoved, StockMoviment moviment, Product product2) {
+    public void saveStock(User user, Product product, Instant moment, Double qttMoved, StockMoviment moviment) {
         Stock stock = new Stock();
         try {
             product = productRepository.getReferenceById(product.getId());

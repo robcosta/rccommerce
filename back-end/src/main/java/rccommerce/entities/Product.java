@@ -56,7 +56,7 @@ public class Product implements Convertible<ProductDTO, ProductMinDTO> {
     private Set<Category> categories = new HashSet<>();
 
     @OneToMany(mappedBy = "id.product")
-    private Set<OrderItem> items = new HashSet<>();
+    private Set<OrderItem> itens = new HashSet<>();
 
     public Product() {
     }
@@ -162,12 +162,12 @@ public class Product implements Convertible<ProductDTO, ProductMinDTO> {
         categories.add(category);
     }
 
-    public Set<OrderItem> getItems() {
-        return items;
+    public Set<OrderItem> getItens() {
+        return itens;
     }
 
     public List<Order> getOrders() {
-        return items.stream().map(x -> x.gerOrder()).toList();
+        return itens.stream().map(x -> x.getOrder()).toList();
     }
 
     @Override

@@ -10,22 +10,26 @@ import rccommerce.services.exceptions.InvalidArgumentExecption;
 
 public enum RoleAuthority {
 
-	ROLE_ADMIN(1), ROLE_OPERATOR(2), ROLE_SELLER(3), ROLE_CLIENT(4);
-	private final Integer code;
+    ROLE_ADMIN(1),
+    ROLE_OPERATOR(2),
+    ROLE_SELLER(3),
+    ROLE_CLIENT(4);
 
-	RoleAuthority(int code) {
-		this.code = code;
-	}
+    private final Integer code;
 
-	public Integer getCode() {
-		return code;
-	}
+    RoleAuthority(int code) {
+        this.code = code;
+    }
 
-	public static Optional<RoleAuthority> searchCode(Integer code) {
-		return Arrays.stream(values()).sequential().filter(t -> t.code.equals(code)).findFirst();
-	}
-	
-	@JsonValue
+    public Integer getCode() {
+        return code;
+    }
+
+    public static Optional<RoleAuthority> searchCode(Integer code) {
+        return Arrays.stream(values()).sequential().filter(t -> t.code.equals(code)).findFirst();
+    }
+
+    @JsonValue
     public String getName() {
         return name();
     }

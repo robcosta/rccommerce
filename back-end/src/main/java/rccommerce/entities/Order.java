@@ -17,116 +17,136 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import rccommerce.dto.OrderDTO;
+import rccommerce.dto.OrderMinDTO;
 import rccommerce.entities.enums.OrderStatus;
+import rccommerce.services.interfaces.Convertible;
 
 @Entity
 @Table(name = "tb_order")
-public class Order {
-	
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
-	
-	@Column(columnDefinition = "TIMESTAMP WITHOUT TIME ZONE")
-	private Instant moment;
-	private OrderStatus status;
-	
-	@ManyToOne
-	@JoinColumn(name = "user_id")
-	private User user;
-	
-	@ManyToOne
-	@JoinColumn(name = "client_id")
-	private Client client;
-	
-	@OneToOne(mappedBy = "order", cascade = CascadeType.ALL)	
-	private Payment payment;
-	
-	@OneToMany(mappedBy = "id.order")
-	private Set<OrderItem> items = new HashSet<>();
-	
-	public Order() {
-	}
+public class Order implements Convertible<OrderDTO, OrderMinDTO> {
 
-	public Order(Long id, Instant moment, OrderStatus status, User user, Client client, Payment payment) {
-		this.id = id;
-		this.moment = moment;
-		this.status = status;
-		this.user = user;
-		this.client = client;
-		this.payment = payment;
-	}
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-	public Long getId() {
-		return id;
-	}
+    @Column(columnDefinition = "TIMESTAMP WITHOUT TIME ZONE")
+    private Instant moment;
+    private OrderStatus status;
 
-	public void setId(Long id) {
-		this.id = id;
-	}
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
 
-	public Instant getMoment() {
-		return moment;
-	}
+    @ManyToOne
+    @JoinColumn(name = "client_id")
+    private Client client;
 
-	public void setMoment(Instant moment) {
-		this.moment = moment;
-	}
+    @OneToOne(mappedBy = "order", cascade = CascadeType.ALL)
+    private Payment payment;
 
-	public OrderStatus getStatus() {
-		return status;
-	}
+    @OneToMany(mappedBy = "id.order")
+    private Set<OrderItem> itens = new HashSet<>();
 
-	public void setStatus(OrderStatus status) {
-		this.status = status;
-	}
-	
-	public User getUser() {
-		return user;
-	}
-	
-	public void setUser(User user) {
-		this.user = user;
-	}
+    public Order() {
+    }
 
-	public Client getClient() {
-		return client;
-	}
+    public Order(Long id, Instant moment, OrderStatus status, User user, Client client, Payment payment) {
+        this.id = id;
+        this.moment = moment;
+        this.status = status;
+        this.user = user;
+        this.client = client;
+        this.payment = payment;
+    }
 
-	public void setClient(Client client) {
-		this.client = client;
-	}
-	
-	public Payment getPayment() {
-		return payment;
-	}
-	
-	public void setPayment(Payment payment) {
-		this.payment = payment;
-	}
-	
-	public Set<OrderItem> getItems() {
-		return items;
-	}
-	
-	public List<Product> getProducts(){
-		return items.stream().map(x -> x.getProduct()).toList();
-	}
+    public Long getId() {
+        return id;
+    }
 
-	@Override
-	public int hashCode() {
-		return Objects.hash(id);
-	}
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		Order other = (Order) obj;
-		return Objects.equals(id, other.id);
-	}
+    public Instant getMoment() {
+        return moment;
+    }
+
+    public void setMoment(Instant moment) {
+        this.moment = moment;
+    }
+
+    public OrderStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(OrderStatus status) {
+        this.status = status;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    public Client getClient() {
+        return client;
+    }
+
+    public void setClient(Client client) {
+        this.client = client;
+    }
+
+    public Payment getPayment() {
+        return payment;
+    }
+
+    public void setPayment(Payment payment) {
+        this.payment = payment;
+    }
+
+    public Set<OrderItem> getItens() {
+        return itens;
+    }
+
+    public void addItens(OrderItem orderItem) {
+        itens.add(orderItem);
+    }
+
+    public List<Product> getProducts() {
+        return itens.stream().map(x -> x.getProduct()).toList();
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        Order other = (Order) obj;
+        return Objects.equals(id, other.id);
+    }
+
+    @Override
+    public OrderDTO convertDTO() {
+        return new OrderDTO(this);
+    }
+
+    @Override
+    public OrderMinDTO convertMinDTO() {
+        return new OrderMinDTO(this);
+    }
 }
