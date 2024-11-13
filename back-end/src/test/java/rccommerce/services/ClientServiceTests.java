@@ -91,7 +91,8 @@ public class ClientServiceTests {
 
         serviceSpy = Mockito.spy(service);
         doNothing().when(serviceSpy).copyDtoToEntity(any(), any());
-        doNothing().when(serviceSpy).checkUserPermissions(any(), any(), any());
+        doNothing().when(serviceSpy).checkUserPermissions(any());
+        doNothing().when(serviceSpy).checkUserPermissions(any(), any());
         when(messageSource.getMessage(any(String.class), any(), any())).thenReturn("Cliente");
     }
 

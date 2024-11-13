@@ -23,6 +23,7 @@ import rccommerce.repositories.PermissionRepository;
 import rccommerce.repositories.RoleRepository;
 import rccommerce.services.exceptions.InvalidArgumentExecption;
 import rccommerce.services.interfaces.GenericService;
+import rccommerce.services.util.SecurityContextUtil;
 
 @Service
 public class OperatorService implements GenericService<Operator, OperatorDTO, OperatorMinDTO, Long> {
@@ -55,14 +56,22 @@ public class OperatorService implements GenericService<Operator, OperatorDTO, Op
     }
 
     @Override
-    public String getClassName() {
-        return getClass().getName();
-    }
-
-    @Override
     public String getTranslatedEntityName() {
         // Pega a tradução do nome da entidade para "Client"
         return messageSource.getMessage("entity.Operator", null, Locale.getDefault());
+    }
+
+    @Override
+    public void checkUserPermissions(PermissionAuthority authority, Long id) {
+        Long userId = SecurityContextUtil.getUserId(); // Obtém o ID do usuário autenticado
+
+        //Verifica se o usuário é o próprio operador para permitir auto operações
+        if (userId.equals(id)) {
+            return;
+        }
+
+        // Para os demais casos, chama o método da interface GenericService
+        GenericService.super.checkUserPermissions(authority);
     }
 
     @Override

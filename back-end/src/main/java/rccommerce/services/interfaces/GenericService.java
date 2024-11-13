@@ -27,13 +27,11 @@ public interface GenericService<T extends Convertible<DTO, MINDTO>, DTO, MINDTO,
 
     T createEntity();
 
-    String getClassName();
-
     String getTranslatedEntityName();
 
     @Transactional(readOnly = true)
     default Page<MINDTO> findAll(Pageable pageable) {
-        checkUserPermissions(PermissionAuthority.PERMISSION_READER, null, getClassName());
+        checkUserPermissions(PermissionAuthority.PERMISSION_READER);
 
         Page<T> result = getRepository().findAll(pageable);
         if (result.getContent().isEmpty()) {
@@ -44,7 +42,14 @@ public interface GenericService<T extends Convertible<DTO, MINDTO>, DTO, MINDTO,
 
     @Transactional(readOnly = true)
     default MINDTO findById(ID id) {
-        checkUserPermissions(PermissionAuthority.PERMISSION_READER, (Long) id, getClassName());
+        return findById(id, true);
+    }
+
+    @Transactional(readOnly = true)
+    default MINDTO findById(ID id, boolean checkpermisson) {
+        if (checkpermisson) {
+            checkUserPermissions(PermissionAuthority.PERMISSION_READER, (Long) id);
+        }
 
         T result = getRepository().findById(id).orElseThrow(() -> {
             handleResourceNotFound();
@@ -56,7 +61,7 @@ public interface GenericService<T extends Convertible<DTO, MINDTO>, DTO, MINDTO,
 
     @Transactional(readOnly = true)
     default Page<MINDTO> findBy(Example<T> example, Pageable pageable) {
-        checkUserPermissions(PermissionAuthority.PERMISSION_READER, null, getClassName());
+        checkUserPermissions(PermissionAuthority.PERMISSION_READER);
 
         Page<T> result = getRepository().findBy(example, query -> query.page(pageable));
 
@@ -68,7 +73,14 @@ public interface GenericService<T extends Convertible<DTO, MINDTO>, DTO, MINDTO,
 
     @Transactional
     default MINDTO insert(DTO dto) {
-        checkUserPermissions(PermissionAuthority.PERMISSION_CREATE, null, getClassName());
+        return insert(dto, true);
+    }
+
+    @Transactional
+    default MINDTO insert(DTO dto, boolean checkpermisson) {
+        if (checkpermisson) {
+            checkUserPermissions(PermissionAuthority.PERMISSION_READER);
+        }
 
         T entity = createEntity();
         copyDtoToEntity(dto, entity);
@@ -83,7 +95,7 @@ public interface GenericService<T extends Convertible<DTO, MINDTO>, DTO, MINDTO,
 
     @Transactional
     default MINDTO update(DTO dto, ID id) {
-        checkUserPermissions(PermissionAuthority.PERMISSION_UPDATE, (Long) id, getClassName());
+        checkUserPermissions(PermissionAuthority.PERMISSION_UPDATE, (Long) id);
 
         try {
             T entity = getRepository().getReferenceById(id);
@@ -101,7 +113,7 @@ public interface GenericService<T extends Convertible<DTO, MINDTO>, DTO, MINDTO,
 
     @Transactional(propagation = Propagation.SUPPORTS)
     default void delete(ID id) {
-        checkUserPermissions(PermissionAuthority.PERMISSION_DELETE, (Long) id, getClassName());
+        checkUserPermissions(PermissionAuthority.PERMISSION_DELETE, (Long) id);
 
         if (!getRepository().existsById(id)) {
             handleResourceNotFound();
@@ -132,24 +144,17 @@ public interface GenericService<T extends Convertible<DTO, MINDTO>, DTO, MINDTO,
     // Método auxiliar para lançar a exceção
     default void handleResourceNotFound() {
         throw new ResourceNotFoundException(
-                getTranslatedEntityName() + " não encontrado para os critérios especificados.");
+                getTranslatedEntityName() + " não encontrado(a) para os critérios especificados.");
     }
 
     // Método auxiliar que verifica a permissão do usuário para acesso aos métodos
     // do service.
-    default void checkUserPermissions(PermissionAuthority authority, Long id, String className) {
-        Long userId = SecurityContextUtil.getUserId(); // Obtém o ID do usuário autenticado
-        List<String> authList = SecurityContextUtil.getAuthList(); // Obtém a lista de permissões do usuário
+    default void checkUserPermissions(PermissionAuthority authority, Long id) {
+        checkUserPermissions(authority);
+    }
 
-        // Permite auto operações.
-        if (userId.equals(id)) {
-            if (className.equalsIgnoreCase("rccommerce.services.ClientService")) {
-                return;
-            }
-            if (className.equalsIgnoreCase("rccommerce.services.OperatorService")) {
-                return;
-            }
-        }
+    default void checkUserPermissions(PermissionAuthority authority) {
+        List<String> authList = SecurityContextUtil.getAuthList(); // Obtém a lista de permissões do usuário
 
         // Permissão geral que concede todas as permissões (PERMISSION_ALL)
         if (authList.contains(PermissionAuthority.PERMISSION_ALL.getName())) {
@@ -199,5 +204,4 @@ public interface GenericService<T extends Convertible<DTO, MINDTO>, DTO, MINDTO,
         // Retorna a senha encriptada se válida
         return new BCryptPasswordEncoder().encode(password);
     }
-
 }

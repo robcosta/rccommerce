@@ -21,6 +21,7 @@ import rccommerce.repositories.ClientRepository;
 import rccommerce.repositories.PermissionRepository;
 import rccommerce.repositories.RoleRepository;
 import rccommerce.services.interfaces.GenericService;
+import rccommerce.services.util.SecurityContextUtil;
 import rccommerce.util.AccentUtils;
 
 @Service
@@ -54,24 +55,25 @@ public class ClientService implements GenericService<Client, ClientDTO, ClientMi
     }
 
     @Override
-    public void checkUserPermissions(PermissionAuthority authority, Long id, String className) {
-        // Lógica para permitir a inserção (CREATE) de qualquer cliente sem verificação
-        // de permissões
+    public void checkUserPermissions(PermissionAuthority authority, Long id) {
+        Long userId = SecurityContextUtil.getUserId(); // Obtém o ID do usuário autenticado
+
+        //Verifica se o usuário é o próprio cliente para permitir auto operações
+        if (userId.equals(id)) {
+            return;
+        }
+        // Permite que qualquer usuário se cadastre como Cliente
         if (authority.equals(PermissionAuthority.PERMISSION_CREATE)) {
             return;
         }
 
         // Para os demais casos, chama o método da interface GenericService
-        GenericService.super.checkUserPermissions(authority, id, className);
+        GenericService.super.checkUserPermissions(authority);
     }
 
     @Override
-    public String getClassName() {
-        return getClass().getName();
-    }
-
-    @Override
-    public void copyDtoToEntity(ClientDTO dto, Client entity) {
+    public void copyDtoToEntity(ClientDTO dto, Client entity
+    ) {
         entity.setName(dto.getName());
         entity.setEmail(dto.getEmail().toLowerCase());
         if (!dto.getPassword().isEmpty()) {
