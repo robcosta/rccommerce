@@ -4,7 +4,7 @@ import java.time.Instant;
 
 import rccommerce.entities.Stock;
 
-public class StockDTO {
+public class StockMinDTO {
 
     private Long id;
     private UserDTO user;
@@ -14,10 +14,10 @@ public class StockDTO {
     private Instant moment;
     private String moviment;
 
-    public StockDTO() {
+    public StockMinDTO() {
     }
 
-    public StockDTO(Long id, UserDTO user, ProductDTO product, Double quantity, Double qttMoved, Instant moment, String moviment) {
+    public StockMinDTO(Long id, UserDTO user, ProductDTO product, Double quantity, Double qttMoved, Instant moment, String moviment) {
         this.id = id;
         this.user = user;
         this.product = product;
@@ -27,7 +27,7 @@ public class StockDTO {
         this.moviment = moviment;
     }
 
-    public StockDTO(Stock entity) {
+    public StockMinDTO(Stock entity) {
         id = entity.getId();
         user = new UserDTO(entity.getUser());
         product = new ProductDTO(entity.getProduct());
