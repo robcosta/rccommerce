@@ -4,21 +4,21 @@ import java.time.Instant;
 
 import rccommerce.entities.Payment;
 
-public class PaymentDTO {
+public class PaymentMinDTO {
 
     private Long id;
     private Instant moment;
     private Long orderId;
     private String paymentType;
 
-    public PaymentDTO(Long id, Instant moment, Long orderId, String paymentType) {
+    public PaymentMinDTO(Long id, Instant moment, Long orderId, String paymentType) {
         this.id = id;
         this.moment = moment;
         this.orderId = orderId;
         this.paymentType = paymentType;
     }
 
-    public PaymentDTO(Payment entity) {
+    public PaymentMinDTO(Payment entity) {
         id = entity.getId();
         moment = entity.getMoment();
         paymentType = entity.getPaymentType().getName();

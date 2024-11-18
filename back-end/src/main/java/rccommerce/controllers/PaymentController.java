@@ -14,28 +14,29 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import jakarta.validation.Valid;
 import rccommerce.dto.PaymentDTO;
+import rccommerce.dto.PaymentMinDTO;
 import rccommerce.services.PaymentService;
 
 @RestController
-@RequestMapping(value =  "/payments")
+@RequestMapping(value = "/payments")
 public class PaymentController {
-	
-	@Autowired
-	private PaymentService service;
-	
+
+    @Autowired
+    private PaymentService service;
+
 //	@PreAuthorize("hasAnyRole('ROLE_ADMIN')")
-	@GetMapping(value = "/{id}")
-	public ResponseEntity<PaymentDTO> findById(@PathVariable Long id) {
-		PaymentDTO dto = service.findById(id);
-		return ResponseEntity.ok(dto);
-	}
-	
+    @GetMapping(value = "/{id}")
+    public ResponseEntity<PaymentMinDTO> findById(@PathVariable Long id) {
+        PaymentMinDTO dto = service.findById(id);
+        return ResponseEntity.ok(dto);
+    }
+
 //	@PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_OPERATOR', 'ROLE_SELLER', 'ROLE_CLIENT')")
-	@PostMapping
-	public ResponseEntity<PaymentDTO> insert(@Valid @RequestBody PaymentDTO dto) {
-		dto = service.insert(dto);
-		URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
-				.buildAndExpand(dto.getId()).toUri();
-		return ResponseEntity.created(uri).body(dto);
-	}
+    @PostMapping
+    public ResponseEntity<PaymentMinDTO> insert(@Valid @RequestBody PaymentDTO dto) {
+        PaymentMinDTO minDto = service.insert(dto);
+        URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
+                .buildAndExpand(dto.getId()).toUri();
+        return ResponseEntity.created(uri).body(minDto);
+    }
 }
