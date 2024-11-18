@@ -24,166 +24,174 @@ import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-import rccommerce.util.AccentUtils;
+import rccommerce.services.util.AccentUtils;
 
 @Entity
-@Table(name = "tb_user", indexes = { @Index(name = "idx_user_name_unaccented", columnList = "nameUnaccented") })
+@Table(name = "tb_user", indexes = {
+    @Index(name = "idx_user_name_unaccented", columnList = "nameUnaccented")})
 @Inheritance(strategy = InheritanceType.JOINED)
 public class User implements UserDetails {
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
-	private String name;
-	private String nameUnaccented;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    private String name;
+    private String nameUnaccented;
 
-	@Column(unique = true)
-	private String email;
-	private String password;
+    @Column(unique = true)
+    private String email;
+    private String password;
 
-	@ManyToMany(fetch = FetchType.EAGER)
-	@JoinTable(name = "tb_user_role", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
-	private Set<Role> roles = new HashSet<>();
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(name = "tb_user_role", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
+    private Set<Role> roles = new HashSet<>();
 
-	@ManyToMany(fetch = FetchType.EAGER)
-	@JoinTable(name = "tb_user_permission", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "permission_id"))
-	private Set<Permission> permissions = new HashSet<>();
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(name = "tb_user_permission", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "permission_id"))
+    private Set<Permission> permissions = new HashSet<>();
 
-	@OneToMany(mappedBy = "user")
-	private List<Order> orders = new ArrayList<>();
+    @OneToMany(mappedBy = "user")
+    private List<Order> orders = new ArrayList<>();
 
-	public User() {
-	}
+    public User() {
+    }
 
-	public User(Long id, String name, String email, String password) {
-		this.id = id;
-		this.name = name;
-		this.email = email;
-		this.password = password;
-	}
+    public User(Long id) {
+        this.id = id;
+    }
 
-	public Long getId() {
-		return id;
-	}
+    public User(Long id, String name, String email, String password) {
+        this.id = id;
+        this.name = name;
+        this.email = email;
+        this.password = password;
+    }
 
-	public void setId(Long id) {
-		this.id = id;
-	}
+    public Long getId() {
+        return id;
+    }
 
-	public String getName() {
-		return name;
-	}
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-	public void setName(String name) {
-		this.name = name;
-		setNameUnaccented(this.name);
-	}
+    public String getName() {
+        return name;
+    }
 
-	public String getNameUnaccented() {
-		return nameUnaccented;
-	}
+    public void setName(String name) {
+        this.name = name;
+        setNameUnaccented(this.name);
+    }
 
-	public void setNameUnaccented(String nameUnaccented) {
-		this.nameUnaccented = AccentUtils.removeAccents(nameUnaccented);
-	}
+    public String getNameUnaccented() {
+        return nameUnaccented;
+    }
 
-	public String getEmail() {
-		return email;
-	}
+    public void setNameUnaccented(String nameUnaccented) {
+        this.nameUnaccented = AccentUtils.removeAccents(nameUnaccented);
+    }
 
-	public void setEmail(String email) {
-		this.email = AccentUtils.removeAccents(email.toLowerCase());
-	}
+    public String getEmail() {
+        return email;
+    }
 
-	public String getPassword() {
-		return password;
-	}
+    public void setEmail(String email) {
+        this.email = AccentUtils.removeAccents(email.toLowerCase());
+    }
 
-	public void setPassword(String password) {
-		this.password = password;
-	}
+    public String getPassword() {
+        return password;
+    }
 
-	public Set<Role> getRoles() {
-		return roles;
-	}
+    public void setPassword(String password) {
+        this.password = password;
+    }
 
-	public void addRole(Role role) {
-		roles.add(role);
-	}
+    public Set<Role> getRoles() {
+        return roles;
+    }
 
-	public Set<Permission> getPermissions() {
-		return permissions;
-	}
+    public void addRole(Role role) {
+        roles.add(role);
+    }
 
-	public void addPermission(Permission permission) {
-		this.permissions.add(permission);
-	}
+    public Set<Permission> getPermissions() {
+        return permissions;
+    }
 
-	public List<Order> getOrders() {
-		return orders;
-	}
+    public void addPermission(Permission permission) {
+        this.permissions.add(permission);
+    }
 
-	public boolean hasRole(String roleNmame) {
-		for (Role role : roles) {
-			if (role.getAuthority().equals(roleNmame)) {
-				return true;
-			}
-		}
-		return false;
-	}
+    public List<Order> getOrders() {
+        return orders;
+    }
 
-	@Override
-	public int hashCode() {
-		return Objects.hash(id);
-	}
+    public boolean hasRole(String roleNmame) {
+        for (Role role : roles) {
+            if (role.getAuthority().equals(roleNmame)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		User other = (User) obj;
-		return Objects.equals(id, other.id);
-	}
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
 
-	@Override
-	public Collection<? extends GrantedAuthority> getAuthorities() {
-		Set<GrantedAuthority> authorities = new HashSet<>();
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        User other = (User) obj;
+        return Objects.equals(id, other.id);
+    }
 
-		// Adiciona os roles como GrantedAuthority
-		authorities.addAll(roles);
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        Set<GrantedAuthority> authorities = new HashSet<>();
 
-		// Adiciona as permissions como GrantedAuthority
-		authorities.addAll(permissions);
+        // Adiciona os roles como GrantedAuthority
+        authorities.addAll(roles);
 
-		return authorities;
-	}
+        // Adiciona as permissions como GrantedAuthority
+        authorities.addAll(permissions);
 
-	@Override
-	public String getUsername() {
-		return email;
-	}
+        return authorities;
+    }
 
-	@Override
-	public boolean isAccountNonExpired() {
-		return true;
-	}
+    @Override
+    public String getUsername() {
+        return email;
+    }
 
-	@Override
-	public boolean isAccountNonLocked() {
-		return true;
-	}
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
 
-	@Override
-	public boolean isCredentialsNonExpired() {
-		return true;
-	}
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
 
-	@Override
-	public boolean isEnabled() {
-		return true;
-	}
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return true;
+    }
 }

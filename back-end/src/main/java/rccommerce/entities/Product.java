@@ -20,7 +20,7 @@ import jakarta.persistence.Table;
 import rccommerce.dto.ProductDTO;
 import rccommerce.dto.ProductMinDTO;
 import rccommerce.services.interfaces.Convertible;
-import rccommerce.util.AccentUtils;
+import rccommerce.services.util.AccentUtils;
 
 @Entity
 @Table(name = "tb_product", indexes = {
@@ -59,6 +59,10 @@ public class Product implements Convertible<ProductDTO, ProductMinDTO> {
     private Set<OrderItem> itens = new HashSet<>();
 
     public Product() {
+    }
+
+    public Product(Long id) {
+        this.id = id;
     }
 
     public Product(Long id, String name, String description, String unit, Double price, String imgUrl, Double quantity,

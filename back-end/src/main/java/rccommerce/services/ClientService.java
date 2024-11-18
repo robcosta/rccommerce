@@ -21,8 +21,9 @@ import rccommerce.repositories.ClientRepository;
 import rccommerce.repositories.PermissionRepository;
 import rccommerce.repositories.RoleRepository;
 import rccommerce.services.interfaces.GenericService;
+import rccommerce.services.util.AccentUtils;
 import rccommerce.services.util.SecurityContextUtil;
-import rccommerce.util.AccentUtils;
+import rccommerce.services.util.ValidPassword;
 
 @Service
 public class ClientService implements GenericService<Client, ClientDTO, ClientMinDTO, Long> {
@@ -72,12 +73,11 @@ public class ClientService implements GenericService<Client, ClientDTO, ClientMi
     }
 
     @Override
-    public void copyDtoToEntity(ClientDTO dto, Client entity
-    ) {
+    public void copyDtoToEntity(ClientDTO dto, Client entity) {
         entity.setName(dto.getName());
         entity.setEmail(dto.getEmail().toLowerCase());
         if (!dto.getPassword().isEmpty()) {
-            entity.setPassword(isValidPassword(dto.getPassword()));
+            entity.setPassword(ValidPassword.isValidPassword(dto.getPassword()));
         }
         entity.setCpf(dto.getCpf());
         entity.getRoles().clear();
@@ -88,8 +88,7 @@ public class ClientService implements GenericService<Client, ClientDTO, ClientMi
 
     @Override
     public String getTranslatedEntityName() {
-        // Pega a tradução do nome da entidade para "Client" e aplicar nas mensagens de
-        // erro"
+        // Pega a tradução do nome da entidade "Client" para aplicar nas mensagens de erro
         return messageSource.getMessage("entity.Client", null, Locale.getDefault());
     }
 

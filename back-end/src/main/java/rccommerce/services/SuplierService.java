@@ -17,7 +17,7 @@ import rccommerce.dto.SuplierMinDTO;
 import rccommerce.entities.Suplier;
 import rccommerce.repositories.SuplierRepository;
 import rccommerce.services.interfaces.GenericService;
-import rccommerce.util.AccentUtils;
+import rccommerce.services.util.AccentUtils;
 
 @Service
 public class SuplierService implements GenericService<Suplier, SuplierDTO, SuplierMinDTO, Long> {
@@ -47,11 +47,6 @@ public class SuplierService implements GenericService<Suplier, SuplierDTO, Supli
     @Override
     public Suplier createEntity() {
         return new Suplier();
-    }
-
-    @Override
-    public String getClassName() {
-        return getClass().getName();
     }
 
     @Override

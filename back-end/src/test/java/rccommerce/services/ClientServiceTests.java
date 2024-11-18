@@ -41,6 +41,7 @@ import rccommerce.repositories.RoleRepository;
 import rccommerce.services.exceptions.DatabaseException;
 import rccommerce.services.exceptions.InvalidPasswordExecption;
 import rccommerce.services.exceptions.ResourceNotFoundException;
+import rccommerce.services.util.ValidPassword;
 import rccommerce.tests.FactoryUser;
 
 @ExtendWith(SpringExtension.class)
@@ -243,7 +244,7 @@ public class ClientServiceTests {
     void isValidPasswordShouldBCryptPasswordWhenValidPassword() {
         String password = "Valid1@";
 
-        String result = service.isValidPassword(password);
+        String result = ValidPassword.isValidPassword(password);
 
         // Verifica se o resultado não é nulo
         assertNotNull(result);
@@ -259,7 +260,7 @@ public class ClientServiceTests {
     @Test
     void isValidPasswordShouldInvalidPasswordExecptionWhenNullPassword() {
         Exception exception = assertThrows(InvalidPasswordExecption.class, () -> {
-            service.isValidPassword(null);
+            ValidPassword.isValidPassword(null);
         });
 
         String expectedMessage = "Senha inválida: pelo menos 6 dígitos.";
@@ -270,7 +271,7 @@ public class ClientServiceTests {
     void isValidPasswordShouldInvalidPasswordExecptionWhenShortPassword() {
 
         Exception exception = assertThrows(InvalidPasswordExecption.class, () -> {
-            service.isValidPassword("12345");
+            ValidPassword.isValidPassword("12345");
         });
 
         String expectedMessage = "Senha inválida: pelo menos 6 dígitos.";
@@ -280,7 +281,7 @@ public class ClientServiceTests {
     @Test
     void isValidPasswordShouldInvalidPasswordExecptionWhenMissingUppercase() {
         Exception exception = assertThrows(InvalidPasswordExecption.class, () -> {
-            service.isValidPassword("lowercase1!");
+            ValidPassword.isValidPassword("lowercase1!");
         });
 
         String expectedMessage = "Senha inválida: pelo menos uma letra maiúscula.";
@@ -290,7 +291,7 @@ public class ClientServiceTests {
     @Test
     void isValidPasswordShouldInvalidPasswordExecptionWhenMissingLowercase() {
         Exception exception = assertThrows(InvalidPasswordExecption.class, () -> {
-            service.isValidPassword("UPPERCASE1!");
+            ValidPassword.isValidPassword("UPPERCASE1!");
         });
 
         String expectedMessage = "Senha inválida: pelo menos uma letra minúscula.";
@@ -300,7 +301,7 @@ public class ClientServiceTests {
     @Test
     void isValidPasswordShouldInvalidPasswordExecptionWhenMissingDigit() {
         Exception exception = assertThrows(InvalidPasswordExecption.class, () -> {
-            service.isValidPassword("NoDigit!");
+            ValidPassword.isValidPassword("NoDigit!");
         });
 
         String expectedMessage = "Senha inválida: pelo menos um dígito.";
@@ -310,7 +311,7 @@ public class ClientServiceTests {
     @Test
     void isValidPasswordShouldInvalidPasswordExecptionWhenMissingSpecialCharacter() {
         Exception exception = assertThrows(InvalidPasswordExecption.class, () -> {
-            service.isValidPassword("NoSpecial1");
+            ValidPassword.isValidPassword("NoSpecial1");
         });
 
         String expectedMessage = "Senha inválida: pelo menos um caractere especial.";
@@ -320,7 +321,7 @@ public class ClientServiceTests {
     @Test
     void isValidPasswordShouldInvalidPasswordExecptionWhenMultipleIssues() {
         Exception exception = assertThrows(InvalidPasswordExecption.class, () -> {
-            service.isValidPassword("short");
+            ValidPassword.isValidPassword("short");
         });
 
         String expectedMessage = "Senha inválida: pelo menos 6 dígitos.";

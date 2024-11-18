@@ -15,40 +15,40 @@ import rccommerce.services.interfaces.Convertible;
 @Table(name = "tb_client")
 public class Client extends User implements Convertible<ClientDTO, ClientMinDTO> {
 
-	@Column(unique = true)
-	private String cpf;
+    @Column(unique = true)
+    private String cpf;
 
-	@OneToMany(mappedBy = "client")
-	private List<Order> orders = new ArrayList<>();
+    @OneToMany(mappedBy = "client")
+    private List<Order> orders = new ArrayList<>();
 
-	public Client() {
-	}
+    public Client() {
+    }
 
-	public Client(Long id, String name, String email, String password, String cpf) {
-		super(id, name, email, password);
-		this.cpf = cpf;
-		super.getRoles().add(new Role(4L, "ROLE_CLIENT"));
-	}
+    public Client(Long id, String name, String email, String password, String cpf) {
+        super(id, name, email, password);
+        this.cpf = cpf;
+        super.getRoles().add(new Role(4L, "ROLE_CLIENT"));
+    }
 
-	public String getCpf() {
-		return cpf;
-	}
+    public String getCpf() {
+        return cpf;
+    }
 
-	public void setCpf(String cpf) {
-		this.cpf = cpf.replaceAll("[^0-9]", "");
-	}
+    public void setCpf(String cpf) {
+        this.cpf = cpf.replaceAll("[^0-9]", "");
+    }
 
-	public List<Order> getOrders() {
-		return orders;
-	}
+    public List<Order> getOrders() {
+        return orders;
+    }
 
-	@Override
-	public ClientDTO convertDTO() {
-		return new ClientDTO(this);
-	}
+    @Override
+    public ClientDTO convertDTO() {
+        return new ClientDTO(this);
+    }
 
-	@Override
-	public ClientMinDTO convertMinDTO() {
-		return new ClientMinDTO(this);
-	}
+    @Override
+    public ClientMinDTO convertMinDTO() {
+        return new ClientMinDTO(this);
+    }
 }

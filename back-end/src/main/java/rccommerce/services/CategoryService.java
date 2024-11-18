@@ -17,7 +17,7 @@ import rccommerce.dto.CategoryMinDTO;
 import rccommerce.entities.Category;
 import rccommerce.repositories.CategoryRepository;
 import rccommerce.services.interfaces.GenericService;
-import rccommerce.util.AccentUtils;
+import rccommerce.services.util.AccentUtils;
 
 @Service
 public class CategoryService implements GenericService<Category, CategoryDTO, CategoryMinDTO, Long> {
@@ -41,11 +41,6 @@ public class CategoryService implements GenericService<Category, CategoryDTO, Ca
     @Override
     public Category createEntity() {
         return new Category();
-    }
-
-    @Override
-    public String getClassName() {
-        return getClass().getName();
     }
 
     @Override

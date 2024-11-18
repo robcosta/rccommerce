@@ -29,7 +29,7 @@ import rccommerce.repositories.SuplierRepository;
 import rccommerce.services.exceptions.InvalidArgumentExecption;
 import rccommerce.services.exceptions.ResourceNotFoundException;
 import rccommerce.services.interfaces.GenericService;
-import rccommerce.util.AccentUtils;
+import rccommerce.services.util.AccentUtils;
 
 @Service
 public class ProductService implements GenericService<Product, ProductDTO, ProductMinDTO, Long> {
@@ -194,11 +194,6 @@ public class ProductService implements GenericService<Product, ProductDTO, Produ
     }
 
     @Override
-    public String getClassName() {
-        return getClass().getName();
-    }
-
-    @Override
     public String getTranslatedEntityName() {
         return messageSource.getMessage("entity.Product", null, Locale.getDefault());
     }
@@ -225,10 +220,10 @@ public class ProductService implements GenericService<Product, ProductDTO, Produ
 
     // Sobrescrevendo o método de verificação de permissões para liberar os métodos de busca de produto para qualquer usuário
     @Override
-    public void checkUserPermissions(PermissionAuthority authority, Long id, String className) {
+    public void checkUserPermissions(PermissionAuthority authority, Long id) {
         // Não chama a verificação de permissões em métodos de busca
         if (permissionCheckEnabled) {
-            GenericService.super.checkUserPermissions(authority, id, className);
+            GenericService.super.checkUserPermissions(authority, id);
         }
     }
 

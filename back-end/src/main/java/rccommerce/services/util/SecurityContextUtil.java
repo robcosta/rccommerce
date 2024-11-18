@@ -27,19 +27,6 @@ public class SecurityContextUtil {
         return userId;
     }
 
-//	// Método para obter a lista de authorities (roles e permissions) do usuário
-//	// autenticado
-//	public static List<String> getAuthList() {
-//		// Obtém o objeto de autenticação atual do SecurityContext
-//		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-//
-//		// Obtém a coleção de authorities do usuário autenticado
-//		Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
-//
-//		// Converte a coleção de GrantedAuthority em uma lista de Strings com os nomes
-//		// das authorities
-//		return authorities.stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList());
-//	}
     public static List<String> getAuthList() {
         // Obtem o objeto de autenticação atual do SecurityContext
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

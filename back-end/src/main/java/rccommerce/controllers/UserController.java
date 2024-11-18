@@ -15,33 +15,33 @@ import rccommerce.dto.UserMinDTO;
 import rccommerce.services.UserService;
 
 @RestController
-@RequestMapping(value =  "/users")
+@RequestMapping(value = "/users")
 public class UserController {
-	
-	@Autowired
-	private UserService service;
-	
-	@PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_OPERATOR', 'ROLE_SELLER','ROLE_CLIENT')")
-	@GetMapping(value = "/me")
-	public ResponseEntity<UserMinDTO> getMe() {
-		UserMinDTO dto = service.getMe();
-		return ResponseEntity.ok(dto);
-	}
-	
-	@PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_OPERATOR', 'ROLE_SELLER')")
-	@GetMapping
-	public ResponseEntity<Page<UserMinDTO>> findAll(
-			@RequestParam(name = "name", defaultValue = "") String name, 
-			@RequestParam(name = "email", defaultValue = "") String email, 
-			Pageable pageable) {
-		Page<UserMinDTO> dto = service.findAll(name, email, pageable);
-		return ResponseEntity.ok(dto);
-	}
-	
-	@PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_OPERATOR', 'ROLE_SELLER')")
-	@GetMapping(value = "/{id}")
-	public ResponseEntity<UserMinDTO> findById(@PathVariable Long id) {
-		UserMinDTO dto = service.findById(id);
-		return ResponseEntity.ok(dto);
-	}
+
+    @Autowired
+    private UserService service;
+
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_OPERATOR', 'ROLE_SELLER','ROLE_CLIENT')")
+    @GetMapping(value = "/me")
+    public ResponseEntity<UserMinDTO> getMe() {
+        UserMinDTO dto = service.getMe();
+        return ResponseEntity.ok(dto);
+    }
+
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_OPERATOR', 'ROLE_SELLER')")
+    @GetMapping
+    public ResponseEntity<Page<UserMinDTO>> findAll(
+            @RequestParam(name = "name", defaultValue = "") String name,
+            @RequestParam(name = "email", defaultValue = "") String email,
+            Pageable pageable) {
+        Page<UserMinDTO> dto = service.findAll(name, email, pageable);
+        return ResponseEntity.ok(dto);
+    }
+
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_OPERATOR', 'ROLE_SELLER')")
+    @GetMapping(value = "/{id}")
+    public ResponseEntity<UserMinDTO> findById(@PathVariable Long id) {
+        UserMinDTO dto = service.findById(id);
+        return ResponseEntity.ok(dto);
+    }
 }

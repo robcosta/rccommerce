@@ -11,13 +11,19 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import rccommerce.dto.UserDTO;
 import rccommerce.dto.UserMinDTO;
 import rccommerce.entities.Permission;
 import rccommerce.entities.Role;
 import rccommerce.entities.User;
+import rccommerce.entities.enums.PermissionAuthority;
 import rccommerce.projections.UserDetailsProjection;
+import rccommerce.repositories.PermissionRepository;
+import rccommerce.repositories.RoleRepository;
 import rccommerce.repositories.UserRepository;
+import rccommerce.services.exceptions.InvalidArgumentExecption;
 import rccommerce.services.exceptions.ResourceNotFoundException;
+import rccommerce.services.util.ValidPassword;
 import rccommerce.util.CustomUserUtil;
 
 @Service
@@ -25,6 +31,12 @@ public class UserService implements UserDetailsService {
 
     @Autowired
     private UserRepository repository;
+
+    @Autowired
+    private RoleRepository roleRepository;
+
+    @Autowired
+    private PermissionRepository permissionRepository;
 
     @Autowired
     private CustomUserUtil customUserUtil;
@@ -83,6 +95,40 @@ public class UserService implements UserDetailsService {
             return repository.searchEmail(username).get();
         } catch (Exception e) {
             throw new UsernameNotFoundException("Usuário não encontrado");
+        }
+    }
+
+    public void copyDtoToEntity(UserDTO dto, User entity) {
+        entity.setName(dto.getName());
+        entity.setEmail(dto.getEmail().toLowerCase());
+        if (dto.getPassword() != null && !dto.getPassword().isEmpty()) {
+            entity.setPassword(ValidPassword.isValidPassword(dto.getPassword()));
+        }
+
+        entity.getPermissions().clear();
+        if (dto.getPermissions().isEmpty()) {
+            Permission result = permissionRepository.findByAuthority(PermissionAuthority.PERMISSION_NONE.getName());
+            entity.addPermission(result);
+        }
+
+        for (String permission : dto.getPermissions()) {
+            Permission result = permissionRepository.findByAuthority(permission);
+            if (result == null) {
+                throw new InvalidArgumentExecption("Permissão de acesso, inexistentes: " + permission);
+            }
+            entity.addPermission(result);
+        }
+
+        if (dto.getRoles().isEmpty()) {
+            throw new InvalidArgumentExecption("Indicar pelo menos um nível de acesso");
+        }
+        entity.getRoles().clear();
+        for (String authority : dto.getRoles()) {
+            Role result = roleRepository.findByAuthority(authority);
+            if (result == null) {
+                throw new InvalidArgumentExecption("Nível 'ROLE' de acesso: " + authority + ", inexistentes");
+            }
+            entity.addRole(result);
         }
     }
 }

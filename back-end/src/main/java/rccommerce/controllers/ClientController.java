@@ -62,7 +62,7 @@ public class ClientController {
 
     @PostMapping
     public ResponseEntity<ClientMinDTO> insert(@Valid @RequestBody ClientDTO dto) {
-        ClientMinDTO minDTO = service.insert(dto);
+        ClientMinDTO minDTO = service.insert(dto, false);
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(dto.getId()).toUri();
         return ResponseEntity.created(uri).body(minDTO);
     }

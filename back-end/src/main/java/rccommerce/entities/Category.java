@@ -15,7 +15,7 @@ import jakarta.persistence.Table;
 import rccommerce.dto.CategoryDTO;
 import rccommerce.dto.CategoryMinDTO;
 import rccommerce.services.interfaces.Convertible;
-import rccommerce.util.AccentUtils;
+import rccommerce.services.util.AccentUtils;
 
 @Entity
 @Table(name = "tb_category", indexes = {

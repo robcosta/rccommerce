@@ -24,6 +24,7 @@ import rccommerce.repositories.RoleRepository;
 import rccommerce.services.exceptions.InvalidArgumentExecption;
 import rccommerce.services.interfaces.GenericService;
 import rccommerce.services.util.SecurityContextUtil;
+import rccommerce.services.util.ValidPassword;
 
 @Service
 public class OperatorService implements GenericService<Operator, OperatorDTO, OperatorMinDTO, Long> {
@@ -80,7 +81,7 @@ public class OperatorService implements GenericService<Operator, OperatorDTO, Op
         entity.setEmail(dto.getEmail().toLowerCase());
         entity.setCommission(dto.getCommission());
         if (dto.getPassword() != null && !dto.getPassword().isEmpty()) {
-            entity.setPassword(isValidPassword(dto.getPassword()));
+            entity.setPassword(ValidPassword.isValidPassword(dto.getPassword()));
         }
 
         entity.getPermissions().clear();

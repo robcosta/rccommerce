@@ -1,8 +1,9 @@
-package rccommerce.util;
+package rccommerce.services.util;
 
 import java.text.Normalizer;
 
 public class AccentUtils {
+
     // Remove acentos de uma string
     public static String removeAccents(String text) {
         if (text == null) {
@@ -12,4 +13,3 @@ public class AccentUtils {
         return normalized.replaceAll("\\p{M}", ""); // Remove os diacríticos
     }
 }
-
