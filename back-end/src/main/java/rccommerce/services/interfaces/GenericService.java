@@ -7,7 +7,6 @@ import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,7 +14,6 @@ import jakarta.persistence.EntityNotFoundException;
 import rccommerce.entities.enums.PermissionAuthority;
 import rccommerce.services.exceptions.DatabaseException;
 import rccommerce.services.exceptions.ForbiddenException;
-import rccommerce.services.exceptions.InvalidPasswordExecption;
 import rccommerce.services.exceptions.ResourceNotFoundException;
 import rccommerce.services.util.SecurityContextUtil;
 
@@ -61,7 +59,14 @@ public interface GenericService<T extends Convertible<DTO, MINDTO>, DTO, MINDTO,
 
     @Transactional(readOnly = true)
     default Page<MINDTO> findBy(Example<T> example, Pageable pageable) {
-        checkUserPermissions(PermissionAuthority.PERMISSION_READER);
+        return findBy(example, true, pageable);
+    }
+
+    @Transactional(readOnly = true)
+    default Page<MINDTO> findBy(Example<T> example, boolean checkpermisson, Pageable pageable) {
+        if (checkpermisson) {
+            checkUserPermissions(PermissionAuthority.PERMISSION_READER);
+        }
 
         Page<T> result = getRepository().findBy(example, query -> query.page(pageable));
 
@@ -125,6 +130,7 @@ public interface GenericService<T extends Convertible<DTO, MINDTO>, DTO, MINDTO,
         }
     }
 
+    // Métodos auxiliares para lançar a exceção
     default void handleDataIntegrityViolation(DataIntegrityViolationException e) {
         if (e.toString().contains("EMAIL NULLS FIRST")) {
             throw new DatabaseException("Email informado já existe");
@@ -141,14 +147,12 @@ public interface GenericService<T extends Convertible<DTO, MINDTO>, DTO, MINDTO,
         throw new DatabaseException(getTranslatedEntityName() + " com vínculos em outras tabelas, exclusão proibida");
     }
 
-    // Método auxiliar para lançar a exceção
     default void handleResourceNotFound() {
         throw new ResourceNotFoundException(
                 getTranslatedEntityName() + " não encontrado(a) para os critérios especificados.");
     }
 
-    // Método auxiliar que verifica a permissão do usuário para acesso aos métodos
-    // do service.
+    // Método auxiliar que verifica a permissão do usuário para acesso aos métodos do service.
     default void checkUserPermissions(PermissionAuthority authority, Long id) {
         checkUserPermissions(authority);
     }
@@ -169,39 +173,5 @@ public interface GenericService<T extends Convertible<DTO, MINDTO>, DTO, MINDTO,
 
         // Se não tiver permissões, lançar exceção
         throw new ForbiddenException("Usuário não tem permissão para acessar este recurso.");
-    }
-
-    default String isValidPassword(String password) {
-        StringBuilder msg = new StringBuilder("Senha inválida:");
-
-        // Verifica o tamanho mínimo
-        if (password == null || password.length() < 6) {
-            msg.append(" pelo menos 6 dígitos.");
-            throw new InvalidPasswordExecption(msg.toString());
-        }
-
-        // Verifica os critérios usando expressões regulares
-        if (!password.matches(".*[A-Z].*")) {
-            msg.append(" pelo menos uma letra maiúscula.");
-            throw new InvalidPasswordExecption(msg.toString());
-        }
-
-        if (!password.matches(".*[a-z].*")) {
-            msg.append(" pelo menos uma letra minúscula.");
-            throw new InvalidPasswordExecption(msg.toString());
-        }
-
-        if (!password.matches(".*[0-9].*")) {
-            msg.append(" pelo menos um dígito.");
-            throw new InvalidPasswordExecption(msg.toString());
-        }
-
-        if (!password.matches(".*[!@#$%^&*()\\+=-].*")) {
-            msg.append(" pelo menos um caractere especial.");
-            throw new InvalidPasswordExecption(msg.toString());
-        }
-
-        // Retorna a senha encriptada se válida
-        return new BCryptPasswordEncoder().encode(password);
     }
 }

@@ -54,8 +54,14 @@ public class OrderService implements GenericService<Order, OrderDTO, OrderMinDTO
     private MessageSource messageSource;
 
     @Transactional(readOnly = true)
-    public Page<OrderMinDTO> searchEntity(Long id, String status, String payment, String user, String client, Pageable pageable) {
-        return findBy(example(id, status, payment, user, client), pageable);
+    public Page<OrderMinDTO> searchEntity(Pageable pageable) {
+        Long userId = SecurityContextUtil.getUserId();
+        return findBy(example(null, null, null, userId, null, null, null), false, pageable);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<OrderMinDTO> searchEntity(Long id, String status, String payment, Long userId, String user, Long clientId, String client, Pageable pageable) {
+        return findBy(example(id, status, payment, userId, user, clientId, client), pageable);
     }
 
     //Necessário para atualizar o OrderItem
@@ -63,7 +69,7 @@ public class OrderService implements GenericService<Order, OrderDTO, OrderMinDTO
     @Transactional
     public OrderMinDTO insert(OrderDTO dto) {
         List<OrderItem> orderItens = new ArrayList<>();
-        OrderMinDTO orderMinDto = GenericService.super.insert(dto);
+        OrderMinDTO orderMinDto = GenericService.super.insert(dto, false);
         Order order = new Order();
         order.setId(orderMinDto.getId());
 
@@ -110,20 +116,29 @@ public class OrderService implements GenericService<Order, OrderDTO, OrderMinDTO
     }
 
     @Override
-    public String getClassName() {
-        return getClass().getName();
-    }
-
-    @Override
     public String getTranslatedEntityName() {
         return messageSource.getMessage("entity.Order", null, Locale.getDefault());
     }
 
-    private Example<Order> example(Long id, String status, String payment, String user, String client) {
+    private Example<Order> example(Long id, String status, String payment, Long userId, String user, Long clientId, String client) {
         Order orderExample = createEntity();
+        User userOrder = new User();
+        Client clientOrder = new Client();
+
         if (id != null) {
             orderExample.setId(id);
         }
+
+        if (userId != null) {
+            userOrder.setId(userId);
+            orderExample.setUser(userOrder);
+        }
+
+        if (clientId != null) {
+            clientOrder.setId(clientId);
+            orderExample.setClient(clientOrder);
+        }
+
         if (status != null && !status.isEmpty()) {
             orderExample.setStatus(OrderStatus.fromValue(status));
         }
@@ -133,21 +148,21 @@ public class OrderService implements GenericService<Order, OrderDTO, OrderMinDTO
             orderExample.setPayment(entity);
         }
         if (user != null && !user.isEmpty()) {
-            User entity = new User();
-            entity.setNameUnaccented(user);
-            orderExample.setUser(entity);
+            userOrder.setNameUnaccented(user);
+            orderExample.setUser(userOrder);
         }
         if (client != null && !client.isEmpty()) {
-            Client entity = new Client();
-            entity.setNameUnaccented(client);
-            orderExample.setClient(entity);
+            clientOrder.setNameUnaccented(client);
+            orderExample.setClient(clientOrder);
         }
 
         ExampleMatcher matcher = ExampleMatcher.matching()
                 .withMatcher("id", ExampleMatcher.GenericPropertyMatchers.exact())
                 .withMatcher("status", ExampleMatcher.GenericPropertyMatchers.exact())
                 .withMatcher("payment", ExampleMatcher.GenericPropertyMatchers.exact())
+                .withMatcher("user.id", ExampleMatcher.GenericPropertyMatchers.exact())
                 .withMatcher("user.nameUnaccented", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase())
+                .withMatcher("client.id", ExampleMatcher.GenericPropertyMatchers.exact())
                 .withMatcher("client.nameUnaccented", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase());
         return Example.of(orderExample, matcher);
     }
