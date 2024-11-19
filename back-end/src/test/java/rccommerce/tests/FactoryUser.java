@@ -1,5 +1,6 @@
 package rccommerce.tests;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -74,7 +75,7 @@ public class FactoryUser {
     }
 
     public static Operator createOperatorAdmin() {
-        Operator operator = new Operator(7L, "Ana Pink", "ana@gmail.com", "An-1234", 1.5);
+        Operator operator = new Operator(7L, "Ana Pink", "ana@gmail.com", "An-1234", new BigDecimal(1.5));
         operator.addRole(createRoleAdmin());
         operator.addPermission(createPermissionAll());
         return operator;
@@ -162,5 +163,4 @@ class UserDetailsImpl implements UserDetailsProjection {
     public String getPermissionAuthority() {
         return null;
     }
-
 }

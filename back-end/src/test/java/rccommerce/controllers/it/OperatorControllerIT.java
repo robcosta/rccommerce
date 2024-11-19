@@ -1,5 +1,7 @@
 package rccommerce.controllers.it;
 
+import java.math.BigDecimal;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -318,7 +320,7 @@ public class OperatorControllerIT {
 
     @Test
     public void insertShouldReturnUnprocessableEntityWhenAdminLoggedAndInvalidCommission() throws Exception {
-        operator.setCommission(-1.0);
+        operator.setCommission(new BigDecimal(-1.0));
 
         operatorDTO = FactoryUser.createOperatorDTO(operator);
         String jsonBody = objectMapper.writeValueAsString(operatorDTO);
@@ -456,7 +458,7 @@ public class OperatorControllerIT {
 
     @Test
     public void updateShouldReturnUnprocessableEntityWhenAdminLoggedAndInvalidComission() throws Exception {
-        operator.setCommission(-0.15);
+        operator.setCommission(new BigDecimal(-1.0));
         operatorDTO = FactoryUser.createOperatorDTO(operator);
         String jsonBody = objectMapper.writeValueAsString(operatorDTO);
 

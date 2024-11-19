@@ -1,5 +1,6 @@
 package rccommerce.entities;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Objects;
 
@@ -32,19 +33,21 @@ public class Stock implements Convertible<StockDTO, StockMinDTO> {
     @JoinColumn(name = "product_id")
     private Product product;
 
-    private Double quantity;
+    @Column(precision = 15, scale = 2)
+    private BigDecimal quantity;
 
     @Column(columnDefinition = "TIMESTAMP WITHOUT TIME ZONE")
     private Instant moment;
 
-    private Double qttMoved;
+    @Column(precision = 15, scale = 2)
+    private BigDecimal qttMoved;
 
     private StockMoviment moviment;
 
     public Stock() {
     }
 
-    public Stock(Long id, User user, Product product, Double quantity, Instant moment, Double qttMoved) {
+    public Stock(Long id, User user, Product product, BigDecimal quantity, Instant moment, BigDecimal qttMoved) {
         this.id = id;
         this.user = user;
         this.product = product;
@@ -77,11 +80,11 @@ public class Stock implements Convertible<StockDTO, StockMinDTO> {
         this.product = product;
     }
 
-    public Double getQuantity() {
+    public BigDecimal getQuantity() {
         return quantity;
     }
 
-    public void setQuantity(Double quantity) {
+    public void setQuantity(BigDecimal quantity) {
         this.quantity = quantity;
     }
 
@@ -93,7 +96,7 @@ public class Stock implements Convertible<StockDTO, StockMinDTO> {
         this.moment = moment;
     }
 
-    public Double getQttMoved() {
+    public BigDecimal getQttMoved() {
         return qttMoved;
     }
 
@@ -105,13 +108,13 @@ public class Stock implements Convertible<StockDTO, StockMinDTO> {
         this.moviment = moviment;
     }
 
-    public void setQttMoved(Double qttMoved) {
+    public void setQttMoved(BigDecimal qttMoved) {
         this.qttMoved = qttMoved;
         switch (this.moviment) {
             case BUY, INPUT ->
-                this.quantity += qttMoved;
+                this.quantity.add(qttMoved);
             case SALE, OUTPUT, TRANSFER ->
-                this.quantity -= qttMoved;
+                this.quantity.subtract(qttMoved);
         }
     }
 

@@ -1,5 +1,7 @@
 package rccommerce.dto;
 
+import java.math.BigDecimal;
+
 import jakarta.validation.constraints.Positive;
 import rccommerce.entities.OrderItem;
 
@@ -8,13 +10,13 @@ public class OrderItemDTO {
     @Positive(message = "Informe um valor positivo")
     private Long productId;
     private String name;
-    private Double price;
+    private BigDecimal price;
 
     @Positive(message = "Informe um valor positivo")
-    private Double quantity;
+    private BigDecimal quantity;
     private String imgUrl;
 
-    public OrderItemDTO(Long productId, String name, Double price, Double quantity, String imgUrl) {
+    public OrderItemDTO(Long productId, String name, BigDecimal price, BigDecimal quantity, String imgUrl) {
         this.productId = productId;
         this.name = name;
         this.price = price;
@@ -38,11 +40,11 @@ public class OrderItemDTO {
         return name;
     }
 
-    public Double getPrice() {
+    public BigDecimal getPrice() {
         return price;
     }
 
-    public Double getQuantity() {
+    public BigDecimal getQuantity() {
         return quantity;
     }
 
@@ -50,7 +52,7 @@ public class OrderItemDTO {
         return imgUrl;
     }
 
-    public Double getSubTotal() {
-        return price * quantity;
+    public BigDecimal getSubTotal() {
+        return price.multiply(quantity);
     }
 }

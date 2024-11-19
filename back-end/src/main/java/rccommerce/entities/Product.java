@@ -1,5 +1,6 @@
 package rccommerce.entities;
 
+import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -39,10 +40,15 @@ public class Product implements Convertible<ProductDTO, ProductMinDTO> {
     @Column(columnDefinition = "TEXT")
     private String description;
     private String unit;
-    private Double price;
+
+    @Column(precision = 15, scale = 2)
+    private BigDecimal price;
+
+    @Column(precision = 15, scale = 2)
     private String imgUrl;
 
-    private Double quantity;
+    @Column(precision = 15, scale = 2)
+    private BigDecimal quantity;
 
     @Column(unique = true)
     private String reference;
@@ -65,7 +71,7 @@ public class Product implements Convertible<ProductDTO, ProductMinDTO> {
         this.id = id;
     }
 
-    public Product(Long id, String name, String description, String unit, Double price, String imgUrl, Double quantity,
+    public Product(Long id, String name, String description, String unit, BigDecimal price, String imgUrl, BigDecimal quantity,
             String reference, Suplier suplier) {
         this.id = id;
         this.name = name;
@@ -118,11 +124,11 @@ public class Product implements Convertible<ProductDTO, ProductMinDTO> {
         this.unit = unit;
     }
 
-    public Double getPrice() {
+    public BigDecimal getPrice() {
         return price;
     }
 
-    public void setPrice(Double price) {
+    public void setPrice(BigDecimal price) {
         this.price = price;
     }
 
@@ -134,11 +140,11 @@ public class Product implements Convertible<ProductDTO, ProductMinDTO> {
         this.imgUrl = imgUrl;
     }
 
-    public Double getQuantity() {
+    public BigDecimal getQuantity() {
         return quantity;
     }
 
-    public void setQuantity(Double quantity) {
+    public void setQuantity(BigDecimal quantity) {
         this.quantity = quantity;
     }
 

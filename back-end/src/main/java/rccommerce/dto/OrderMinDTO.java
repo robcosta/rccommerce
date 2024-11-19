@@ -1,5 +1,6 @@
 package rccommerce.dto;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -71,10 +72,10 @@ public class OrderMinDTO {
         return itens;
     }
 
-    public Double getTotal() {
-        double sum = 0.0;
+    public BigDecimal getTotal() {
+        BigDecimal sum = BigDecimal.valueOf(0.0);
         for (OrderItemDTO item : itens) {
-            sum += item.getSubTotal();
+            sum.add(item.getSubTotal());
         }
         return sum;
     }

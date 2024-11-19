@@ -1,5 +1,6 @@
 package rccommerce.dto;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 
 import rccommerce.entities.Stock;
@@ -9,15 +10,15 @@ public class StockMinDTO {
     private Long id;
     private UserDTO user;
     private ProductDTO product;
-    private Double quantity;
-    private Double qttMoved;
+    private BigDecimal quantity;
+    private BigDecimal qttMoved;
     private Instant moment;
     private String moviment;
 
     public StockMinDTO() {
     }
 
-    public StockMinDTO(Long id, UserDTO user, ProductDTO product, Double quantity, Double qttMoved, Instant moment, String moviment) {
+    public StockMinDTO(Long id, UserDTO user, ProductDTO product, BigDecimal quantity, BigDecimal qttMoved, Instant moment, String moviment) {
         this.id = id;
         this.user = user;
         this.product = product;
@@ -48,11 +49,11 @@ public class StockMinDTO {
         return product;
     }
 
-    public Double getQuantity() {
+    public BigDecimal getQuantity() {
         return quantity;
     }
 
-    public Double getQttMoved() {
+    public BigDecimal getQttMoved() {
         return qttMoved;
     }
 

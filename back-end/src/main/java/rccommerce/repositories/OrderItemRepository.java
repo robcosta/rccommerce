@@ -7,6 +7,6 @@ import rccommerce.entities.OrderItem;
 import rccommerce.entities.OrderItemPK;
 
 @Repository
-public interface OrderItemRepository extends JpaRepository<OrderItem, OrderItemPK>{
+public interface OrderItemRepository extends JpaRepository<OrderItem, OrderItemPK> {
 
 }

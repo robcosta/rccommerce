@@ -1,7 +1,9 @@
 package rccommerce.entities;
 
+import java.math.BigDecimal;
 import java.util.Objects;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
@@ -13,13 +15,16 @@ public class OrderItem {
     @EmbeddedId
     private OrderItemPK id = new OrderItemPK();
 
-    private Double quantity;
-    private Double price;
+    @Column(precision = 15, scale = 2)
+    private BigDecimal quantity;
+
+    @Column(precision = 15, scale = 2)
+    private BigDecimal price;
 
     public OrderItem() {
     }
 
-    public OrderItem(Order order, Product product, Double quantity, Double price) {
+    public OrderItem(Order order, Product product, BigDecimal quantity, BigDecimal price) {
         id.setOrder(order);
         id.setProduct(product);
         this.quantity = quantity;
@@ -42,19 +47,19 @@ public class OrderItem {
         id.setProduct(product);
     }
 
-    public Double getQuantity() {
+    public BigDecimal getQuantity() {
         return quantity;
     }
 
-    public void setQuantity(Double quantity) {
+    public void setQuantity(BigDecimal quantity) {
         this.quantity = quantity;
     }
 
-    public Double getPrice() {
+    public BigDecimal getPrice() {
         return price;
     }
 
-    public void setPrice(Double price) {
+    public void setPrice(BigDecimal price) {
         this.price = price;
     }
 

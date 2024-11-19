@@ -1,5 +1,6 @@
 package rccommerce.services;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Locale;
 
@@ -97,7 +98,7 @@ public class ProductService implements GenericService<Product, ProductDTO, Produ
         entity.setUnit(dto.getUnit());
         entity.setPrice(dto.getPrice());
         entity.setImgUrl(dto.getImgUrl());
-        entity.setQuantity(0.0);
+        entity.setQuantity(new BigDecimal(0.00));
         entity.setReference(getReference(dto, entity));
 
         entity.getCategories().clear();
