@@ -100,6 +100,7 @@ public class User implements UserDetails {
         this.email = AccentUtils.removeAccents(email.toLowerCase());
     }
 
+    @Override
     public String getPassword() {
         return password;
     }
