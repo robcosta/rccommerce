@@ -119,8 +119,8 @@ INSERT INTO tb_order_item (order_id, product_id, quantity, price) VALUES (1, 3, 
 INSERT INTO tb_order_item (order_id, product_id, quantity, price) VALUES (2, 3, 1.0, 1250.0);
 INSERT INTO tb_order_item (order_id, product_id, quantity, price) VALUES (3, 1, 1.0, 90.5);
 
-INSERT INTO tb_payment (order_id, moment, payment_type) VALUES (1, TIMESTAMP WITH TIME ZONE '2022-07-25T15:00:00Z', 1);
-INSERT INTO tb_payment (order_id, moment, payment_type) VALUES (2, TIMESTAMP WITH TIME ZONE '2022-07-30T11:00:00Z', 2);
+INSERT INTO tb_payment (order_id, moment, payment_type, amount) VALUES (1, TIMESTAMP WITH TIME ZONE '2022-07-25T15:00:00Z', 1, 1431.0);
+INSERT INTO tb_payment (order_id, moment, payment_type, amount) VALUES (2, TIMESTAMP WITH TIME ZONE '2022-07-30T11:00:00Z', 2, 1250.0);
 
 INSERT INTO tb_stock (user_id, product_id, quantity, moment, qtt_Moved, moviment) VALUES (1, 3, 12, TIMESTAMP WITH TIME ZONE '2022-07-30T11:00:00Z', 2, 1);
 INSERT INTO tb_stock (user_id, product_id, quantity, moment, qtt_Moved, moviment) VALUES (1, 3, 10, TIMESTAMP WITH TIME ZONE '2022-07-30T11:00:00Z', 2, 1);

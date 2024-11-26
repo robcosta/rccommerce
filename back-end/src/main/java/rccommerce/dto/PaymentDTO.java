@@ -1,43 +1,39 @@
 package rccommerce.dto;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Digits;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
 import rccommerce.entities.Payment;
 
+@Builder
+@AllArgsConstructor
+@Getter
 public class PaymentDTO {
 
     private Long id;
     private Instant moment;
+
+    @NotNull(message = "O valor não pode ser nulo.")
     private Long orderId;
+
+    @NotBlank(message = "Campo requerido")
     private String paymentType;
 
-    public PaymentDTO(Long id, Instant moment, Long orderId, String paymentType) {
-        this.id = id;
-        this.moment = moment;
-        this.orderId = orderId;
-        this.paymentType = paymentType;
-    }
+    @NotNull(message = "O valor não pode ser nulo.")
+    @DecimalMin(value = "0.01", inclusive = true, message = "O valor deve ser maior que zero.")
+    @Digits(integer = 15, fraction = 2, message = "O valor deve ter no máximo 15 dígitos na parte inteira e 2 na parte fracionária.")
+    private BigDecimal amount;
 
     public PaymentDTO(Payment entity) {
-        id = entity.getId();
-        moment = entity.getMoment();
         paymentType = entity.getPaymentType().getName();
         orderId = entity.getOrder().getId();
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public Instant getMoment() {
-        return moment;
-    }
-
-    public String getPaymentType() {
-        return paymentType;
-    }
-
-    public Long getOrderId() {
-        return orderId;
+        amount = entity.getAmount();
     }
 }

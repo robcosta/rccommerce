@@ -81,11 +81,6 @@ public class PaymentService implements GenericService<Payment, PaymentDTO, Payme
 
         payment.setMoment(Instant.now());
         payment.setPaymentType(PaymentType.fromValue(dto.getPaymentType()));
-        // try {
-        //     payment.setPaymentType(PaymentType.valueOf(dto.getPaymentType()));
-        // } catch (IllegalArgumentException e) {
-        //     throw new InvalidArgumentExecption("Tipo de pagamento inexistente: " + dto.getPaymentType());
-        // }
         payment.setOrder(order);
         order.setStatus(OrderStatus.PAID);
         List<Stock> productStock = new ArrayList<>();
