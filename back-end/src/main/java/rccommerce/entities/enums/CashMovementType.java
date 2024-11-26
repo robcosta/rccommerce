@@ -16,13 +16,17 @@ public enum CashMovementType {
     DIVERSE_RECEIPT(3, "Recebimento Diverso"),
     INTEREST_OR_FINE(4, "Juros ou Multas"),
     OTHER_RECEIPTS(5, "Outros Recebimentos"),
+    // Entrada - Abertura
+    OPENING_BALANCE(12, "Abertura de caixa"),
     // Saídas
     WITHDRAWAL(6, "Retirada de Caixa"),
     INITIAL_CHANGE(7, "Troco Inicial"),
     OPERATIONAL_EXPENSE(8, "Despesa Operacional"),
     REIMBURSEMENT(9, "Reembolso"),
     DISCOUNT(10, "Desconto"),
-    OTHER_EXPENSES(11, "Outras Saídas");
+    OTHER_EXPENSES(11, "Outras Saídas"),
+    // Saída - Fechamento
+    CLOSING_BALANCE(13, "Fechamento de caixa");
 
     private final Integer code;
     private final String description;
