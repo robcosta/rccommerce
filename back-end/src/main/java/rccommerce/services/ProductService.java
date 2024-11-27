@@ -22,7 +22,6 @@ import rccommerce.entities.Category;
 import rccommerce.entities.Product;
 import rccommerce.entities.Stock;
 import rccommerce.entities.Suplier;
-import rccommerce.entities.enums.PermissionAuthority;
 import rccommerce.repositories.CategoryRepository;
 import rccommerce.repositories.ProductRepository;
 import rccommerce.repositories.StockRepository;
@@ -50,31 +49,18 @@ public class ProductService implements GenericService<Product, ProductDTO, Produ
     @Autowired
     private MessageSource messageSource;
 
-    //Permitir que qualquer usuário, logado ou não, possa buscar produtos 
-    private boolean permissionCheckEnabled = true;
-
     @Transactional(readOnly = true)
     public Page<ProductMinDTO> searchEntity(Long id, String name, String reference, Pageable pageable) {
-        disablePermissionCheck();
-        try {
-            return findBy(example(id, name, reference), pageable);
-        } finally {
-            enablePermissionCheck();
-        }
-
+        return findBy(example(id, name, reference), false, pageable);
     }
 
     @Transactional(readOnly = true)
     public ProductDTO findByReference(String codBarra) {
-        disablePermissionCheck();
         codBarra = String.format("0000000000000" + codBarra).substring(codBarra.length());
-        try {
-            Product result = repository.findByReference(codBarra)
-                    .orElseThrow(() -> new ResourceNotFoundException("Produto não encontrado."));
-            return new ProductDTO(result);
-        } finally {
-            enablePermissionCheck();
-        }
+
+        Product result = repository.findByReference(codBarra)
+                .orElseThrow(() -> new ResourceNotFoundException("Produto não encontrado."));
+        return new ProductDTO(result);
     }
 
     @Transactional
@@ -217,23 +203,5 @@ public class ProductService implements GenericService<Product, ProductDTO, Produ
                 .withMatcher("reference", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase());
 
         return Example.of(productExample, matcher);
-    }
-
-    // Sobrescrevendo o método de verificação de permissões para liberar os métodos de busca de produto para qualquer usuário
-    @Override
-    public void checkUserPermissions(PermissionAuthority authority, Long id) {
-        // Não chama a verificação de permissões em métodos de busca
-        if (permissionCheckEnabled) {
-            GenericService.super.checkUserPermissions(authority, id);
-        }
-    }
-
-    // Desabilita a verificação de permissões
-    private void enablePermissionCheck() {
-        permissionCheckEnabled = true;
-    }
-
-    private void disablePermissionCheck() {
-        permissionCheckEnabled = false;
     }
 }

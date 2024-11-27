@@ -53,7 +53,7 @@ public class ProductController {
 
     @GetMapping(value = "/{id}")
     public ResponseEntity<ProductMinDTO> findById(@ValidId @PathVariable String id) {
-        ProductMinDTO dto = service.findById(Long.valueOf(id));
+        ProductMinDTO dto = service.findById(Long.valueOf(id), false);
         return ResponseEntity.ok(dto);
     }
 
