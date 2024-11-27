@@ -2,7 +2,6 @@ package rccommerce.entities;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.util.Objects;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -12,15 +11,28 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import rccommerce.dto.StockDTO;
 import rccommerce.dto.StockMinDTO;
 import rccommerce.entities.enums.StockMoviment;
 import rccommerce.services.interfaces.Convertible;
 
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@Getter
+@Setter
 @Entity
 @Table(name = "tb_stock")
 public class Stock implements Convertible<StockDTO, StockMinDTO> {
 
+    @EqualsAndHashCode.Include
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -44,9 +56,6 @@ public class Stock implements Convertible<StockDTO, StockMinDTO> {
 
     private StockMoviment moviment;
 
-    public Stock() {
-    }
-
     public Stock(Long id, User user, Product product, BigDecimal quantity, Instant moment, BigDecimal qttMoved) {
         this.id = id;
         this.user = user;
@@ -54,58 +63,6 @@ public class Stock implements Convertible<StockDTO, StockMinDTO> {
         this.quantity = quantity;
         this.moment = moment;
         this.qttMoved = qttMoved;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
-    }
-
-    public Product getProduct() {
-        return product;
-    }
-
-    public void setProduct(Product product) {
-        this.product = product;
-    }
-
-    public BigDecimal getQuantity() {
-        return quantity;
-    }
-
-    public void setQuantity(BigDecimal quantity) {
-        this.quantity = quantity;
-    }
-
-    public Instant getMoment() {
-        return moment;
-    }
-
-    public void setMoment(Instant moment) {
-        this.moment = moment;
-    }
-
-    public BigDecimal getQttMoved() {
-        return qttMoved;
-    }
-
-    public StockMoviment getMoviment() {
-        return moviment;
-    }
-
-    public void setMoviment(StockMoviment moviment) {
-        this.moviment = moviment;
     }
 
     public void setQttMoved(BigDecimal qttMoved) {
@@ -116,26 +73,6 @@ public class Stock implements Convertible<StockDTO, StockMinDTO> {
             case SALE, OUTPUT, TRANSFER ->
                 this.quantity.subtract(qttMoved);
         }
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id);
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        Stock other = (Stock) obj;
-        return Objects.equals(id, other.id);
     }
 
     @Override

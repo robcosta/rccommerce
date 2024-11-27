@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 
 import org.springframework.security.core.GrantedAuthority;
@@ -24,14 +23,27 @@ import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import rccommerce.services.util.AccentUtils;
 
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@Getter
+@Setter
 @Entity
 @Table(name = "tb_user", indexes = {
     @Index(name = "idx_user_name_unaccented", columnList = "nameUnaccented")})
 @Inheritance(strategy = InheritanceType.JOINED)
 public class User implements UserDetails {
 
+    @EqualsAndHashCode.Include
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -53,9 +65,6 @@ public class User implements UserDetails {
     @OneToMany(mappedBy = "user")
     private List<Order> orders = new ArrayList<>();
 
-    public User() {
-    }
-
     public User(Long id) {
         this.id = id;
     }
@@ -67,66 +76,29 @@ public class User implements UserDetails {
         this.password = password;
     }
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
     public void setName(String name) {
         this.name = name;
         setNameUnaccented(this.name);
-    }
-
-    public String getNameUnaccented() {
-        return nameUnaccented;
     }
 
     public void setNameUnaccented(String nameUnaccented) {
         this.nameUnaccented = AccentUtils.removeAccents(nameUnaccented);
     }
 
-    public String getEmail() {
-        return email;
-    }
-
     public void setEmail(String email) {
         this.email = AccentUtils.removeAccents(email.toLowerCase());
     }
 
-    @Override
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public Set<Role> getRoles() {
-        return roles;
-    }
-
+    // @Override
+    // public String getPassword() {
+    //     return password;
+    // }
     public void addRole(Role role) {
         roles.add(role);
     }
 
-    public Set<Permission> getPermissions() {
-        return permissions;
-    }
-
     public void addPermission(Permission permission) {
         this.permissions.add(permission);
-    }
-
-    public List<Order> getOrders() {
-        return orders;
     }
 
     public boolean hasRole(String roleNmame) {
@@ -136,26 +108,6 @@ public class User implements UserDetails {
             }
         }
         return false;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id);
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        User other = (User) obj;
-        return Objects.equals(id, other.id);
     }
 
     @Override
