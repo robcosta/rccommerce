@@ -5,11 +5,18 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
 import jakarta.validation.constraints.NotEmpty;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import rccommerce.entities.Order;
 import rccommerce.entities.OrderItem;
 import rccommerce.entities.enums.OrderStatus;
+import rccommerce.util.BigDecimalTwoDecimalSerializer;
 
+@AllArgsConstructor
+@Getter
 public class OrderMinDTO {
 
     private Long id;
@@ -18,19 +25,10 @@ public class OrderMinDTO {
     private UserOrderDTO User;
 
     private ClientOrderDTO client;
-    private PaymentDTO payment;
+    private PaymentMinDTO payment;
 
     @NotEmpty(message = "Deve ter pelo menos um item")
     private List<OrderItemDTO> itens = new ArrayList<>();
-
-    public OrderMinDTO(Long id, Instant moment, OrderStatus status, UserOrderDTO User, ClientOrderDTO client, PaymentDTO payment) {
-        this.id = id;
-        this.moment = moment;
-        this.status = status;
-        this.User = User;
-        this.client = client;
-        this.payment = payment;
-    }
 
     public OrderMinDTO(Order entity) {
         id = entity.getId();
@@ -38,44 +36,17 @@ public class OrderMinDTO {
         status = entity.getStatus();
         User = new UserOrderDTO(entity.getUser());
         client = new ClientOrderDTO(entity.getClient());
-        payment = (entity.getPayment() == null) ? null : new PaymentDTO(entity.getPayment());
+        payment = (entity.getPayment() == null) ? null : new PaymentMinDTO(entity.getPayment());
         for (OrderItem item : entity.getItens()) {
             itens.add(new OrderItemDTO(item));
         }
     }
 
-    public Long getId() {
-        return id;
-    }
-
-    public Instant getMoment() {
-        return moment;
-    }
-
-    public OrderStatus getStatus() {
-        return status;
-    }
-
-    public UserOrderDTO getUser() {
-        return User;
-    }
-
-    public ClientOrderDTO getClient() {
-        return client;
-    }
-
-    public PaymentDTO getPayment() {
-        return payment;
-    }
-
-    public List<OrderItemDTO> getItens() {
-        return itens;
-    }
-
+    @JsonSerialize(using = BigDecimalTwoDecimalSerializer.class)
     public BigDecimal getTotal() {
         BigDecimal sum = BigDecimal.valueOf(0.0);
         for (OrderItemDTO item : itens) {
-            sum.add(item.getSubTotal());
+            sum = sum.add(item.getSubTotal());
         }
         return sum;
     }

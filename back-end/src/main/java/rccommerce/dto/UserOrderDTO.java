@@ -1,29 +1,20 @@
 package rccommerce.dto;
 
-import java.math.BigDecimal;
-
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import rccommerce.entities.User;
 
+@NoArgsConstructor
+@AllArgsConstructor
+@Getter
 public class UserOrderDTO {
 
     private Long id;
     private String name;
 
-    public UserOrderDTO(Long id, String name, BigDecimal commission) {
-        this.id = id;
-        this.name = name;
-    }
-
     public UserOrderDTO(User user) {
         id = user.getId();
         name = user.getName();
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public String getName() {
-        return name;
     }
 }

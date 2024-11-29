@@ -2,27 +2,28 @@ package rccommerce.dto;
 
 import java.math.BigDecimal;
 
-import jakarta.validation.constraints.Positive;
-import rccommerce.entities.OrderItem;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
+import jakarta.validation.constraints.Positive;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import rccommerce.entities.OrderItem;
+import rccommerce.util.BigDecimalTwoDecimalSerializer;
+
+@AllArgsConstructor
+@Getter
 public class OrderItemDTO {
 
     @Positive(message = "Informe um valor positivo")
     private Long productId;
     private String name;
+
+    @JsonSerialize(using = BigDecimalTwoDecimalSerializer.class)
     private BigDecimal price;
 
     @Positive(message = "Informe um valor positivo")
     private BigDecimal quantity;
     private String imgUrl;
-
-    public OrderItemDTO(Long productId, String name, BigDecimal price, BigDecimal quantity, String imgUrl) {
-        this.productId = productId;
-        this.name = name;
-        this.price = price;
-        this.quantity = quantity;
-        this.imgUrl = imgUrl;
-    }
 
     public OrderItemDTO(OrderItem entity) {
         productId = entity.getProduct().getId();
@@ -32,26 +33,7 @@ public class OrderItemDTO {
         imgUrl = entity.getProduct().getImgUrl();
     }
 
-    public Long getProductId() {
-        return productId;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public BigDecimal getPrice() {
-        return price;
-    }
-
-    public BigDecimal getQuantity() {
-        return quantity;
-    }
-
-    public String getImgUrl() {
-        return imgUrl;
-    }
-
+    @JsonSerialize(using = BigDecimalTwoDecimalSerializer.class)
     public BigDecimal getSubTotal() {
         return price.multiply(quantity);
     }

@@ -3,10 +3,13 @@ package rccommerce.dto;
 import java.math.BigDecimal;
 import java.time.Instant;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import rccommerce.entities.Payment;
+import rccommerce.util.BigDecimalTwoDecimalSerializer;
 
 @Builder
 @AllArgsConstructor
@@ -17,6 +20,8 @@ public class PaymentMinDTO {
     private Instant moment;
     private Long orderId;
     private String paymentType;
+
+    @JsonSerialize(using = BigDecimalTwoDecimalSerializer.class)
     private BigDecimal amount;
 
     public PaymentMinDTO(Payment entity) {
@@ -24,5 +29,6 @@ public class PaymentMinDTO {
         moment = entity.getMoment();
         paymentType = entity.getPaymentType().getName();
         orderId = entity.getOrder().getId();
+        amount = entity.getAmount();
     }
 }

@@ -4,14 +4,20 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
+import lombok.Getter;
 import rccommerce.entities.Category;
 import rccommerce.entities.Product;
+import rccommerce.util.BigDecimalTwoDecimalSerializer;
 
+@Getter
 public class ProductMinDTO {
 
     private Long id;
     private String name;
     private String unit;
+    @JsonSerialize(using = BigDecimalTwoDecimalSerializer.class)
     private BigDecimal price;
     private String imgUrl;
     private BigDecimal qttStock;
@@ -42,41 +48,5 @@ public class ProductMinDTO {
         for (Category category : entity.getCategories()) {
             categories.add(new CategoryDTO(category));
         }
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public String getUnit() {
-        return unit;
-    }
-
-    public BigDecimal getPrice() {
-        return price;
-    }
-
-    public String getImgUrl() {
-        return imgUrl;
-    }
-
-    public BigDecimal getQttStock() {
-        return qttStock;
-    }
-
-    public String getReference() {
-        return reference;
-    }
-
-    public SuplierMinDTO getSuplier() {
-        return suplier;
-    }
-
-    public List<CategoryDTO> getCategories() {
-        return categories;
     }
 }

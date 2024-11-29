@@ -4,11 +4,9 @@ import java.math.BigDecimal;
 import java.time.Instant;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import rccommerce.entities.CashMovement;
 
-@Builder
 @AllArgsConstructor
 @Getter
 public class CashMovementMinDTO {

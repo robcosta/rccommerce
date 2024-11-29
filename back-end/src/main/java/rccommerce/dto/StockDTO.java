@@ -3,8 +3,14 @@ package rccommerce.dto;
 import java.math.BigDecimal;
 import java.time.Instant;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import rccommerce.entities.Stock;
 
+@NoArgsConstructor
+@AllArgsConstructor
+@Getter
 public class StockDTO {
 
     private Long id;
@@ -15,19 +21,6 @@ public class StockDTO {
     private Instant moment;
     private String moviment;
 
-    public StockDTO() {
-    }
-
-    public StockDTO(Long id, UserDTO user, ProductDTO product, BigDecimal quantity, BigDecimal qttMoved, Instant moment, String moviment) {
-        this.id = id;
-        this.user = user;
-        this.product = product;
-        this.quantity = quantity;
-        this.qttMoved = qttMoved;
-        this.moment = moment;
-        this.moviment = moviment;
-    }
-
     public StockDTO(Stock entity) {
         id = entity.getId();
         user = new UserDTO(entity.getUser());
@@ -35,33 +28,5 @@ public class StockDTO {
         quantity = entity.getQuantity();
         moment = entity.getMoment();
         qttMoved = entity.getQttMoved();
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public UserDTO getUser() {
-        return user;
-    }
-
-    public ProductDTO getProduct() {
-        return product;
-    }
-
-    public BigDecimal getQuantity() {
-        return quantity;
-    }
-
-    public BigDecimal getQttMoved() {
-        return qttMoved;
-    }
-
-    public Instant getMoment() {
-        return moment;
-    }
-
-    public String getMoviment() {
-        return moviment;
     }
 }

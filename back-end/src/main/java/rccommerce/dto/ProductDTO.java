@@ -4,12 +4,19 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import rccommerce.entities.Category;
 import rccommerce.entities.Product;
+import rccommerce.util.BigDecimalTwoDecimalSerializer;
 
+@AllArgsConstructor
+@Getter
 public class ProductDTO {
 
     private Long id;
@@ -24,6 +31,7 @@ public class ProductDTO {
     @Size(min = 2, max = 2, message = "Unidade com 2 caracteres.")
     private String unit;
 
+    @JsonSerialize(using = BigDecimalTwoDecimalSerializer.class)
     @Positive(message = "Informe o preço do produto")
     private BigDecimal price;
     private String imgUrl;
@@ -33,19 +41,6 @@ public class ProductDTO {
 
     @Size(min = 1, message = "Indique pelo menos uma categoria válida")
     private List<CategoryDTO> categories = new ArrayList<>();
-
-    public ProductDTO(Long id, String name, String description, String unit, BigDecimal price, String imgUrl, BigDecimal quantity,
-            String reference, SuplierMinDTO suplier) {
-        this.id = id;
-        this.name = name;
-        this.description = description;
-        this.unit = unit;
-        this.price = price;
-        this.imgUrl = imgUrl;
-        this.quantity = quantity;
-        this.reference = reference;
-        this.suplier = suplier;
-    }
 
     public ProductDTO(Product entity) {
         id = entity.getId();
@@ -60,45 +55,5 @@ public class ProductDTO {
         for (Category category : entity.getCategories()) {
             categories.add(new CategoryDTO(category));
         }
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public String getUnit() {
-        return unit;
-    }
-
-    public BigDecimal getPrice() {
-        return price;
-    }
-
-    public String getImgUrl() {
-        return imgUrl;
-    }
-
-    public BigDecimal getQuantity() {
-        return quantity;
-    }
-
-    public String getReference() {
-        return reference;
-    }
-
-    public SuplierMinDTO getSuplier() {
-        return suplier;
-    }
-
-    public List<CategoryDTO> getCategories() {
-        return categories;
     }
 }

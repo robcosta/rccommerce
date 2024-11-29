@@ -10,11 +10,9 @@ import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import rccommerce.entities.CashRegister;
 
-@Builder
 @AllArgsConstructor
 @Getter
 public class CashRegisterDTO {
