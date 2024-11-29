@@ -60,6 +60,10 @@ public class Order implements Convertible<OrderDTO, OrderMinDTO> {
     @OneToMany(mappedBy = "id.order")
     private Set<OrderItem> itens = new HashSet<>();
 
+    public Order(Long id) {
+        this.id = id;
+    }
+
     public Order(Long id, Instant moment, OrderStatus status, User user, Client client, Payment payment) {
         this.id = id;
         this.moment = moment;

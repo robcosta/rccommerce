@@ -70,12 +70,10 @@ public class OrderService implements GenericService<Order, OrderDTO, OrderMinDTO
     public OrderMinDTO insert(OrderDTO dto) {
         List<OrderItem> orderItens = new ArrayList<>();
         OrderMinDTO orderMinDto = GenericService.super.insert(dto, false);
-        Order order = new Order();
-        order.setId(orderMinDto.getId());
+        Order order = new Order(orderMinDto.getId());
 
         for (OrderItemDTO orderItemDto : orderMinDto.getItens()) {
-            Product product = new Product();
-            product.setId(orderItemDto.getProductId());
+            Product product = new Product(orderItemDto.getProductId());
             orderItens.add(new OrderItem(order, product, orderItemDto.getQuantity(), orderItemDto.getPrice()));
         }
 

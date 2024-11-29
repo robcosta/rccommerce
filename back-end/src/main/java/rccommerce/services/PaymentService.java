@@ -1,5 +1,6 @@
 package rccommerce.services;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -10,6 +11,8 @@ import org.springframework.context.MessageSource;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import rccommerce.dto.PaymentDTO;
 import rccommerce.dto.PaymentMinDTO;
@@ -25,6 +28,7 @@ import rccommerce.repositories.PaymentRepository;
 import rccommerce.services.exceptions.InvalidArgumentExecption;
 import rccommerce.services.exceptions.ResourceNotFoundException;
 import rccommerce.services.interfaces.GenericService;
+import rccommerce.util.BigDecimalTwoDecimalSerializer;
 
 @Service
 public class PaymentService implements GenericService<Payment, PaymentDTO, PaymentMinDTO, Long> {
@@ -70,8 +74,6 @@ public class PaymentService implements GenericService<Payment, PaymentDTO, Payme
     @Override
     @Transactional
     public PaymentMinDTO insert(PaymentDTO dto) {
-        Payment payment = new Payment();
-
         Order order = orderRepository.findById(dto.getOrderId())
                 .orElseThrow(() -> new ResourceNotFoundException("Pedido não encontrado"));
 
@@ -79,9 +81,17 @@ public class PaymentService implements GenericService<Payment, PaymentDTO, Payme
             throw new InvalidArgumentExecption("Pedido já pago");
         }
 
-        payment.setMoment(Instant.now());
-        payment.setPaymentType(PaymentType.fromValue(dto.getPaymentType()));
-        payment.setOrder(order);
+        if (dto.getAmount().compareTo(getAmountOrder(order)) < 0) {
+            throw new InvalidArgumentExecption("Valor informado abaixo do valor do pedido.");
+        }
+
+        Payment payment = Payment.builder()
+                .moment(Instant.now())
+                .paymentType(PaymentType.fromValue(dto.getPaymentType()))
+                .amount(dto.getAmount())
+                .order(order)
+                .build();
+
         order.setStatus(OrderStatus.PAID);
         List<Stock> productStock = new ArrayList<>();
         for (OrderItem item : order.getItens()) {
@@ -94,9 +104,9 @@ public class PaymentService implements GenericService<Payment, PaymentDTO, Payme
             stock.setQttMoved(item.getQuantity());
             productStock.add(stock);
         }
-        payment = repository.save(payment);
+        payment = repository.saveAndFlush(payment);
         order.setPayment(payment);
-        orderRepository.save(order);
+        orderRepository.saveAndFlush(order);
         productService.updateStock(productStock);
         return new PaymentMinDTO(payment);
     }
@@ -119,5 +129,14 @@ public class PaymentService implements GenericService<Payment, PaymentDTO, Payme
     @Override
     public String getTranslatedEntityName() {
         return messageSource.getMessage("entity.Payment", null, Locale.getDefault());
+    }
+
+    @JsonSerialize(using = BigDecimalTwoDecimalSerializer.class)
+    public BigDecimal getAmountOrder(Order order) {
+        BigDecimal sum = BigDecimal.valueOf(0.0);
+        for (OrderItem item : order.getItens()) {
+            sum = sum.add(item.getPrice().multiply(item.getQuantity()));
+        }
+        return sum;
     }
 }
