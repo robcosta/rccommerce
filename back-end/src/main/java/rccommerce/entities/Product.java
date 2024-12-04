@@ -69,10 +69,12 @@ public class Product implements Convertible<ProductDTO, ProductMinDTO> {
     @JoinColumn(name = "suplier_id")
     private Suplier suplier;
 
+    @Builder.Default
     @ManyToMany
     @JoinTable(name = "tb_product_category", joinColumns = @JoinColumn(name = "product_id"), inverseJoinColumns = @JoinColumn(name = "category_id"))
     private Set<Category> categories = new HashSet<>();
 
+    @Builder.Default
     @OneToMany(mappedBy = "id.product")
     private Set<OrderItem> itens = new HashSet<>();
 

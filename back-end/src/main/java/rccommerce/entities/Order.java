@@ -1,9 +1,12 @@
 package rccommerce.entities;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -26,6 +29,7 @@ import rccommerce.dto.OrderDTO;
 import rccommerce.dto.OrderMinDTO;
 import rccommerce.entities.enums.OrderStatus;
 import rccommerce.services.interfaces.Convertible;
+import rccommerce.util.BigDecimalTwoDecimalSerializer;
 
 @Builder
 @AllArgsConstructor
@@ -57,6 +61,7 @@ public class Order implements Convertible<OrderDTO, OrderMinDTO> {
     @OneToOne(mappedBy = "order", cascade = CascadeType.ALL)
     private Payment payment;
 
+    @Builder.Default
     @OneToMany(mappedBy = "id.order")
     private Set<OrderItem> itens = new HashSet<>();
 
@@ -79,6 +84,14 @@ public class Order implements Convertible<OrderDTO, OrderMinDTO> {
 
     public List<Product> getProducts() {
         return itens.stream().map(x -> x.getProduct()).toList();
+    }
+
+    //Retorna o valor total do pedido
+    @JsonSerialize(using = BigDecimalTwoDecimalSerializer.class)
+    public BigDecimal getTotalOrder() {
+        return itens.stream()
+                .map(item -> item.getPrice().multiply(item.getQuantity())) // Multiplica preço pela quantidade
+                .reduce(BigDecimal.ZERO, BigDecimal::add); // Soma os resultados
     }
 
     @Override
