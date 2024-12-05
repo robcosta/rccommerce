@@ -69,12 +69,12 @@ public class ProductService implements GenericService<Product, ProductDTO, Produ
             try {
                 Product entity = repository.getReferenceById(productStock.getProduct().getId());
                 entity.setQuantity(productStock.getQuantity());
-                repository.saveAndFlush(entity);
+                repository.save(entity);
             } catch (EntityNotFoundException e) {
                 throw new ResourceNotFoundException("Produto não encontrado");
             }
         }
-        stockRepository.saveAllAndFlush(stocks);
+        stockRepository.saveAll(stocks);
     }
 
     @Override

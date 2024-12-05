@@ -2,8 +2,6 @@ package rccommerce.services;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -17,11 +15,12 @@ import org.springframework.transaction.annotation.Transactional;
 import rccommerce.dto.PaymentDTO;
 import rccommerce.dto.PaymentDetailDTO;
 import rccommerce.dto.PaymentMinDTO;
+import rccommerce.dto.ProductDTO;
+import rccommerce.dto.StockDTO;
 import rccommerce.entities.Order;
 import rccommerce.entities.OrderItem;
 import rccommerce.entities.Payment;
 import rccommerce.entities.PaymentDetail;
-import rccommerce.entities.Stock;
 import rccommerce.entities.enums.OrderStatus;
 import rccommerce.entities.enums.PaymentType;
 import rccommerce.entities.enums.StockMoviment;
@@ -41,7 +40,7 @@ public class PaymentService implements GenericService<Payment, PaymentDTO, Payme
     private OrderRepository orderRepository;
 
     @Autowired
-    private ProductService productService;
+    private StockService stockService;
 
     // @Autowired
     // private StockService stockService;
@@ -50,30 +49,6 @@ public class PaymentService implements GenericService<Payment, PaymentDTO, Payme
 
     private Order order;
 
-    // @Transactional(readOnly = true)
-    // public PaymentDTO findById(Long id) {
-    //     Payment result = repository.findById(id)
-    //             .orElseThrow(() -> new ResourceNotFoundException("Pagamento não encontrado"));
-    //     return new PaymentDTO(result);
-    // }
-    // @Override
-    // @Transactional
-    // public PaymentMinDTO insert(PaymentDTO dto) {
-    //     Order order = orderRepository.getReferenceById(dto.getOrderId());
-    //     if (order == null) {
-    //         throw new ResourceNotFoundException("Pedido de Id:' " + dto.getOrderId() + "' não encontrado");
-    //     }
-    //     if (order.getPayment() != null) {
-    //         throw new InvalidArgumentExecption("Pedido de Id:' " + dto.getOrderId() + "' já pago");
-    //     }
-    //    // List<Stock> productStock = new ArrayList<>();
-    //     for (OrderItem item : order.getItens()) {
-    //         item.
-    //     }
-    //     order.setStatus(OrderStatus.PAID);
-    //     List<Stock> productStock = new ArrayList<>();
-    //     return null;
-    // }
     @Override
     @Transactional
     public PaymentMinDTO insert(PaymentDTO dto) {
@@ -125,6 +100,7 @@ public class PaymentService implements GenericService<Payment, PaymentDTO, Payme
 
         // Processar pagamento exato
         order.setStatus(OrderStatus.PAID);
+
         updateStock(order, entity.getMoment());
         repository.save(entity);
         PaymentMinDTO paymentMinDTO = new PaymentMinDTO(entity);
@@ -134,18 +110,13 @@ public class PaymentService implements GenericService<Payment, PaymentDTO, Payme
     }
 
     private void updateStock(Order order, Instant paymentMoment) {
-        List<Stock> productStock = new ArrayList<>();
+        String moviment = StockMoviment.SALE.name();
         for (OrderItem item : order.getItens()) {
-            Stock stock = new Stock();
-            stock.setUser(order.getUser());
-            stock.setProduct(item.getProduct());
-            stock.setMoment(paymentMoment);
-            stock.setMoviment(StockMoviment.SALE);
-            stock.setQuantity(item.getProduct().getQuantity());
-            stock.setQttMoved(item.getQuantity());
-            productStock.add(stock);
+            ProductDTO product = new ProductDTO(item.getProduct());
+            BigDecimal qttMoved = item.getQuantity();
+            StockDTO dto = new StockDTO(product, paymentMoment, moviment, qttMoved);
+            stockService.updateStock(dto);
         }
-        productService.updateStock(productStock);
     }
 
     @Override

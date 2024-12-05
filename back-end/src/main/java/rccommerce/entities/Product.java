@@ -95,7 +95,7 @@ public class Product implements Convertible<ProductDTO, ProductMinDTO> {
         this.suplier = suplier;
     }
 
-    public void setName(String name) {
+    public final void setName(String name) {
         this.name = name;
         setNameUnaccented(name);
     }

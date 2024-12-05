@@ -17,6 +17,7 @@ public class ProductMinDTO {
     private Long id;
     private String name;
     private String unit;
+
     @JsonSerialize(using = BigDecimalTwoDecimalSerializer.class)
     private BigDecimal price;
     private String imgUrl;
@@ -43,6 +44,7 @@ public class ProductMinDTO {
         unit = entity.getUnit();
         price = entity.getPrice();
         imgUrl = entity.getImgUrl();
+        qttStock = entity.getQuantity();
         reference = entity.getReference();
         suplier = new SuplierMinDTO(entity.getSuplier());
         for (Category category : entity.getCategories()) {

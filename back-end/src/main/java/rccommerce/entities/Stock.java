@@ -69,9 +69,9 @@ public class Stock implements Convertible<StockDTO, StockMinDTO> {
         this.qttMoved = qttMoved;
         switch (this.moviment) {
             case BUY, INPUT ->
-                this.quantity.add(qttMoved);
+                this.quantity = this.quantity.add(qttMoved);
             case SALE, OUTPUT, TRANSFER ->
-                this.quantity.subtract(qttMoved);
+                this.quantity = this.quantity.subtract(qttMoved);
         }
     }
 

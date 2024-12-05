@@ -21,6 +21,13 @@ public class StockDTO {
     private Instant moment;
     private String moviment;
 
+    public StockDTO(ProductDTO product, Instant moment, String moviment, BigDecimal qttMoved) {
+        this.product = product;
+        this.moment = moment;
+        this.moviment = moviment;
+        this.qttMoved = qttMoved;
+    }
+
     public StockDTO(Stock entity) {
         id = entity.getId();
         user = new UserDTO(entity.getUser());
