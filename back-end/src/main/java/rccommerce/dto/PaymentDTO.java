@@ -1,21 +1,16 @@
 package rccommerce.dto;
 
-import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-
-import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.Digits;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import rccommerce.entities.Payment;
-import rccommerce.util.BigDecimalTwoDecimalSerializer;
+import rccommerce.entities.PaymentDetail;
 
-@Builder
 @AllArgsConstructor
 @Getter
 public class PaymentDTO {
@@ -26,18 +21,18 @@ public class PaymentDTO {
     @NotNull(message = "O valor não pode ser nulo.")
     private Long orderId;
 
-    @NotBlank(message = "Campo requerido")
-    private String paymentType;
-
-    @JsonSerialize(using = BigDecimalTwoDecimalSerializer.class)
-    @NotNull(message = "O valor não pode ser nulo.")
-    @DecimalMin(value = "0.01", inclusive = true, message = "O valor deve ser maior que zero.")
-    @Digits(integer = 15, fraction = 2, message = "O valor deve ter no máximo 15 dígitos na parte inteira e 2 na parte fracionária.")
-    private BigDecimal amount;
+    @Size(min = 1, message = "Indique pelo menos uma forma de pagemnto válida.")
+    private List<PaymentDetailDTO> paymentDetails = new ArrayList<>();
 
     public PaymentDTO(Payment entity) {
-        paymentType = entity.getPaymentType().getName();
-        orderId = entity.getOrder().getId();
-        amount = entity.getAmount();
+        this.id = entity.getId();
+        this.orderId = entity.getOrder().getId();
+        for (PaymentDetail paymentDetail : entity.getPaymentDetails()) {
+            paymentDetails.add(new PaymentDetailDTO(paymentDetail));
+        }
+    }
+
+    public List<PaymentDetailDTO> getPaymentDetails() {
+        return paymentDetails;
     }
 }

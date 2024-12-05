@@ -2,8 +2,10 @@ package rccommerce.services;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
@@ -23,6 +25,7 @@ import rccommerce.entities.Client;
 import rccommerce.entities.Order;
 import rccommerce.entities.OrderItem;
 import rccommerce.entities.Payment;
+import rccommerce.entities.PaymentDetail;
 import rccommerce.entities.Product;
 import rccommerce.entities.User;
 import rccommerce.entities.enums.OrderStatus;
@@ -118,10 +121,11 @@ public class OrderService implements GenericService<Order, OrderDTO, OrderMinDTO
         return messageSource.getMessage("entity.Order", null, Locale.getDefault());
     }
 
-    private Example<Order> example(Long id, String status, String payment, Long userId, String user, Long clientId, String client) {
+    private Example<Order> example(Long id, String status, String paymentType, Long userId, String user, Long clientId, String client) {
         Order orderExample = createEntity();
         User userOrder = new User();
         Client clientOrder = new Client();
+        Payment entity = new Payment();
 
         if (id != null) {
             orderExample.setId(id);
@@ -140,9 +144,10 @@ public class OrderService implements GenericService<Order, OrderDTO, OrderMinDTO
         if (status != null && !status.isEmpty()) {
             orderExample.setStatus(OrderStatus.fromValue(status));
         }
-        if (payment != null && !payment.isEmpty()) {
-            Payment entity = new Payment();
-            entity.setPaymentType(PaymentType.fromValue(payment));
+        if (paymentType != null && !paymentType.isEmpty()) {
+            Set<PaymentDetail> paymentDetails = new HashSet<>();
+            paymentDetails.add(new PaymentDetail(PaymentType.fromValue(paymentType), null));
+            entity.setPaymentDetails(paymentDetails);
             orderExample.setPayment(entity);
         }
         if (user != null && !user.isEmpty()) {
@@ -157,7 +162,7 @@ public class OrderService implements GenericService<Order, OrderDTO, OrderMinDTO
         ExampleMatcher matcher = ExampleMatcher.matching()
                 .withMatcher("id", ExampleMatcher.GenericPropertyMatchers.exact())
                 .withMatcher("status", ExampleMatcher.GenericPropertyMatchers.exact())
-                .withMatcher("payment", ExampleMatcher.GenericPropertyMatchers.exact())
+                .withMatcher("paymentType", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase())
                 .withMatcher("user.id", ExampleMatcher.GenericPropertyMatchers.exact())
                 .withMatcher("user.nameUnaccented", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase())
                 .withMatcher("client.id", ExampleMatcher.GenericPropertyMatchers.exact())

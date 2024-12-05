@@ -1,17 +1,14 @@
 package rccommerce.dto;
 
-import java.math.BigDecimal;
 import java.time.Instant;
-
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import java.util.ArrayList;
+import java.util.List;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import rccommerce.entities.Payment;
-import rccommerce.util.BigDecimalTwoDecimalSerializer;
+import rccommerce.entities.PaymentDetail;
 
-@Builder
 @AllArgsConstructor
 @Getter
 public class PaymentMinDTO {
@@ -19,16 +16,20 @@ public class PaymentMinDTO {
     private Long id;
     private Instant moment;
     private Long orderId;
-    private String paymentType;
+    private String message;
 
-    @JsonSerialize(using = BigDecimalTwoDecimalSerializer.class)
-    private BigDecimal amount;
+    private List<PaymentDetailDTO> paymentDetails = new ArrayList<>();
 
     public PaymentMinDTO(Payment entity) {
-        id = entity.getId();
-        moment = entity.getMoment();
-        paymentType = entity.getPaymentType().getName();
-        orderId = entity.getOrder().getId();
-        amount = entity.getAmount();
+        this.id = entity.getId();
+        this.moment = entity.getMoment();
+        this.orderId = entity.getOrder().getId();
+        for (PaymentDetail paymentDetail : entity.getPaymentDetails()) {
+            paymentDetails.add(new PaymentDetailDTO(paymentDetail));
+        }
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
     }
 }

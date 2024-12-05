@@ -42,12 +42,11 @@ public class OrderMinDTO {
         }
     }
 
+    //Retorna o valor total do pedido
     @JsonSerialize(using = BigDecimalTwoDecimalSerializer.class)
     public BigDecimal getTotal() {
-        BigDecimal sum = BigDecimal.valueOf(0.0);
-        for (OrderItemDTO item : itens) {
-            sum = sum.add(item.getSubTotal());
-        }
-        return sum;
+        return itens.stream()
+                .map(item -> item.getPrice().multiply(item.getQuantity())) // Multiplica preço pela quantidade
+                .reduce(BigDecimal.ZERO, BigDecimal::add); // Soma os resultados
     }
 }

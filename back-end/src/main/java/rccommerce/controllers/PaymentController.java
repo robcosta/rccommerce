@@ -27,7 +27,7 @@ public class PaymentController {
 //	@PreAuthorize("hasAnyRole('ROLE_ADMIN')")
     @GetMapping(value = "/{id}")
     public ResponseEntity<PaymentMinDTO> findById(@PathVariable Long id) {
-        PaymentMinDTO dto = service.findById(id);
+        PaymentMinDTO dto = service.findById(id, false);
         return ResponseEntity.ok(dto);
     }
 

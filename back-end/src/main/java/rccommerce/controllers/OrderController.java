@@ -51,7 +51,7 @@ public class OrderController {
     public ResponseEntity<Page<OrderMinDTO>> searchEntity(
             @ValidId @RequestParam(name = "id", defaultValue = "") String id,
             @RequestParam(name = "status", defaultValue = "") String status,
-            @RequestParam(name = "payment", defaultValue = "") String payment,
+            @RequestParam(name = "paymentType", defaultValue = "") String paymentType,
             @ValidId @RequestParam(name = "userid", defaultValue = "") String userId,
             @RequestParam(name = "user", defaultValue = "") String user,
             @ValidId @RequestParam(name = "clientid", defaultValue = "") String clientId,
@@ -59,7 +59,7 @@ public class OrderController {
 
         Page<OrderMinDTO> pageDto = service.searchEntity(
                 id.isEmpty() ? null : Long.valueOf(id),
-                status, payment,
+                status, paymentType,
                 userId.isEmpty() ? null : Long.valueOf(userId),
                 user,
                 clientId.isEmpty() ? null : Long.valueOf(clientId),
