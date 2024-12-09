@@ -32,4 +32,11 @@ public class PaymentMinDTO {
     public void setMessage(String message) {
         this.message = message;
     }
+
+    public String getMessage() {
+        if (message == null) {
+            this.message = "Ok!";
+        }
+        return message;
+    }
 }
