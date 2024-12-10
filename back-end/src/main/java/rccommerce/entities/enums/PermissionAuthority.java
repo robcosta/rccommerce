@@ -16,8 +16,9 @@ public enum PermissionAuthority {
     PERMISSION_READER(4),
     PERMISSION_UPDATE(5),
     PERMISSION_DELETE(6),
-    PERMISSION_ROLE(7),
-    PERMISSION_PERMISSION(8);
+    PERMISSION_CASH(7),
+    PERMISSION_ROLE(8),
+    PERMISSION_PERMISSION(9);
 
     private final Integer code;
 

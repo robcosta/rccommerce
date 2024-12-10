@@ -51,6 +51,13 @@ public enum CashMovementType {
                 .findFirst();
     }
 
+    public static Optional<CashMovementType> searchDescription(String description) {
+        return Arrays.stream(values())
+                .sequential()
+                .filter(t -> t.description.equals(description))
+                .findFirst();
+    }
+
     @JsonValue
     public String getName() {
         return name();

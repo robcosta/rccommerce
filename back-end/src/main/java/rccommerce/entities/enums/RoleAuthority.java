@@ -13,7 +13,8 @@ public enum RoleAuthority {
     ROLE_ADMIN(1),
     ROLE_OPERATOR(2),
     ROLE_SELLER(3),
-    ROLE_CLIENT(4);
+    ROLE_CLIENT(4),
+    ROLE_CASH(5);
 
     private final Integer code;
 
