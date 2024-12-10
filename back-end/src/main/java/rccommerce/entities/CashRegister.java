@@ -53,6 +53,7 @@ public class CashRegister implements Convertible<CashRegisterDTO, CashRegisterMi
     @JoinColumn(name = "operator_id", unique = true, nullable = false)
     private Operator operator;
 
+    @Builder.Default
     @OneToMany(mappedBy = "cashRegister", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<CashMovement> movements = new ArrayList<>();
 
@@ -81,10 +82,10 @@ public class CashRegister implements Convertible<CashRegisterDTO, CashRegisterMi
         }
         // Verifica o tipo do movimento
         switch (movement.getCashMovementType()) {
-            case WITHDRAWAL, OPERATIONAL_EXPENSE, REIMBURSEMENT, DISCOUNT, OTHER_EXPENSES -> {
+            case WITHDRAWAL, OPERATIONAL_EXPENSE, REIMBURSEMENT, DISCOUNT, OTHER_EXPENSES, CLOSING_BALANCE -> {
                 subtractFromBalance(movement.getAmount());
             }
-            case SALE, REINFORCEMENT, DIVERSE_RECEIPT, INTEREST_OR_FINE, OTHER_RECEIPTS -> {
+            case SALE, REINFORCEMENT, DIVERSE_RECEIPT, INTEREST_OR_FINE, OTHER_RECEIPTS, OPENING_BALANCE -> {
                 addToBalance(movement.getAmount());
             }
             default ->

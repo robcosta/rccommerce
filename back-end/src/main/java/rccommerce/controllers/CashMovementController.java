@@ -57,8 +57,8 @@ public class CashMovementController {
     //     return ResponseEntity.ok(pageDto);
     // }
     @PostMapping
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_OPERATOR', 'ROLE_SELLER')")
-    public ResponseEntity<CashMovementMinDTO> insert(@Valid @RequestBody CashMovementBalanceDTO dto) {
+    @PreAuthorize("hasAnyRole('ROLE_CASH')")
+    public ResponseEntity<CashMovementMinDTO> openingBalance(@Valid @RequestBody CashMovementBalanceDTO dto) {
         CashMovementMinDTO minDTO = service.openingBalance(dto);
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(dto.getId()).toUri();
         return ResponseEntity.created(uri).body(minDTO);

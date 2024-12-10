@@ -39,6 +39,7 @@ public class CashMovementService implements GenericService<CashMovement, CashMov
     }
 
     public CashMovementMinDTO openingBalance(CashMovementBalanceDTO dto) {
+
         return registerBalance(dto.getAmount(), CashMovementType.OPENING_BALANCE);
     }
 
@@ -79,19 +80,15 @@ public class CashMovementService implements GenericService<CashMovement, CashMov
 
     @Override
     public void copyDtoToEntity(CashMovementDTO dto, CashMovement entity) {
-        // entity.setCashMovementType(CashMovementType.fromValue(dto.getCashMovementType()));
-        // entity.setPaymentType(PaymentType.fromValue(dto.getPaymentType()));
-        // entity.setAmount(dto.getAmount());
-        // entity.setDescription(dto.getDescription());
-        // entity.setTimestamp(dto.getTimestamp());
+        entity.setCashMovementType(CashMovementType.fromValue(dto.getCashMovementType()));
+        entity.setPaymentType(PaymentType.fromValue(dto.getPaymentType()));
+        entity.setAmount(dto.getAmount());
+        entity.setDescription(dto.getDescription());
+        entity.setTimestamp(dto.getTimestamp());
 
-        // // Validação e associação do CashRegister
-        // CashRegisterMinDTO cashRegister = cashRegisterService.findById(dto.getCashRegisterId());
-        // if (cashRegister == null) {
-        //     throw new ResourceNotFoundException("Caixa não encontrado para o ID: " + dto.getCashRegisterId());
-        // }
-        // //         .orElseThrow(() -> new ResourceNotFoundException("Caixa não encontrado para o ID: " + dto.getCashRegisterId()));
-        // // entity.setCashRegister(cashRegister);
+        CashRegister cashRegister = cashRegisterService.getOpenCashRegisterByOperator();
+        entity.setCashRegister(cashRegister);
+
     }
 
     @Override

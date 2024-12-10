@@ -2,13 +2,15 @@ INSERT INTO tb_role (authority) VALUES ('ROLE_ADMIN');
 INSERT INTO tb_role (authority) VALUES ('ROLE_OPERATOR');
 INSERT INTO tb_role (authority) VALUES ('ROLE_SELLER');
 INSERT INTO tb_role (authority) VALUES ('ROLE_CLIENT');
+INSERT INTO tb_role (authority) VALUES ('ROLE_CASH');
 
 INSERT INTO tb_permission (authority) VALUES ('PERMISSION_ALL');
+INSERT INTO tb_permission (authority) VALUES ('PERMISSION_NONE');
 INSERT INTO tb_permission (authority) VALUES ('PERMISSION_CREATE');
 INSERT INTO tb_permission (authority) VALUES ('PERMISSION_READER');
 INSERT INTO tb_permission (authority) VALUES ('PERMISSION_UPDATE');
 INSERT INTO tb_permission (authority) VALUES ('PERMISSION_DELETE');
-INSERT INTO tb_permission (authority) VALUES ('PERMISSION_NONE');
+INSERT INTO tb_permission (authority) VALUES ('PERMISSION_CASH');
 
 INSERT INTO tb_user (name, name_unaccented, email, password) VALUES ('Administrador', 'Administrador', 'admin@gmail.com', '$2a$10$efAKHcdzfnBwg5yCvuiOMeiu8pB6TuvNayPjVAZpopc1Ijx95Wyu2');
 INSERT INTO tb_user (name, name_unaccented, email, password) VALUES ('Bob Green', 'Bob Green', 'bob@gmail.com', '$2a$10$Adpk5tdO8yFkIX.6IspH.OTF0dOxx2D9kx3drL6q4/1uLhoB/Ahze');
@@ -17,13 +19,16 @@ INSERT INTO tb_user (name, name_unaccented, email, password) VALUES ('Alex Blue'
 INSERT INTO tb_user_role(user_id, role_id) VALUES(1,1)
 INSERT INTO tb_user_role(user_id, role_id) VALUES(2,2)
 INSERT INTO tb_user_role(user_id, role_id) VALUES(2,3)
+INSERT INTO tb_user_role(user_id, role_id) VALUES(2,5)
 INSERT INTO tb_user_role(user_id, role_id) VALUES(3,3)
+
 
 INSERT INTO tb_user_permission(user_id, permission_id) VALUES(1,1)
 INSERT INTO tb_user_permission(user_id, permission_id) VALUES(2,2)
 INSERT INTO tb_user_permission(user_id, permission_id) VALUES(2,3)
 INSERT INTO tb_user_permission(user_id, permission_id) VALUES(2,4)
 INSERT INTO tb_user_permission(user_id, permission_id) VALUES(2,5)
+INSERT INTO tb_user_permission(user_id, permission_id) VALUES(2,7)
 INSERT INTO tb_user_permission(user_id, permission_id) VALUES(3,3)
 
 INSERT INTO tb_operator(id, commission) VALUES (1, 2.0);

@@ -12,6 +12,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import rccommerce.dto.CashMovementDTO;
 import rccommerce.dto.PaymentDTO;
 import rccommerce.dto.PaymentDetailDTO;
 import rccommerce.dto.PaymentMinDTO;
@@ -42,8 +43,9 @@ public class PaymentService implements GenericService<Payment, PaymentDTO, Payme
     @Autowired
     private StockService stockService;
 
-    // @Autowired
-    // private StockService stockService;
+    @Autowired
+    private CashMovementService cashMovementService;
+
     @Autowired
     private MessageSource messageSource;
 
@@ -100,6 +102,19 @@ public class PaymentService implements GenericService<Payment, PaymentDTO, Payme
 
         // Processar pagamento exato
         order.setStatus(OrderStatus.PAID);
+
+        // Atualiza o caixa
+        for (PaymentDetail paymentDetail : entity.getPaymentDetails()) {
+            CashMovementDTO casMovimentDto = CashMovementDTO.builder()
+                    .cashMovementType("SALE")
+                    .paymentType(paymentDetail.getPaymentType().getName())
+                    .amount(paymentDetail.getAmount())
+                    .description("Order: " + order.getId())
+                    .timestamp(entity.getMoment())
+                    .build();
+
+            cashMovementService.insert(casMovimentDto);
+        }
 
         updateStock(order, entity.getMoment());
         repository.save(entity);
