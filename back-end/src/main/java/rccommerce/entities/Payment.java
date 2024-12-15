@@ -7,10 +7,8 @@ import java.util.Set;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.MapsId;
 import jakarta.persistence.OneToMany;
@@ -49,28 +47,28 @@ public class Payment implements Convertible<PaymentDTO, PaymentMinDTO> {
     private Instant moment;
 
     @Builder.Default
-    @OneToMany(mappedBy = "payment", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-    private Set<PaymentDetail> paymentDetails = new HashSet<>();
+    @OneToMany(mappedBy = "payment")//, cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    private Set<MovementDetail> movementDetails = new HashSet<>();
 
-    public void addPaymentDetail(PaymentDetail paymentDetail) {
-        if (paymentDetail == null) {
-            throw new IllegalArgumentException("PaymentDetail não pode ser nulo.");
+    public void addPaymentDetail(MovementDetail movementDetail) {
+        if (movementDetail == null) {
+            throw new IllegalArgumentException("MovementDetail não pode ser nulo.");
         }
         // Configurar a relação bidirecional
-        paymentDetail.setPayment(this);
-        this.paymentDetails.add(paymentDetail);
+        movementDetail.setPayment(this);
+        this.movementDetails.add(movementDetail);
     }
 
-    public void removePaymentDetail(PaymentDetail paymentDetail) {
-        if (paymentDetail != null && this.paymentDetails.remove(paymentDetail)) {
-            paymentDetail.setPayment(null); // Remove a referência reversa
+    public void removePaymentDetail(MovementDetail movementDetail) {
+        if (movementDetail != null && this.movementDetails.remove(movementDetail)) {
+            movementDetail.setPayment(null); // Remove a referência reversa
         }
     }
 
     @JsonSerialize(using = BigDecimalTwoDecimalSerializer.class)
     public BigDecimal getTotalPayments() {
-        return paymentDetails.stream()
-                .map(PaymentDetail::getAmount)
+        return movementDetails.stream()
+                .map(MovementDetail::getAmount)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 

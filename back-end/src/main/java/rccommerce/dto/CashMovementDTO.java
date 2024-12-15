@@ -2,48 +2,108 @@ package rccommerce.dto;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 
-import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.Digits;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import rccommerce.entities.CashMovement;
+import rccommerce.entities.MovementDetail;
 
+@Builder
 @AllArgsConstructor
 @Getter
 public class CashMovementDTO {
 
-    @NotNull(message = "O ID não pode ser nulo.")
     private final Long id;
 
     @NotNull(message = "O tipo de movimento não pode ser nulo.")
     private final String cashMovementType;
 
-    private final String paymentType;
+    @Builder.Default
+    @NotEmpty(message = "A lista de pagamentos não pode ser nula ou vazia.")
+    @Valid // Valida cada elemento da lista de acordo com as regras em MovementDetailDTO
+    private List<MovementDetailDTO> movementDetails = new ArrayList<>();
 
-    @NotNull(message = "O valor não pode ser nulo.")
-    @DecimalMin(value = "0.01", inclusive = true, message = "O valor deve ser maior que zero.")
-    @Digits(integer = 15, fraction = 2, message = "O valor deve ter no máximo 15 dígitos na parte inteira e 2 na parte fracionária.")
-    private final BigDecimal amount;
-
-    @Size(max = 255, message = "A descrição não pode exceder 255 caracteres.")
     private final String description;
-
-    @NotNull(message = "O timestamp não pode ser nulo.")
     private final Instant timestamp;
+    private Long cashRegisterId;
 
-    @NotNull(message = "O ID do caixa não pode ser nulo.")
-    private final Long cashRegisterId;
-
+    /**
+     * Construtor que consolida pagamentos recebidos no JSON.
+     *
+     * @param movementDetails Lista de pagamentos a consolidar.
+     */
     public CashMovementDTO(CashMovement entity) {
         this.id = entity.getId();
         this.cashMovementType = entity.getCashMovementType().getName();
-        this.paymentType = entity.getPaymentType().getName();
-        this.amount = entity.getAmount();
+        for (MovementDetail movement : entity.getMovementDetails()) {
+            this.getMovementDetails().add(new MovementDetailDTO(movement));
+        }
         this.description = entity.getDescription();
         this.timestamp = entity.getTimestamp();
         this.cashRegisterId = entity.getCashRegister().getId();
     }
+
+    public void setCashRegisterId(Long cashRegisterId) {
+        this.cashRegisterId = cashRegisterId;
+    }
+
+    /**
+     * Adiciona ou atualiza um pagamento no balanço de movimentação de caixa. Se
+     * o tipo de pagamento já existir, acumula o valor no existente. Caso
+     * contrário, adiciona um novo pagamento à lista.
+     *
+     * @param movementDetail o detalhe do pagamento a ser adicionado
+     */
+    public void addPayment(MovementDetailDTO movementDetail) {
+        MovementDetailDTO existingPayment = movementDetails.stream()
+                .filter(p -> p.getMovementType().equals(movementDetail.getMovementType()))
+                .findFirst()
+                .orElse(null);
+
+        if (existingPayment != null) {
+            // Atualiza o valor do pagamento existente
+            BigDecimal updatedAmount = existingPayment.getAmount().add(movementDetail.getAmount());
+
+            // Remove o pagamento existente e adiciona um atualizado
+            movementDetails.remove(existingPayment);
+            movementDetails.add(new MovementDetailDTO(
+                    existingPayment.getId(),
+                    existingPayment.getMovementType(),
+                    updatedAmount
+            ));
+        } else {
+            // Adiciona novo pagamento se o tipo não existir
+            movementDetails.add(movementDetail);
+        }
+    }
+
+    public BigDecimal getTotalAmount() {
+        return movementDetails.stream()
+                .map(MovementDetailDTO::getAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+    // /**
+    //  * Consolida pagamentos, somando os valores de mesmo MovimentType.
+    //  *
+    //  * @param movementDetails Lista original de pagamentos.
+    //  * @return Lista consolidada de pagamentos.
+    //  */
+    // private List<MovementDetailDTO> consolidatePayments(List<MovementDetailDTO> movementDetails) {
+    //     Map<MovimentType, BigDecimal> consolidated = movementDetails.stream()
+    //             .collect(Collectors.toMap(
+    //                     MovementDetailDTO::getPaymentType,
+    //                     MovementDetailDTO::getAmount,
+    //                     BigDecimal::add // Soma os valores dos MovimentType duplicados
+    //             ));
+    //     // Converte o mapa consolidado de volta para uma lista de MovementDetailDTO
+    //     return consolidated.entrySet().stream()
+    //             .map(entry -> new MovementDetailDTO(null, entry.getKey(), entry.getValue()))
+    //             .collect(Collectors.toList());
+    // }
 }

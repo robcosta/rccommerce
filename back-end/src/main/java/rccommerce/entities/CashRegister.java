@@ -49,12 +49,12 @@ public class CashRegister implements Convertible<CashRegisterDTO, CashRegisterMi
     @Column(columnDefinition = "TIMESTAMP WITHOUT TIME ZONE")
     private Instant closeTime;
 
-    @OneToOne(optional = false, fetch = FetchType.LAZY)
+    @OneToOne(optional = false, fetch = FetchType.EAGER)
     @JoinColumn(name = "operator_id", unique = true, nullable = false)
     private Operator operator;
 
     @Builder.Default
-    @OneToMany(mappedBy = "cashRegister", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "cashRegister", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<CashMovement> movements = new ArrayList<>();
 
     public CashRegister() {
@@ -76,34 +76,31 @@ public class CashRegister implements Convertible<CashRegisterDTO, CashRegisterMi
         this.operator = operator;
     }
 
-    public void addMovement(CashMovement movement) {
-        if (movement.getPaymentType() == null) {
-            throw new InvalidArgumentExecption("Movimentos de entrada devem conter um tipo de pagamento.");
-        }
-        // Verifica o tipo do movimento
-        switch (movement.getCashMovementType()) {
-            case WITHDRAWAL, OPERATIONAL_EXPENSE, REIMBURSEMENT, DISCOUNT, OTHER_EXPENSES, CLOSING_BALANCE -> {
-                subtractFromBalance(movement.getAmount());
-            }
-            case SALE, REINFORCEMENT, DIVERSE_RECEIPT, INTEREST_OR_FINE, OTHER_RECEIPTS, OPENING_BALANCE -> {
-                addToBalance(movement.getAmount());
-            }
-            default ->
-                throw new InvalidArgumentExecption("Movimento de caixa inválido: " + movement.getCashMovementType().getName());
-        }
-
-        // Adiciona o movimento ao caixa
-        movements.add(movement);
-
-        // Relacionamento bidirecional
-        movement.setCashRegister(this);
-    }
-
-    private void addToBalance(BigDecimal amount) {
+    // public void addMovement(CashMovement movement) {
+    //     if (movement.getMovementType() == null) {
+    //         throw new InvalidArgumentExecption("Movimentos de entrada devem conter um tipo de pagamento.");
+    //     }
+    //     // Verifica o tipo do movimento
+    //     switch (movement.getCashMovementType()) {
+    //         case WITHDRAWAL, OPERATIONAL_EXPENSE, REIMBURSEMENT, DISCOUNT, OTHER_EXPENSES, CLOSING_BALANCE -> {
+    //             subtractFromBalance(movement.getAmount());
+    //         }
+    //         case SALE, REINFORCEMENT, DIVERSE_RECEIPT, INTEREST_OR_FINE, OTHER_RECEIPTS, OPENING_BALANCE -> {
+    //             addToBalance(movement.getAmount());
+    //         }
+    //         default ->
+    //             throw new InvalidArgumentExecption("Movimento de caixa inválido: " + movement.getCashMovementType().getName());
+    //     }
+    //     // Adiciona o movimento ao caixa
+    //     movements.add(movement);
+    //     // Relacionamento bidirecional
+    //     movement.setCashRegister(this);
+    // }
+    public void addToBalance(BigDecimal amount) {
         balance = balance.add(amount);
     }
 
-    private void subtractFromBalance(BigDecimal amount) {
+    public void subtractFromBalance(BigDecimal amount) {
         if (balance.compareTo(amount) < 0) {
             throw new InvalidArgumentExecption("Saldo insuficiente no caixa.");
         }

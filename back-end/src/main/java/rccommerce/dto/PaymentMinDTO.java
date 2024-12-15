@@ -6,26 +6,26 @@ import java.util.List;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import rccommerce.entities.MovementDetail;
 import rccommerce.entities.Payment;
-import rccommerce.entities.PaymentDetail;
 
 @AllArgsConstructor
 @Getter
 public class PaymentMinDTO {
 
-    private Long id;
-    private Instant moment;
-    private Long orderId;
+    private final Long id;
+    private final Instant moment;
+    private final Long orderId;
     private String message;
 
-    private List<PaymentDetailDTO> paymentDetails = new ArrayList<>();
+    private List<MovementDetailDTO> movementDetails = new ArrayList<>();
 
     public PaymentMinDTO(Payment entity) {
         this.id = entity.getId();
         this.moment = entity.getMoment();
         this.orderId = entity.getOrder().getId();
-        for (PaymentDetail paymentDetail : entity.getPaymentDetails()) {
-            paymentDetails.add(new PaymentDetailDTO(paymentDetail));
+        for (MovementDetail movementDetail : entity.getMovementDetails()) {
+            movementDetails.add(new MovementDetailDTO(movementDetail));
         }
     }
 

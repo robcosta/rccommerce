@@ -13,8 +13,9 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import jakarta.validation.Valid;
-import rccommerce.dto.CashMovementBalanceDTO;
+import rccommerce.dto.CashMovementDTO;
 import rccommerce.dto.CashMovementMinDTO;
+import rccommerce.dto.CashReportDTO;
 import rccommerce.services.CashMovementService;
 
 @Validated
@@ -56,11 +57,25 @@ public class CashMovementController {
     //             client, pageable);
     //     return ResponseEntity.ok(pageDto);
     // }
-    @PostMapping
+    @PostMapping("/open")
     @PreAuthorize("hasAnyRole('ROLE_CASH')")
-    public ResponseEntity<CashMovementMinDTO> openingBalance(@Valid @RequestBody CashMovementBalanceDTO dto) {
+    public ResponseEntity<CashMovementMinDTO> openingBalance(@Valid @RequestBody CashMovementDTO dto) {
+        long startTime = System.currentTimeMillis();
         CashMovementMinDTO minDTO = service.openingBalance(dto);
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(dto.getId()).toUri();
+        long endTime = System.currentTimeMillis();
+        long queryTime = endTime - startTime;
+        System.out.println("**************************************************************************************************************");
+        System.out.println("TEMPO TOTAL: " + queryTime);
+        System.out.println("**************************************************************************************************************");
         return ResponseEntity.created(uri).body(minDTO);
     }
+
+    @PostMapping("/close")
+    @PreAuthorize("hasAnyRole('ROLE_CASH')")
+    public ResponseEntity<CashReportDTO> closeCashRegister(@Valid @RequestBody CashMovementDTO dto) {
+        service.closeCashRegister(dto);
+        return ResponseEntity.ok().build();
+    }
+
 }

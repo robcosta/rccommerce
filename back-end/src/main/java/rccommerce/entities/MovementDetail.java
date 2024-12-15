@@ -1,10 +1,11 @@
 package rccommerce.entities;
 
 import java.math.BigDecimal;
-import java.util.Objects;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -18,7 +19,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import rccommerce.entities.enums.PaymentType;
+import rccommerce.entities.enums.MovimentType;
 
 @Builder
 @NoArgsConstructor
@@ -27,24 +28,29 @@ import rccommerce.entities.enums.PaymentType;
 @Getter
 @Setter
 @Entity
-@Table(name = "tb_payment_detail")
-public class PaymentDetail {
+@Table(name = "tb_moviment_detail")
+public class MovementDetail {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
+
+    @Enumerated(EnumType.STRING)
     @EqualsAndHashCode.Include
-    private PaymentType paymentType;
+    private MovimentType movementType;
 
     private BigDecimal amount;
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
-    @JoinColumn(name = "payment_id", nullable = false)
+    @JoinColumn(name = "payment_id")//, nullable = false)
     private Payment payment;
-    
-    public PaymentDetail(PaymentType paymentType, BigDecimal amount) {
-        this.paymentType = paymentType;
+
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
+    @JoinColumn(name = "cashMovement_id", nullable = false)
+    private CashMovement cachMovement;
+
+    public MovementDetail(MovimentType movementType, BigDecimal amount) {
+        this.movementType = movementType;
         this.amount = amount;
     }
 

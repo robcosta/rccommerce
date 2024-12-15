@@ -8,7 +8,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 
 import rccommerce.services.exceptions.InvalidArgumentExecption;
 
-public enum PaymentType {
+public enum MovimentType {
 
     MONEY(1, "Dinheiro"),
     PIX(2, "PIX"),
@@ -21,7 +21,7 @@ public enum PaymentType {
     private final Integer code;
     private final String description;
 
-    private PaymentType(int code, String description) {
+    private MovimentType(int code, String description) {
         this.code = code;
         this.description = description;
     }
@@ -34,14 +34,14 @@ public enum PaymentType {
         return description;
     }
 
-    public static Optional<PaymentType> searchCode(Integer code) {
+    public static Optional<MovimentType> searchCode(Integer code) {
         return Arrays.stream(values())
                 .sequential()
                 .filter(t -> t.code.equals(code))
                 .findFirst();
     }
 
-    public static Optional<PaymentType> searchDescription(String description) {
+    public static Optional<MovimentType> searchDescription(String description) {
         return Arrays.stream(values())
                 .sequential()
                 .filter(t -> t.description.equals(description))
@@ -54,8 +54,8 @@ public enum PaymentType {
     }
 
     @JsonCreator
-    public static PaymentType fromValue(String value) {
-        for (PaymentType very : PaymentType.values()) {
+    public static MovimentType fromValue(String value) {
+        for (MovimentType very : MovimentType.values()) {
             if (very.name().equalsIgnoreCase(value)) {
                 return very;
             }

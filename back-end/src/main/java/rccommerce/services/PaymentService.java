@@ -8,22 +8,24 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import rccommerce.dto.CashMovementDTO;
+import rccommerce.dto.MovementDetailDTO;
 import rccommerce.dto.PaymentDTO;
-import rccommerce.dto.PaymentDetailDTO;
 import rccommerce.dto.PaymentMinDTO;
 import rccommerce.dto.ProductDTO;
 import rccommerce.dto.StockDTO;
+import rccommerce.entities.MovementDetail;
 import rccommerce.entities.Order;
 import rccommerce.entities.OrderItem;
 import rccommerce.entities.Payment;
-import rccommerce.entities.PaymentDetail;
+import rccommerce.entities.enums.CashMovementType;
+import rccommerce.entities.enums.MovimentType;
 import rccommerce.entities.enums.OrderStatus;
-import rccommerce.entities.enums.PaymentType;
 import rccommerce.entities.enums.StockMoviment;
 import rccommerce.repositories.OrderRepository;
 import rccommerce.repositories.PaymentRepository;
@@ -74,8 +76,8 @@ public class PaymentService implements GenericService<Payment, PaymentDTO, Payme
             BigDecimal excessAmount = totalPayments.subtract(totalOrder);
 
             // Verificar se há pagamento em dinheiro
-            PaymentDetail moneyPayment = entity.getPaymentDetails().stream()
-                    .filter(detail -> detail.getPaymentType().equals(PaymentType.MONEY))
+            MovementDetail moneyPayment = entity.getMovementDetails().stream()
+                    .filter(detail -> detail.getMovementType().equals(MovimentType.MONEY))
                     .findFirst()
                     .orElse(null);
 
@@ -100,30 +102,39 @@ public class PaymentService implements GenericService<Payment, PaymentDTO, Payme
                     String.format("Valor pago: R$ %.2f é insuficiente para cobrir o total do pedido: R$ %.2f.", totalPayments, totalOrder));
         }
 
-        // Processar pagamento exato
-        order.setStatus(OrderStatus.PAID);
+        // Atualiza o pedido
+        updateOrder(order);
 
-        // Atualiza o caixa
-        for (PaymentDetail paymentDetail : entity.getPaymentDetails()) {
-            CashMovementDTO casMovimentDto = CashMovementDTO.builder()
-                    .cashMovementType("SALE")
-                    .paymentType(paymentDetail.getPaymentType().getName())
-                    .amount(paymentDetail.getAmount())
-                    .description("Order: " + order.getId())
-                    .timestamp(entity.getMoment())
-                    .build();
+        //Atualiza o estoque
+        updateStock(order, entity.getMoment());
 
-            cashMovementService.insert(casMovimentDto);
+        // Atualiza o caixa        
+        updateCash(dto);
+
+        //Salva o pagamento
+        try {
+            repository.save(entity);
+        } catch (DataIntegrityViolationException e) {
+            handleDataIntegrityViolation(e);
         }
 
-        updateStock(order, entity.getMoment());
-        repository.save(entity);
         PaymentMinDTO paymentMinDTO = new PaymentMinDTO(entity);
         paymentMinDTO.setMessage(message.toString());
 
         return paymentMinDTO;
     }
 
+    //Altera o Status do pedido
+    private void updateOrder(Order order) {
+        order.setStatus(OrderStatus.PAID);
+        try {
+            orderRepository.save(order);
+        } catch (DataIntegrityViolationException e) {
+            handleDataIntegrityViolation(e);
+        }
+    }
+
+    // Atualiza o estoque
     private void updateStock(Order order, Instant paymentMoment) {
         String moviment = StockMoviment.SALE.name();
         for (OrderItem item : order.getItens()) {
@@ -132,6 +143,17 @@ public class PaymentService implements GenericService<Payment, PaymentDTO, Payme
             StockDTO dto = new StockDTO(product, paymentMoment, moviment, qttMoved);
             stockService.updateStock(dto);
         }
+    }
+
+    //Atualiza o caixa
+    private void updateCash(PaymentDTO dto) {
+
+        CashMovementDTO cashMovementDTO = CashMovementDTO.builder()
+                .cashMovementType(CashMovementType.SALE.getName())
+                .movementDetails(dto.getMovementDetails())
+                .build();
+
+        cashMovementService.inputBalance(cashMovementDTO);
     }
 
     @Override
@@ -143,36 +165,32 @@ public class PaymentService implements GenericService<Payment, PaymentDTO, Payme
     public void copyDtoToEntity(PaymentDTO dto, Payment entity) {
         entity.setMoment(Instant.now());
         entity.setOrder(order);
-        // Garantir que paymentDetails não seja nulo antes de processar
-        if (dto.getPaymentDetails() == null || dto.getPaymentDetails().isEmpty()) {
-            throw new InvalidArgumentExecption("A lista de detalhes de pagamento está vazia ou nula.");
-        }
 
-        // Validar os detalhes de pagamento para garantir que paymentType não seja nulo
-        dto.getPaymentDetails().forEach(paymentDetailDTO -> {
-            if (paymentDetailDTO.getPaymentType() == null) {
+        // Validar os detalhes de pagamento para garantir que movementType não seja nulo
+        dto.getMovementDetails().forEach(movementDetailDTO -> {
+            if (movementDetailDTO.getMovementType() == null) {
                 throw new InvalidArgumentExecption("O tipo de pagamento não pode ser nulo.");
             }
-            if (paymentDetailDTO.getAmount() == null || paymentDetailDTO.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
+            if (movementDetailDTO.getAmount() == null || movementDetailDTO.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
                 throw new InvalidArgumentExecption("O valor do pagamento deve ser maior que zero.");
             }
         });
 
         // Criar um mapa para agrupar e somar os valores por tipo de pagamento
-        Map<PaymentType, BigDecimal> groupedPayments = dto.getPaymentDetails().stream()
+        Map<MovimentType, BigDecimal> groupedPayments = dto.getMovementDetails().stream()
                 .collect(Collectors.toMap(
-                        PaymentDetailDTO::getPaymentType,
-                        PaymentDetailDTO::getAmount,
+                        MovementDetailDTO::getMovementType,
+                        MovementDetailDTO::getAmount,
                         BigDecimal::add // Combina os valores de tipos iguais somando-os
                 ));
 
         // Limpar detalhes de pagamento existentes na entidade
-        entity.getPaymentDetails().clear();
+        entity.getMovementDetails().clear();
 
-        // Converter os valores agrupados em PaymentDetail e adicionar à entidade
-        groupedPayments.forEach((paymentType, totalAmount) -> {
-            PaymentDetail paymentDetail = new PaymentDetail(paymentType, totalAmount);
-            entity.addPaymentDetail(paymentDetail);
+        // Converter os valores agrupados em MovementDetail e adicionar à entidade
+        groupedPayments.forEach((movementType, totalAmount) -> {
+            MovementDetail movementDetail = new MovementDetail(movementType, totalAmount);
+            entity.addPaymentDetail(movementDetail);
         });
     }
 

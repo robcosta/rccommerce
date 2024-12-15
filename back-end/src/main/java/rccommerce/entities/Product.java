@@ -85,7 +85,7 @@ public class Product implements Convertible<ProductDTO, ProductMinDTO> {
     public Product(Long id, String name, String description, String unit, BigDecimal price, String imgUrl, BigDecimal quantity,
             String reference, Suplier suplier) {
         this.id = id;
-        setName(name);
+        this.setName(name);
         this.description = description;
         this.unit = unit;
         this.price = price;
@@ -95,7 +95,7 @@ public class Product implements Convertible<ProductDTO, ProductMinDTO> {
         this.suplier = suplier;
     }
 
-    public final void setName(String name) {
+    public void setName(String name) {
         this.name = name;
         setNameUnaccented(name);
     }

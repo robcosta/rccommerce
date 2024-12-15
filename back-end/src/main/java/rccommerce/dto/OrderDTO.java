@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.Value;
 import rccommerce.entities.Order;
 import rccommerce.entities.OrderItem;
 import rccommerce.entities.enums.OrderStatus;
@@ -17,6 +18,7 @@ import rccommerce.util.BigDecimalTwoDecimalSerializer;
 
 @AllArgsConstructor
 @Getter
+@Value
 public class OrderDTO {
 
     private Long id;

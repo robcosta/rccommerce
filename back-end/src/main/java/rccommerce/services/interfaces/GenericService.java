@@ -90,7 +90,7 @@ public interface GenericService<T extends Convertible<DTO, MINDTO>, DTO, MINDTO,
         T entity = createEntity();
         copyDtoToEntity(dto, entity);
         try {
-            entity = getRepository().saveAndFlush(entity);
+            entity = getRepository().save(entity);
             return entity.convertMinDTO();
         } catch (DataIntegrityViolationException e) {
             handleDataIntegrityViolation(e);
@@ -105,7 +105,7 @@ public interface GenericService<T extends Convertible<DTO, MINDTO>, DTO, MINDTO,
         try {
             T entity = getRepository().getReferenceById(id);
             copyDtoToEntity(dto, entity);
-            entity = getRepository().saveAndFlush(entity);
+            entity = getRepository().save(entity);
             return entity.convertMinDTO();
         } catch (EntityNotFoundException e) {
             handleResourceNotFound();
