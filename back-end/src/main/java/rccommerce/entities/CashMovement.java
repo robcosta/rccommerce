@@ -51,13 +51,7 @@ public class CashMovement implements Convertible<CashMovementDTO, CashMovementMi
     @Column(nullable = false, length = 50)
     private CashMovementType cashMovementType;
 
-    // @Enumerated(EnumType.STRING)
-    // @Column(nullable = true, length = 50)
-    // private MovimentType movementType;
-    // @Column(nullable = false, precision = 15, scale = 2)
-    // private BigDecimal amount;
-    @Builder.Default
-    @OneToMany(mappedBy = "cachMovement", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "cashMovement", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private Set<MovementDetail> movementDetails = new HashSet<>();
 
     @Column(length = 255)
@@ -66,34 +60,36 @@ public class CashMovement implements Convertible<CashMovementDTO, CashMovementMi
     @Column(columnDefinition = "TIMESTAMP WITHOUT TIME ZONE")
     private Instant timestamp;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinColumn(name = "cash_register_id", nullable = false)
+    // @JsonManagedReference
     private CashRegister cashRegister;
 
-    // public CashMovement(BigDecimal amount) {
-    //     if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
-    //         throw new InvalidArgumentExecption("O valor deve ser maior que zero.");
-    //     }
-    // }
-    // public void setAmount(BigDecimal amount) {
-    //     if (amount.compareTo(BigDecimal.ZERO) <= 0) {
-    //         throw new InvalidArgumentExecption("O valor deve ser maior que zero.");
-    //     }
-    //     this.amount = amount;
-    // }
     @JsonSerialize(using = BigDecimalTwoDecimalSerializer.class)
-    public BigDecimal getTotalPayments() {
+    public BigDecimal getTotalAmount() {
         return movementDetails.stream()
                 .map(MovementDetail::getAmount)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
-    public void addPaymentDetail(MovementDetail movementDetail) {
+    public Set<MovementDetail> getMovementDetails() {
+        return movementDetails;
+    }
+
+    public void addMovementDetail(MovementDetail movementDetail) {
         if (movementDetail == null) {
             throw new IllegalArgumentException("MovementDetail não pode ser nulo.");
         }
-        movementDetail.setCachMovement(this); // Configura a relação reversa
+        movementDetails = new HashSet<>();
+        // Relacionamento bidirecional
+        movementDetail.setCashMovement(this);
         this.movementDetails.add(movementDetail);
+    }
+
+    public void removeMovementDetail(MovementDetail movementDetail) {
+        if (movementDetail != null) {
+            this.movementDetails.remove(movementDetail); // Remove diretamente
+        }
     }
 
     @Override

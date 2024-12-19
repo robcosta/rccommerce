@@ -144,7 +144,8 @@ public interface GenericService<T extends Convertible<DTO, MINDTO>, DTO, MINDTO,
         if (e.toString().contains("CNPJ NULLS FIRST")) {
             throw new DatabaseException("CNPJ informado já existe");
         }
-        throw new DatabaseException(getTranslatedEntityName() + " com vínculos em outras tabelas, exclusão proibida");
+
+        throw new DatabaseException(getTranslatedEntityName() + " causando erro de integridade, operação proibida.");
     }
 
     default void handleResourceNotFound() {

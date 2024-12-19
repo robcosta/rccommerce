@@ -1,5 +1,6 @@
 package rccommerce.services;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Locale;
 
@@ -11,15 +12,16 @@ import org.springframework.transaction.annotation.Transactional;
 
 import rccommerce.dto.CashMovementDTO;
 import rccommerce.dto.CashMovementMinDTO;
-import rccommerce.dto.CashRegisterDTO;
-import rccommerce.dto.CashReportDTO;
+import rccommerce.dto.CashReportMinDTO;
 import rccommerce.dto.MovementDetailDTO;
+import rccommerce.dto.OperatorMinDTO;
 import rccommerce.entities.CashMovement;
 import rccommerce.entities.CashRegister;
 import rccommerce.entities.MovementDetail;
 import rccommerce.entities.enums.CashMovementType;
 import rccommerce.repositories.CashMovimentRepository;
 import rccommerce.services.exceptions.InvalidArgumentExecption;
+import rccommerce.services.exceptions.MessageToUsersException;
 import rccommerce.services.interfaces.GenericService;
 
 @Service
@@ -30,6 +32,9 @@ public class CashMovementService implements GenericService<CashMovement, CashMov
 
     @Autowired
     private CashRegisterService cashRegisterService;
+
+    @Autowired
+    private OperatorService operatorService;
 
     @Autowired
     private MessageSource messageSource;
@@ -52,7 +57,28 @@ public class CashMovementService implements GenericService<CashMovement, CashMov
     }
 
     @Transactional
-    public CashReportDTO closeCashRegister(CashMovementDTO dto) {
+    public CashReportMinDTO closeCashRegister(CashMovementDTO dto) {
+        CashRegister cashRegister = cashRegisterService.getOpenCashRegisterByOperator();
+        CashMovementMinDTO cashMovement = registerBalance(dto);
+        BigDecimal amountOperator = dto.getTotalAmount();
+        BigDecimal amountSystem = cashMovement.getTotalAmount();
+        BigDecimal difference = amountOperator.subtract(amountSystem);
+
+        if (!difference.equals(BigDecimal.ZERO)) {
+            throw new MessageToUsersException("Diferença no caixa, deseja continuar?");
+        }
+
+        return CashReportMinDTO.builder()
+                .operator(new OperatorMinDTO(cashRegister.getOperator()))
+                .openTime(cashRegister.getOpenTime())
+                .closeTime(cashRegister.getCloseTime())
+                .operatorData(dto.getMovementDetails())
+                .systemData(dto.getMovementDetails())
+                .amountOperator(amountOperator)
+                .amountSystem(amountSystem)
+                .difference(amountOperator.subtract(amountSystem))
+                .build();
+
         // dto.setCashMovementType(CashMovementType.CLOSING_BALANCE);
         // // Envia a totalização informada pelo operador para proceder o fechamento do caixa
         // List<CashMovement> cashMovement = registerBalance(dto);
@@ -68,27 +94,13 @@ public class CashMovementService implements GenericService<CashMovement, CashMov
         //         .closingBalance(cashMovement.getCashRegister().getBalance())
         //         .difference(cashMovement.getCashRegister().getBalance())
         //         .build();
-        return null;
     }
 
     @Transactional
     private CashMovementMinDTO registerBalance(CashMovementDTO dto) {
         CashRegister cashRegister = cashRegisterService.getCashRegister(dto.getTotalAmount(), CashMovementType.fromValue(dto.getCashMovementType()));
-        // Map<MovimentType, BigDecimal> persistedAmounts;
-        CashRegisterDTO cashRegisterDTO = new CashRegisterDTO(cashRegister);
-        dto.setCashRegisterId(cashRegisterDTO.getId());
-
-        // try {
-        //     // Salva o registro no caixa
-        //     if (cashRegisterDTO.getId() == null) {
-        //         cashRegisterService.insert(cashRegisterDTO);
-        //     } else {
-        //         cashRegisterService.update(cashRegisterDTO, cashRegisterDTO.getId());
-        //     }
-        // } catch (DataIntegrityViolationException e) {
-        //     handleDataIntegrityViolation(e);
-        //     return null;
-        // }
+        // CashRegisterDTO cashRegisterDTO = new CashRegisterDTO(cashRegister);
+        // dto.setCashRegisterDTO(cashRegisterDTO);
         return insert(dto);
     }
 
@@ -96,8 +108,18 @@ public class CashMovementService implements GenericService<CashMovement, CashMov
     public void copyDtoToEntity(CashMovementDTO dto, CashMovement entity) {
         entity.setId(dto.getId());
         entity.setCashMovementType(CashMovementType.fromValue(dto.getCashMovementType()));
-        for (MovementDetailDTO payment : dto.getMovementDetails()) {
-            entity.addPaymentDetail(new MovementDetail(payment.getMovementType(), payment.getAmount()));
+
+        // Limpa os detalhes existentes
+        entity.getMovementDetails().clear();
+        MovementDetail movementDetail;
+        for (MovementDetailDTO movementDetailDTO : dto.getMovementDetails()) {
+            movementDetail = MovementDetail.builder()
+                    .id(movementDetailDTO.getId())
+                    .movementType(movementDetailDTO.getMovementType())
+                    .amount(movementDetailDTO.getAmount())
+                    .cashMovement(entity)
+                    .build();
+            entity.addMovementDetail(movementDetail);
         }
         entity.setDescription(CashMovementType.fromValue(dto.getCashMovementType()).getDescription());
         entity.setTimestamp(Instant.now());
@@ -122,7 +144,7 @@ public class CashMovementService implements GenericService<CashMovement, CashMov
     //             .reduce(BigDecimal.ZERO, BigDecimal::add));  // Somando os valores dos pagamentos informados
     //     cashMovement.setTimestamp(Instant.now());
     //     cashMovement.setCashMovementType(CashMovementType.CLOSING_BALANCE);
-    //     cashMovement.setPaymentType(MovimentType.MONEY);  // Tipo de pagamento (ajustar conforme a lógica de seu sistema)
+    //     cashMovement.setPaymentType(MovementType.MONEY);  // Tipo de pagamento (ajustar conforme a lógica de seu sistema)
     //     cashMovement.setDescription("Fechamento de caixa");
     //     // Adicionar o movimento de fechamento ao caixa
     //     cashRegister.addMovement(cashMovement);
@@ -152,7 +174,7 @@ public class CashMovementService implements GenericService<CashMovement, CashMov
     //     //    Long operatorId = SecurityContextUtil.getUserId();
     //     CashRegister cashRegister = cashRegisterService.getCashRegister(amount, cashMovementType);
     //     CashRegisterDTO cashRegisterDTO;
-    //     Map<MovimentType, BigDecimal> persistedAmounts;
+    //     Map<MovementType, BigDecimal> persistedAmounts;
     //     switch (cashMovementType) {
     //         // case OPENING_BALANCE -> {
     //         //     cashRegister = openingBalance(amount);
@@ -161,7 +183,7 @@ public class CashMovementService implements GenericService<CashMovement, CashMov
     //         case CLOSING_BALANCE -> {
     //             cashRegister = closingBalance(amount);
     //             cashRegisterDTO = new CashRegisterDTO(cashRegister);
-    //             // Obter os valores agrupados por MovimentType dos movimentos de caixa persistidos no banco
+    //             // Obter os valores agrupados por MovementType dos movimentos de caixa persistidos no banco
     //             persistedAmounts = repository.sumAmountsByPaymentType(cashRegister.getId());
     //             BigDecimal totalSystemAmount = persistedAmounts.values().stream()
     //                     .reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -193,7 +215,7 @@ public class CashMovementService implements GenericService<CashMovement, CashMov
     //     entity.setAmount(amount);
     //     entity.setTimestamp(Instant.now());
     //     entity.setCashMovementType(cashMovementType);
-    //     entity.setPaymentType(MovimentType.MONEY);
+    //     entity.setPaymentType(MovementType.MONEY);
     //     entity.setDescription(cashMovementType.getDescription());
     //     entity.setCashRegister(cashRegister);
     //     try {

@@ -19,7 +19,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import rccommerce.entities.enums.MovimentType;
+import rccommerce.entities.enums.MovementType;
 
 @Builder
 @NoArgsConstructor
@@ -37,21 +37,16 @@ public class MovementDetail {
 
     @Enumerated(EnumType.STRING)
     @EqualsAndHashCode.Include
-    private MovimentType movementType;
+    private MovementType movementType;
 
     private BigDecimal amount;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
+    @ManyToOne(fetch = FetchType.LAZY)//, cascade = CascadeType.PERSIST)
     @JoinColumn(name = "payment_id")//, nullable = false)
     private Payment payment;
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinColumn(name = "cashMovement_id", nullable = false)
-    private CashMovement cachMovement;
-
-    public MovementDetail(MovimentType movementType, BigDecimal amount) {
-        this.movementType = movementType;
-        this.amount = amount;
-    }
-
+    // @JsonIgnore
+    private CashMovement cashMovement;
 }

@@ -8,7 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import rccommerce.entities.CashMovement;
-import rccommerce.entities.enums.MovimentType;
+import rccommerce.entities.enums.MovementType;
 
 @Repository
 public interface CashMovimentRepository extends JpaRepository<CashMovement, Long> {
@@ -18,5 +18,5 @@ public interface CashMovimentRepository extends JpaRepository<CashMovement, Long
             FROM tb_cash_movement cm 
             WHERE cm.cash_register_id = :cashRegisterId GROUP BY cm.payment_type
         """)
-    Map<MovimentType, BigDecimal> sumAmountsByPaymentType(Long cashRegisterId);
+    Map<MovementType, BigDecimal> sumAmountsByPaymentType(Long cashRegisterId);
 }
