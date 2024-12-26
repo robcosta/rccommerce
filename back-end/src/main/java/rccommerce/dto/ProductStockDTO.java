@@ -6,12 +6,12 @@ import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import rccommerce.entities.Stock;
+import rccommerce.entities.ProductStock;
 
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
-public class StockMinDTO {
+public class ProductStockDTO {
 
     private Long id;
     private UserDTO user;
@@ -21,7 +21,14 @@ public class StockMinDTO {
     private Instant moment;
     private String moviment;
 
-    public StockMinDTO(Stock entity) {
+    public ProductStockDTO(ProductDTO product, Instant moment, String moviment, BigDecimal qttMoved) {
+        this.product = product;
+        this.moment = moment;
+        this.moviment = moviment;
+        this.qttMoved = qttMoved;
+    }
+
+    public ProductStockDTO(ProductStock entity) {
         id = entity.getId();
         user = new UserDTO(entity.getUser());
         product = new ProductDTO(entity.getProduct());

@@ -3,15 +3,14 @@ package rccommerce.repositories;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import rccommerce.entities.Stock;
+import rccommerce.entities.ProductStock;
 
 @Repository
-public interface StockRepository extends JpaRepository<Stock, Long> {
+public interface StockRepository extends JpaRepository<ProductStock, Long> {
 
     // @Query("SELECT MAX(obj2.id) FROM Stock obj2 WHERE obj2.product.id =
     // :productId ")
     // public Stock searcLastMovement(Long productId);
-
     // @Query("SELECT obj FROM Stock obj "
     // + "WHERE obj.id = (SELECT MAX(obj2.id) FROM Stock obj2 WHERE obj2.product.id
     // = :productId) ")

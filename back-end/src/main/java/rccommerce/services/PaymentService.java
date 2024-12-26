@@ -22,7 +22,7 @@ import rccommerce.entities.MovementDetail;
 import rccommerce.entities.Order;
 import rccommerce.entities.OrderItem;
 import rccommerce.entities.Payment;
-import rccommerce.entities.Stock;
+import rccommerce.entities.ProductStock;
 import rccommerce.entities.enums.CashMovementType;
 import rccommerce.entities.enums.OrderStatus;
 import rccommerce.entities.enums.StockMoviment;
@@ -143,7 +143,7 @@ public class PaymentService implements GenericService<Payment, PaymentDTO, Payme
         // Atualiza o estoque
         for (OrderItem item : order.getItens()) {
             try {
-                stockRepository.save(Stock.builder()
+                stockRepository.save(ProductStock.builder()
                         .product(item.getProduct())
                         .moment(moment)
                         .moviment(StockMoviment.SALE)

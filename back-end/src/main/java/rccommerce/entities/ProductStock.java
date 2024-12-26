@@ -17,8 +17,8 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import rccommerce.dto.StockDTO;
-import rccommerce.dto.StockMinDTO;
+import rccommerce.dto.ProductStockDTO;
+import rccommerce.dto.ProductStockMinDTO;
 import rccommerce.entities.enums.StockMoviment;
 import rccommerce.services.interfaces.Convertible;
 
@@ -29,8 +29,8 @@ import rccommerce.services.interfaces.Convertible;
 @Getter
 @Setter
 @Entity
-@Table(name = "tb_stock")
-public class Stock implements Convertible<StockDTO, StockMinDTO> {
+@Table(name = "tb_Product_stock")
+public class ProductStock implements Convertible<ProductStockDTO, ProductStockMinDTO> {
 
     @EqualsAndHashCode.Include
     @Id
@@ -56,7 +56,7 @@ public class Stock implements Convertible<StockDTO, StockMinDTO> {
 
     private StockMoviment moviment;
 
-    public Stock(Long id, User user, Product product, BigDecimal quantity, Instant moment, BigDecimal qttMoved) {
+    public ProductStock(Long id, User user, Product product, BigDecimal quantity, Instant moment, BigDecimal qttMoved) {
         this.id = id;
         this.user = user;
         this.product = product;
@@ -76,12 +76,12 @@ public class Stock implements Convertible<StockDTO, StockMinDTO> {
     }
 
     @Override
-    public StockDTO convertDTO() {
-        return new StockDTO(this);
+    public ProductStockDTO convertDTO() {
+        return new ProductStockDTO(this);
     }
 
     @Override
-    public StockMinDTO convertMinDTO() {
-        return new StockMinDTO(this);
+    public ProductStockMinDTO convertMinDTO() {
+        return new ProductStockMinDTO(this);
     }
 }

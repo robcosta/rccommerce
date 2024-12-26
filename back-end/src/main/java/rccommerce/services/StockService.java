@@ -8,10 +8,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import rccommerce.dto.StockDTO;
-import rccommerce.dto.StockMinDTO;
+import rccommerce.dto.ProductStockDTO;
+import rccommerce.dto.ProductStockMinDTO;
 import rccommerce.entities.Product;
-import rccommerce.entities.Stock;
+import rccommerce.entities.ProductStock;
 import rccommerce.entities.User;
 import rccommerce.entities.enums.StockMoviment;
 import rccommerce.repositories.ProductRepository;
@@ -22,7 +22,7 @@ import rccommerce.services.interfaces.GenericService;
 import rccommerce.services.util.SecurityContextUtil;
 
 @Service
-public class StockService implements GenericService<Stock, StockDTO, StockMinDTO, Long> {
+public class StockService implements GenericService<ProductStock, ProductStockDTO, ProductStockMinDTO, Long> {
 
     @Autowired
     private StockRepository repository;
@@ -37,8 +37,8 @@ public class StockService implements GenericService<Stock, StockDTO, StockMinDTO
     private MessageSource messageSource;
 
     @Transactional
-    public void updateStock(StockDTO dto) {
-        Stock entity = createEntity();
+    public void updateStock(ProductStockDTO dto) {
+        ProductStock entity = createEntity();
         copyDtoToEntity(dto, entity);
         Product product = entity.getProduct();
         product.setQuantity(entity.getQuantity());
@@ -47,12 +47,12 @@ public class StockService implements GenericService<Stock, StockDTO, StockMinDTO
     }
 
     @Override
-    public JpaRepository<Stock, Long> getRepository() {
+    public JpaRepository<ProductStock, Long> getRepository() {
         return repository;
     }
 
     @Override
-    public void copyDtoToEntity(StockDTO dto, Stock entity) {
+    public void copyDtoToEntity(ProductStockDTO dto, ProductStock entity) {
         Long userId = SecurityContextUtil.getUserId();
         User user = userRepository.getReferenceById(userId);
         Product product = productRepository.findById(dto.getProduct().getId())
@@ -66,8 +66,8 @@ public class StockService implements GenericService<Stock, StockDTO, StockMinDTO
     }
 
     @Override
-    public Stock createEntity() {
-        return new Stock();
+    public ProductStock createEntity() {
+        return new ProductStock();
     }
 
     @Override

@@ -20,7 +20,7 @@ import rccommerce.dto.ProductDTO;
 import rccommerce.dto.ProductMinDTO;
 import rccommerce.entities.Product;
 import rccommerce.entities.ProductCategory;
-import rccommerce.entities.Stock;
+import rccommerce.entities.ProductStock;
 import rccommerce.entities.Suplier;
 import rccommerce.repositories.CategoryRepository;
 import rccommerce.repositories.ProductRepository;
@@ -64,8 +64,8 @@ public class ProductService implements GenericService<Product, ProductDTO, Produ
     }
 
     @Transactional
-    public void updateStock(List<Stock> stocks) {
-        for (Stock productStock : stocks) {
+    public void updateStock(List<ProductStock> stocks) {
+        for (ProductStock productStock : stocks) {
             try {
                 Product entity = repository.getReferenceById(productStock.getProduct().getId());
                 entity.setQuantity(productStock.getQuantity());
