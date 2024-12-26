@@ -3,8 +3,6 @@ package rccommerce.services;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Locale;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
@@ -14,21 +12,23 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import rccommerce.dto.CashMovementDTO;
+import rccommerce.dto.CashRegisterDTO;
 import rccommerce.dto.MovementDetailDTO;
 import rccommerce.dto.PaymentDTO;
 import rccommerce.dto.PaymentMinDTO;
-import rccommerce.dto.ProductDTO;
-import rccommerce.dto.StockDTO;
+import rccommerce.entities.CashMovement;
+import rccommerce.entities.CashRegister;
 import rccommerce.entities.MovementDetail;
 import rccommerce.entities.Order;
 import rccommerce.entities.OrderItem;
 import rccommerce.entities.Payment;
+import rccommerce.entities.Stock;
 import rccommerce.entities.enums.CashMovementType;
-import rccommerce.entities.enums.MovementType;
 import rccommerce.entities.enums.OrderStatus;
 import rccommerce.entities.enums.StockMoviment;
 import rccommerce.repositories.OrderRepository;
 import rccommerce.repositories.PaymentRepository;
+import rccommerce.repositories.StockRepository;
 import rccommerce.services.exceptions.InvalidArgumentExecption;
 import rccommerce.services.exceptions.ResourceNotFoundException;
 import rccommerce.services.interfaces.GenericService;
@@ -43,119 +43,125 @@ public class PaymentService implements GenericService<Payment, PaymentDTO, Payme
     private OrderRepository orderRepository;
 
     @Autowired
-    private StockService stockService;
+    private StockRepository stockRepository;
 
     @Autowired
-    private CashMovementService cashMovementService;
+    private CashRegisterService cashRegisterService;
 
     @Autowired
     private MessageSource messageSource;
 
     private Order order;
 
-    @Override
+    private CashRegister cashRegister;
+
+    private Instant moment;
+
+    private StringBuilder message;
+
     @Transactional
-    public PaymentMinDTO insert(PaymentDTO dto) {
-        StringBuilder message = new StringBuilder("Pagamento Concluído.");
+    public PaymentMinDTO insertPayment(PaymentDTO dto) {
+        moment = Instant.now();
+        message = new StringBuilder("Pagamento Concluído.");
+
+        // Verifica se o operador tem caixa aberto e realiza as tratativas do caixa
+        updateCash(dto);
+
+        // Verifica se o pedido existe
         order = orderRepository.findById(dto.getOrderId())
                 .orElseThrow(() -> new ResourceNotFoundException("Pedido não encontrado"));
 
+        //Verifica se opedido já foi pago
         if (order.getPayment() != null) {
             throw new InvalidArgumentExecption("Pedido de Id: '" + dto.getOrderId() + "' já foi pago.");
         }
 
-        Payment entity = createEntity();
-        copyDtoToEntity(dto, entity);
+        //Analisa as formas de pagamento indicando troco, caso tenha e atualiza a mensagem
+        paymentAnalysis(dto, order);
 
-        // Verificar se o valor total pago cobre o valor do pedido
-        BigDecimal totalPayments = entity.getTotalPayments();
-        BigDecimal totalOrder = order.getTotalOrder();
-
-        if (totalPayments.compareTo(totalOrder) > 0) {
-            // Valor excedente
-            BigDecimal excessAmount = totalPayments.subtract(totalOrder);
-
-            // Verificar se há pagamento em dinheiro
-            MovementDetail moneyPayment = entity.getMovementDetails().stream()
-                    .filter(detail -> detail.getMovementType().equals(MovementType.MONEY))
-                    .findFirst()
-                    .orElse(null);
-
-            if (moneyPayment == null || moneyPayment.getAmount().compareTo(excessAmount) < 0) {
-                BigDecimal money = new BigDecimal(0.00);
-                if (moneyPayment != null) {
-                    money = money.add(moneyPayment.getAmount());
-                }
-                throw new InvalidArgumentExecption(String.format("Pagamento não concluído. Valor pago de R$ %.2f excede o valor do pedido R$ %.2f. "
-                        + "Troco de R$ %.2f só pode ser devolvido em dinheiro, contudo a parcela em dinheiro (R$ %.2f) recebida é inferior ao troco.",
-                        totalPayments, totalOrder, totalPayments.subtract(totalOrder), money));
-            }
-
-            // Ajustar o valor em dinheiro para refletir o troco
-            moneyPayment.setAmount(moneyPayment.getAmount().subtract(excessAmount));
-            message.append(String.format(" Troco: R$ %.2f", excessAmount));
-        }
-
-        // Pagamento exato ou insuficiente
-        if (totalPayments.compareTo(totalOrder) < 0) {
-            throw new InvalidArgumentExecption(
-                    String.format("Valor pago: R$ %.2f é insuficiente para cobrir o total do pedido: R$ %.2f.", totalPayments, totalOrder));
-        }
-
-        // Atualiza o pedido
-        updateOrder(order);
-
-        //Atualiza o estoque
-        updateStock(order, entity.getMoment());
+        // Atualiza o pedido para PAGO e o estoque
+        updateOrderAndStock(order, moment);
 
         //Salva o pagamento
-        try {
-            entity = repository.save(entity);
-        } catch (DataIntegrityViolationException e) {
-            handleDataIntegrityViolation(e);
-        }
-
-        dto = new PaymentDTO(entity);
-
-        // Atualiza o caixa        
-        updateCash(dto);
-
-        PaymentMinDTO paymentMinDTO = new PaymentMinDTO(entity);
-        paymentMinDTO.setMessage(message.toString());
-
-        return paymentMinDTO;
+        PaymentMinDTO minDTO = insert(dto);
+        minDTO.setMessage(message.toString());
+        return minDTO;
     }
 
-    //Altera o Status do pedido
-    private void updateOrder(Order order) {
+    //Atualiza o caixa
+    private void updateCash(PaymentDTO dto) {
+        // Verifica se exite caixa aberto para o operador
+        cashRegister = cashRegisterService.validateOpenCashRegister();
+        CashMovement cashMovement = new CashMovement();
+        cashMovement.setCashMovementType(CashMovementType.SALE);
+        for (CashMovementDTO cashMovementDTD : dto.getCashRegister().getCashMovements()) {
+            for (MovementDetailDTO movementDetailDTO : cashMovementDTD.getMovementDetails()) {
+                MovementDetail detail = new MovementDetail();
+                Payment payment = new Payment();
+                payment.setId(dto.getId());
+                detail.setAmount(movementDetailDTO.getAmount());
+                detail.setMovementType(movementDetailDTO.getMovementType());
+                detail.setPayment(payment);
+                cashMovement.addMovementDetail(detail);
+            }
+            cashRegister.addMovement(cashMovement);
+        }
+        cashRegisterService.update(new CashRegisterDTO(cashRegister), cashRegister.getId());
+    }
+
+    // Aanlisa as formas de pagamento indicando troco, caso tenha
+    private void paymentAnalysis(PaymentDTO dto, Order order) {
+        BigDecimal totalPayments = dto.getCashRegister().getTotalAmount();
+        BigDecimal totalMoney = dto.getCashRegister().getTotalMoneyPayments();
+        BigDecimal totalOrder = order.getTotalOrder();
+
+        // Lança exceção caso o valor informado seja inferior ao valor do pedido
+        if (totalPayments.compareTo(totalOrder) < 0) {
+            throw new InvalidArgumentExecption(String.format("Pagamento não concluído. Valor pago de R$ %.2f é "
+                    + "insuficiente para cobrir o total do pedido: R$ %.2f.", totalPayments, totalOrder));
+        }
+
+        // Valor excedente
+        BigDecimal excessAmount = totalPayments.subtract(totalOrder);
+
+        // Lança exceção caso o valor informado em dinheiro seja inferior ao troco
+        if (totalMoney.compareTo(excessAmount) < 0) {
+            throw new InvalidArgumentExecption(String.format("Pagamento não concluído. Valor pago de R$ %.2f excede"
+                    + " o valor do pedido R$ %.2f. Troco de R$ %.2f só pode ser devolvido em dinheiro, contudo a "
+                    + "parcela em dinheiro (R$ %.2f) recebida é inferior ao troco.",
+                    totalPayments, totalOrder, totalPayments.subtract(totalOrder), totalMoney));
+        }
+
+        // Ajustar o valor em dinheiro para refletir o troco
+        message.append(String.format(" Troco: R$ %.2f", excessAmount));
+    }
+
+    // Altera o Status do pedido para PAGO e atualiza o estoque
+    @Transactional
+    private void updateOrderAndStock(Order order, Instant moment) {
+
+        // Atualiza o estoque
+        for (OrderItem item : order.getItens()) {
+            try {
+                stockRepository.save(Stock.builder()
+                        .product(item.getProduct())
+                        .moment(moment)
+                        .moviment(StockMoviment.SALE)
+                        .quantity(item.getQuantity())
+                        .build());
+            } catch (DataIntegrityViolationException e) {
+                handleDataIntegrityViolation(e);
+            }
+
+        }
+
+        // Atualiza o status do pedido
         order.setStatus(OrderStatus.PAID);
         try {
             orderRepository.save(order);
         } catch (DataIntegrityViolationException e) {
             handleDataIntegrityViolation(e);
         }
-    }
-
-    // Atualiza o estoque
-    private void updateStock(Order order, Instant paymentMoment) {
-        String moviment = StockMoviment.SALE.name();
-        for (OrderItem item : order.getItens()) {
-            ProductDTO product = new ProductDTO(item.getProduct());
-            BigDecimal qttMoved = item.getQuantity();
-            StockDTO dto = new StockDTO(product, paymentMoment, moviment, qttMoved);
-            stockService.updateStock(dto);
-        }
-    }
-
-    //Atualiza o caixa
-    private void updateCash(PaymentDTO dto) {
-
-        CashMovementDTO cashMovementDTO = CashMovementDTO.builder()
-                .cashMovementType(CashMovementType.SALE.getName())
-                .movementDetails(dto.getMovementDetails())
-                .build();
-
-        cashMovementService.inputBalance(cashMovementDTO);
     }
 
     @Override
@@ -165,38 +171,9 @@ public class PaymentService implements GenericService<Payment, PaymentDTO, Payme
 
     @Override
     public void copyDtoToEntity(PaymentDTO dto, Payment entity) {
-        entity.setMoment(Instant.now());
+        entity.setMoment(moment);
         entity.setOrder(order);
-
-        // Validar os detalhes de pagamento para garantir que movementType não seja nulo
-        dto.getMovementDetails().forEach(movementDetailDTO -> {
-            if (movementDetailDTO.getMovementType() == null) {
-                throw new InvalidArgumentExecption("O tipo de pagamento não pode ser nulo.");
-            }
-            if (movementDetailDTO.getAmount() == null || movementDetailDTO.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
-                throw new InvalidArgumentExecption("O valor do pagamento deve ser maior que zero.");
-            }
-        });
-
-        // Criar um mapa para agrupar e somar os valores por tipo de pagamento
-        Map<MovementType, BigDecimal> groupedPayments = dto.getMovementDetails().stream()
-                .collect(Collectors.toMap(
-                        MovementDetailDTO::getMovementType,
-                        MovementDetailDTO::getAmount,
-                        BigDecimal::add // Combina os valores de tipos iguais somando-os
-                ));
-
-        // Limpar detalhes de pagamento existentes na entidade
-        entity.getMovementDetails().clear();
-
-        // Converter os valores agrupados em MovementDetail e adicionar à entidade
-        groupedPayments.forEach((movementType, totalAmount) -> {
-            MovementDetail movementDetail = MovementDetail.builder()
-                    .movementType(movementType)
-                    .amount(totalAmount)
-                    .build();
-            entity.addPaymentDetail(movementDetail);
-        });
+        entity.setCashRegister(cashRegister);
     }
 
     @Override

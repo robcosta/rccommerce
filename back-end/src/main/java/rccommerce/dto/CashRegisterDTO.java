@@ -38,7 +38,6 @@ public class CashRegisterDTO {
     @Valid // Valida cada elemento da lista de acordo com as regras em MovementDetailDTO
     private List<CashMovementDTO> cashMovements = new ArrayList<>();
 
-    //@NotNull(message = "O valor de forceClose não pode ser nulo.")
     private boolean forceClose;
 
     public CashRegisterDTO(CashRegister entity) {
@@ -54,6 +53,10 @@ public class CashRegisterDTO {
         this.forceClose = false; // Default value
     }
 
+    public List<CashMovementDTO> getCashMovementDTO() {
+        return cashMovements;
+    }
+
     public BigDecimal getTotalAmount() {
         return cashMovements.stream()
                 .flatMap(cashMovementDTO -> cashMovementDTO.getMovementDetails().stream())
@@ -61,12 +64,21 @@ public class CashRegisterDTO {
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
+    public BigDecimal getTotalMoneyPayments() {
+        return cashMovements.stream()
+                .flatMap(cashMovementDTO -> cashMovementDTO.getMovementDetails().stream())
+                .filter(detail -> MovementType.MONEY.equals(detail.getMovementType()))
+                .map(MovementDetailDTO::getAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    // Mapeia os MovementType para o relatório final do caixa
     public Map<MovementType, BigDecimal> getMovementTotals() {
         Map<MovementType, BigDecimal> movementTotals = new EnumMap<>(MovementType.class);
 
         if (cashMovements != null) {
             cashMovements.stream()
-                    .flatMap(cashMovementDTO -> cashMovementDTO.getMovementDetails().stream())
+                    .flatMap(cashMovement -> cashMovement.getMovementDetails().stream())
                     .forEach(detail -> {
                         MovementType type = detail.getMovementType();
                         BigDecimal amount = detail.getAmount();

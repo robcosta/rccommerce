@@ -8,10 +8,12 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import jakarta.persistence.EntityNotFoundException;
 import rccommerce.dto.CashMovementDTO;
 import rccommerce.dto.CashRegisterDTO;
 import rccommerce.dto.CashRegisterMinDTO;
@@ -23,8 +25,10 @@ import rccommerce.entities.MovementDetail;
 import rccommerce.entities.Operator;
 import rccommerce.entities.enums.CashMovementType;
 import rccommerce.entities.enums.MovementType;
+import rccommerce.entities.enums.PermissionAuthority;
 import rccommerce.repositories.CashRegisterRepository;
 import rccommerce.repositories.OperatorRepository;
+import rccommerce.repositories.PaymentRepository;
 import rccommerce.services.exceptions.InvalidArgumentExecption;
 import rccommerce.services.exceptions.MessageToUsersException;
 import rccommerce.services.interfaces.GenericService;
@@ -39,8 +43,9 @@ public class CashRegisterService implements GenericService<CashRegister, CashReg
     @Autowired
     private OperatorRepository operatorRepository;
 
-    // @Autowired
-    // private CashMovementService cashMovementService;
+    @Autowired
+    private PaymentRepository paymentRepository;
+
     @Autowired
     private MessageSource messageSource;
 
@@ -101,6 +106,27 @@ public class CashRegisterService implements GenericService<CashRegister, CashReg
                 .build();
 
         return cashReportMinDTO;
+    }
+
+    /*
+     * Realiza o fechamento do caixa comparando os dados enviados pelo usuário
+     * com os dados do sistema.
+     */
+    @Transactional
+    public void registerBalance(CashMovementDTO dto) {
+        checkUserPermissions(PermissionAuthority.PERMISSION_CASH, getOperatorId());
+        CashRegister cashRegister = validateOpenCashRegister();
+        CashRegisterDTO cashRegisterDTO = new CashRegisterDTO(cashRegister);
+        cashRegisterDTO.getCashMovements().add(dto);
+
+        copyDtoToEntity(cashRegisterDTO, cashRegister);
+        try {
+            repository.save(cashRegister);
+        } catch (EntityNotFoundException e) {
+            handleResourceNotFound();
+        } catch (DataIntegrityViolationException e) {
+            handleDataIntegrityViolation(e);
+        }
     }
 
     // /**
@@ -184,8 +210,11 @@ public class CashRegisterService implements GenericService<CashRegister, CashReg
                 MovementDetail movementDetail = new MovementDetail();
                 movementDetail.setMovementType(movementDetailDTO.getMovementType());
                 movementDetail.setAmount(movementType.applyFactor(movementDetailDTO.getAmount()));
+                // movementDetail.setPayment(movementDetailDTO.getPaymentDTO() != null
+                //         ? paymentRepository.getReferenceById(movementDetailDTO.getPaymentDTO().getId())
+                //         : null);
+                // Adiciona MovementDetail ao CashMovement respeitando o relacionamento bidirecional 
                 movementDetail.setPayment(null);
-                // Adiciona MovementDetail ao CashMovement respeitando o relacionamento bidirecional         
                 cashMovement.addMovementDetail(movementDetail);
             }
             // Adicona CashMovement ao CashRegiste respeitando o relacionamento bidirecional

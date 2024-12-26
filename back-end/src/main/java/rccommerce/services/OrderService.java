@@ -2,10 +2,8 @@ package rccommerce.services;
 
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
@@ -22,13 +20,11 @@ import rccommerce.dto.OrderDTO;
 import rccommerce.dto.OrderItemDTO;
 import rccommerce.dto.OrderMinDTO;
 import rccommerce.entities.Client;
-import rccommerce.entities.MovementDetail;
 import rccommerce.entities.Order;
 import rccommerce.entities.OrderItem;
 import rccommerce.entities.Payment;
 import rccommerce.entities.Product;
 import rccommerce.entities.User;
-import rccommerce.entities.enums.MovementType;
 import rccommerce.entities.enums.OrderStatus;
 import rccommerce.repositories.ClientRepository;
 import rccommerce.repositories.OrderItemRepository;
@@ -144,14 +140,14 @@ public class OrderService implements GenericService<Order, OrderDTO, OrderMinDTO
         if (status != null && !status.isEmpty()) {
             orderExample.setStatus(OrderStatus.fromValue(status));
         }
-        if (movementType != null && !movementType.isEmpty()) {
-            Set<MovementDetail> movementDetails = new HashSet<>();
-            movementDetails.add(MovementDetail.builder()
-                    .movementType(MovementType.fromValue(movementType))
-                    .build());
-            entity.setMovementDetails(movementDetails);
-            orderExample.setPayment(entity);
-        }
+        // if (movementType != null && !movementType.isEmpty()) {
+        //     Set<MovementDetail> movementDetails = new HashSet<>();
+        //     movementDetails.add(MovementDetail.builder()
+        //             .movementType(MovementType.fromValue(movementType))
+        //             .build());
+        //     entity.setMovementDetails(movementDetails);
+        //     orderExample.setPayment(entity);
+        // }
         if (user != null && !user.isEmpty()) {
             userOrder.setNameUnaccented(user);
             orderExample.setUser(userOrder);
@@ -164,7 +160,7 @@ public class OrderService implements GenericService<Order, OrderDTO, OrderMinDTO
         ExampleMatcher matcher = ExampleMatcher.matching()
                 .withMatcher("id", ExampleMatcher.GenericPropertyMatchers.exact())
                 .withMatcher("status", ExampleMatcher.GenericPropertyMatchers.exact())
-                .withMatcher("movementType", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase())
+                // .withMatcher("movementType", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase())
                 .withMatcher("user.id", ExampleMatcher.GenericPropertyMatchers.exact())
                 .withMatcher("user.nameUnaccented", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase())
                 .withMatcher("client.id", ExampleMatcher.GenericPropertyMatchers.exact())

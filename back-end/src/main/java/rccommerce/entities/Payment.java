@@ -2,18 +2,16 @@ package rccommerce.entities;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.util.HashSet;
-import java.util.Set;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.MapsId;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -39,44 +37,26 @@ public class Payment implements Convertible<PaymentDTO, PaymentMinDTO> {
 
     @EqualsAndHashCode.Include
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @OneToOne
-    @MapsId
     private Order order;
 
     @Column(columnDefinition = "TIMESTAMP WITHOUT TIME ZONE")
     private Instant moment;
 
-    // @OneToMany(mappedBy = "payment")//, cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-    // private Set<MovementDetail> movementDetails = new HashSet<>();
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-    private Set<MovementDetail> movementDetails = new HashSet<>();
+    @ManyToOne
+    @JoinColumn(name = "cash_register_id", nullable = false)
+    private CashRegister cashRegister;
 
-    // public void addPaymentDetail(MovementDetail movementDetail) {
-    //     if (movementDetail == null) {
-    //         throw new IllegalArgumentException("MovementDetail não pode ser nulo.");
-    //     }
-    //     // Configurar a relação bidirecional
-    //     movementDetail.setPayment(this);
-    //     this.movementDetails.add(movementDetail);
-    // }
-    public void addPaymentDetail(MovementDetail movementDetail) {
-        if (movementDetail == null) {
-            throw new IllegalArgumentException("MovementDetail não pode ser nulo.");
-        }
-        this.movementDetails.add(movementDetail); // Adiciona sem configurar relação reversa
-    }
-
-    public void removePaymentDetail(MovementDetail movementDetail) {
-        if (movementDetail != null && this.movementDetails.remove(movementDetail)) {
-            movementDetail.setPayment(null); // Remove a referência reversa
-        }
-    }
-
+    /*
+     * Retorna o valor pago total
+     */
     @JsonSerialize(using = BigDecimalTwoDecimalSerializer.class)
     public BigDecimal getTotalPayments() {
-        return movementDetails.stream()
+        return cashRegister.getCashMovements().stream()
+                .flatMap(cashMovement -> cashMovement.getMovementDetails().stream())
                 .map(MovementDetail::getAmount)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }

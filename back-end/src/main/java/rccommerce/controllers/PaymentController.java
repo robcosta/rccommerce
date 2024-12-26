@@ -35,7 +35,7 @@ public class PaymentController {
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_OPERATOR', 'ROLE_SELLER', 'ROLE_CLIENT')")
     @PostMapping
     public ResponseEntity<PaymentMinDTO> insert(@Valid @RequestBody PaymentDTO dto) {
-        PaymentMinDTO minDto = service.insert(dto);
+        PaymentMinDTO minDto = service.insertPayment(dto);
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
                 .buildAndExpand(dto.getId()).toUri();
         return ResponseEntity.created(uri).body(minDto);

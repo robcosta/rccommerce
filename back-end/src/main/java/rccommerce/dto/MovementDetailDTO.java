@@ -32,9 +32,12 @@ public class MovementDetailDTO {
     @Digits(integer = 15, fraction = 2, message = "O valor deve ter no máximo 15 dígitos na parte inteira e 2 na parte fracionária.")
     private BigDecimal amount;
 
+    private PaymentDTO paymentDTO;
+
     public MovementDetailDTO(MovementDetail entity) {
         this.id = entity.getId();
         this.movementType = entity.getMovementType();
         this.amount = entity.getAmount();
+        this.paymentDTO = new PaymentDTO(entity.getPayment());
     }
 }

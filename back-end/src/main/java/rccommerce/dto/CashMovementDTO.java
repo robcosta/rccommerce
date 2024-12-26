@@ -59,7 +59,8 @@ public class CashMovementDTO {
                 .map(entry -> new MovementDetailDTO(
                 null, // ID pode ser null no consolidado
                 entry.getKey(), // movementType
-                entry.getValue() // Soma dos amounts
+                entry.getValue(),// Soma dos amounts
+                null // payment pode ser nulo
         ))
                 .collect(Collectors.toList());
     }
