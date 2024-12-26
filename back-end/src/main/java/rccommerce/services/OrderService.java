@@ -1,8 +1,6 @@
 package rccommerce.services;
 
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Locale;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,22 +62,19 @@ public class OrderService implements GenericService<Order, OrderDTO, OrderMinDTO
     }
 
     //Necessário para atualizar o OrderItem
-    @Override
-    @Transactional
-    public OrderMinDTO insert(OrderDTO dto) {
-        List<OrderItem> orderItens = new ArrayList<>();
-        OrderMinDTO orderMinDto = GenericService.super.insert(dto, false);
-        Order order = new Order(orderMinDto.getId());
-
-        for (OrderItemDTO orderItemDto : orderMinDto.getItens()) {
-            Product product = new Product(orderItemDto.getProductId());
-            orderItens.add(new OrderItem(order, product, orderItemDto.getQuantity(), orderItemDto.getPrice()));
-        }
-
-        orderItemRepository.saveAllAndFlush(orderItens);
-        return orderMinDto;
-    }
-
+    // @Override
+    // @Transactional
+    // public OrderMinDTO insert(OrderDTO dto) {
+    //     List<OrderItem> orderItens = new ArrayList<>();
+    //     OrderMinDTO orderMinDto = GenericService.super.insert(dto, false);
+    //     Order order = new Order(orderMinDto.getId());
+    //     for (OrderItemDTO orderItemDto : orderMinDto.getItens()) {
+    //         Product product = new Product(orderItemDto.getProductId());
+    //         orderItens.add(new OrderItem(order, product, orderItemDto.getQuantity(), orderItemDto.getPrice()));
+    //     }
+    //     orderItemRepository.saveAllAndFlush(orderItens);
+    //     return orderMinDto;
+    // }
     @Override
     public JpaRepository<Order, Long> getRepository() {
         return repository;
