@@ -7,8 +7,8 @@ import java.util.List;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import lombok.Getter;
-import rccommerce.entities.Category;
 import rccommerce.entities.Product;
+import rccommerce.entities.ProductCategory;
 import rccommerce.util.BigDecimalTwoDecimalSerializer;
 
 @Getter
@@ -25,7 +25,7 @@ public class ProductMinDTO {
     private String reference;
     private SuplierMinDTO suplier;
 
-    private List<CategoryDTO> categories = new ArrayList<>();
+    private List<ProductCategoryDTO> categories = new ArrayList<>();
 
     public ProductMinDTO(Long id, String name, String unit, BigDecimal price, String imgUrl,
             String reference, SuplierMinDTO suplier) {
@@ -47,8 +47,8 @@ public class ProductMinDTO {
         qttStock = entity.getQuantity();
         reference = entity.getReference();
         suplier = new SuplierMinDTO(entity.getSuplier());
-        for (Category category : entity.getCategories()) {
-            categories.add(new CategoryDTO(category));
+        for (ProductCategory category : entity.getCategories()) {
+            categories.add(new ProductCategoryDTO(category));
         }
     }
 }

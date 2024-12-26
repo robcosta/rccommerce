@@ -70,8 +70,9 @@ public class Product implements Convertible<ProductDTO, ProductMinDTO> {
     private Suplier suplier;
 
     @ManyToMany
-    @JoinTable(name = "tb_product_category", joinColumns = @JoinColumn(name = "product_id"), inverseJoinColumns = @JoinColumn(name = "category_id"))
-    private Set<Category> categories = new HashSet<>();
+    @JoinTable(name = "tb_product_category_id",
+            joinColumns = @JoinColumn(name = "product_id"), inverseJoinColumns = @JoinColumn(name = "category_id"))
+    private Set<ProductCategory> categories = new HashSet<>();
 
     @OneToMany(mappedBy = "id.product")
     private Set<OrderItem> itens = new HashSet<>();
@@ -102,7 +103,7 @@ public class Product implements Convertible<ProductDTO, ProductMinDTO> {
         this.nameUnaccented = AccentUtils.removeAccents(nameUnaccented);
     }
 
-    public void addCategory(Category category) {
+    public void addCategory(ProductCategory category) {
         categories.add(category);
     }
 

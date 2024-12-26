@@ -17,8 +17,8 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import rccommerce.dto.CategoryDTO;
-import rccommerce.dto.CategoryMinDTO;
+import rccommerce.dto.ProductCategoryDTO;
+import rccommerce.dto.ProductCategoryMinDTO;
 import rccommerce.services.interfaces.Convertible;
 import rccommerce.services.util.AccentUtils;
 
@@ -29,10 +29,10 @@ import rccommerce.services.util.AccentUtils;
 @Getter
 @Setter
 @Entity
-@Table(name = "tb_category", indexes = {
+@Table(name = "tb_product_category", indexes = {
     @Index(name = "idx_category_name_unaccented", columnList = "nameUnaccented")
 })
-public class Category implements Convertible<CategoryDTO, CategoryMinDTO> {
+public class ProductCategory implements Convertible<ProductCategoryDTO, ProductCategoryMinDTO> {
 
     @EqualsAndHashCode.Include
     @Id
@@ -48,8 +48,8 @@ public class Category implements Convertible<CategoryDTO, CategoryMinDTO> {
     @ManyToMany(mappedBy = "categories")
     private Set<Product> products = new HashSet<>();
 
-    public Category(Long id, String name) {
-        this.id = id;       
+    public ProductCategory(Long id, String name) {
+        this.id = id;
         setName(name);
     }
 
@@ -63,12 +63,12 @@ public class Category implements Convertible<CategoryDTO, CategoryMinDTO> {
     }
 
     @Override
-    public CategoryDTO convertDTO() {
-        return new CategoryDTO(this);
+    public ProductCategoryDTO convertDTO() {
+        return new ProductCategoryDTO(this);
     }
 
     @Override
-    public CategoryMinDTO convertMinDTO() {
-        return new CategoryMinDTO(this);
+    public ProductCategoryMinDTO convertMinDTO() {
+        return new ProductCategoryMinDTO(this);
     }
 }

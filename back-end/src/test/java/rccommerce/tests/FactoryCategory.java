@@ -1,29 +1,29 @@
 package rccommerce.tests;
 
-import rccommerce.dto.CategoryDTO;
-import rccommerce.dto.CategoryMinDTO;
-import rccommerce.entities.Category;
+import rccommerce.dto.ProductCategoryDTO;
+import rccommerce.dto.ProductCategoryMinDTO;
+import rccommerce.entities.ProductCategory;
 
 public class FactoryCategory {
 
-    public static Category createCategory() {
-        Category category = new Category(7L, "BANHO");
+    public static ProductCategory createCategory() {
+        ProductCategory category = new ProductCategory(7L, "BANHO");
         return category;
     }
 
-    public static Category createNewCategory() {
-        return new Category();
+    public static ProductCategory createNewCategory() {
+        return new ProductCategory();
     }
 
-    public static CategoryDTO createCategoryDTO() {
-        return new CategoryDTO(createCategory());
+    public static ProductCategoryDTO createCategoryDTO() {
+        return new ProductCategoryDTO(createCategory());
     }
 
-    public static CategoryDTO createCategoryDTO(Category entity) {
-        return new CategoryDTO(entity);
+    public static ProductCategoryDTO createCategoryDTO(ProductCategory entity) {
+        return new ProductCategoryDTO(entity);
     }
 
-    public static CategoryMinDTO createCategoryMinDTO() {
-        return new CategoryMinDTO(createCategory());
+    public static ProductCategoryMinDTO createCategoryMinDTO() {
+        return new ProductCategoryMinDTO(createCategory());
     }
 }

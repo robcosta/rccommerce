@@ -15,11 +15,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.persistence.EntityNotFoundException;
-import rccommerce.dto.CategoryDTO;
+import rccommerce.dto.ProductCategoryDTO;
 import rccommerce.dto.ProductDTO;
 import rccommerce.dto.ProductMinDTO;
-import rccommerce.entities.Category;
 import rccommerce.entities.Product;
+import rccommerce.entities.ProductCategory;
 import rccommerce.entities.Stock;
 import rccommerce.entities.Suplier;
 import rccommerce.repositories.CategoryRepository;
@@ -88,8 +88,8 @@ public class ProductService implements GenericService<Product, ProductDTO, Produ
         entity.setReference(getReference(dto, entity));
 
         entity.getCategories().clear();
-        for (CategoryDTO category : dto.getCategories()) {
-            Category result = categoryRepository.findById(category.getId())
+        for (ProductCategoryDTO category : dto.getCategories()) {
+            ProductCategory result = categoryRepository.findById(category.getId())
                     .orElseThrow(() -> new ResourceNotFoundException("Categoria não encontrada"));
             entity.addCategory(result);
         }

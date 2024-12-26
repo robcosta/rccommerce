@@ -12,15 +12,15 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import rccommerce.dto.CategoryDTO;
-import rccommerce.dto.CategoryMinDTO;
-import rccommerce.entities.Category;
+import rccommerce.dto.ProductCategoryDTO;
+import rccommerce.dto.ProductCategoryMinDTO;
+import rccommerce.entities.ProductCategory;
 import rccommerce.repositories.CategoryRepository;
 import rccommerce.services.interfaces.GenericService;
 import rccommerce.services.util.AccentUtils;
 
 @Service
-public class CategoryService implements GenericService<Category, CategoryDTO, CategoryMinDTO, Long> {
+public class CategoryService implements GenericService<ProductCategory, ProductCategoryDTO, ProductCategoryMinDTO, Long> {
 
     @Autowired
     private CategoryRepository repository;
@@ -29,27 +29,27 @@ public class CategoryService implements GenericService<Category, CategoryDTO, Ca
     private MessageSource messageSource;
 
     @Transactional(readOnly = true)
-    public Page<CategoryMinDTO> searchEntity(Long id, String name, Pageable pageable) {
+    public Page<ProductCategoryMinDTO> searchEntity(Long id, String name, Pageable pageable) {
         return findBy(example(id, name), pageable);
     }
 
     @Override
-    public JpaRepository<Category, Long> getRepository() {
+    public JpaRepository<ProductCategory, Long> getRepository() {
         return repository;
     }
 
     @Override
-    public Category createEntity() {
-        return new Category();
+    public ProductCategory createEntity() {
+        return new ProductCategory();
     }
 
     @Override
-    public void copyDtoToEntity(CategoryDTO dto, Category entity) {
+    public void copyDtoToEntity(ProductCategoryDTO dto, ProductCategory entity) {
         entity.setName(dto.getName());
     }
 
-    private Example<Category> example(Long id, String name) {
-        Category categoryExample = createEntity();
+    private Example<ProductCategory> example(Long id, String name) {
+        ProductCategory categoryExample = createEntity();
         if (id != null) {
             categoryExample.setId(id);
         }

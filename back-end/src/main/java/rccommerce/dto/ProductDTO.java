@@ -11,8 +11,8 @@ import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import rccommerce.entities.Category;
 import rccommerce.entities.Product;
+import rccommerce.entities.ProductCategory;
 import rccommerce.util.BigDecimalTwoDecimalSerializer;
 
 @AllArgsConstructor
@@ -40,7 +40,7 @@ public class ProductDTO {
     private SuplierMinDTO suplier;
 
     @Size(min = 1, message = "Indique pelo menos uma categoria válida")
-    private List<CategoryDTO> categories = new ArrayList<>();
+    private List<ProductCategoryDTO> categories = new ArrayList<>();
 
     public ProductDTO(Product entity) {
         id = entity.getId();
@@ -52,8 +52,8 @@ public class ProductDTO {
         quantity = entity.getQuantity();
         reference = entity.getReference();
         suplier = new SuplierMinDTO(entity.getSuplier());
-        for (Category category : entity.getCategories()) {
-            categories.add(new CategoryDTO(category));
+        for (ProductCategory category : entity.getCategories()) {
+            categories.add(new ProductCategoryDTO(category));
         }
     }
 }

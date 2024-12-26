@@ -4,11 +4,11 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import rccommerce.entities.Category;
+import rccommerce.entities.ProductCategory;
 
 @AllArgsConstructor
 @Getter
-public class CategoryDTO {
+public class ProductCategoryDTO {
 
     private Long id;
 
@@ -16,7 +16,7 @@ public class CategoryDTO {
     @Size(min = 3, max = 80, message = "Nome precisa ter de 3 a 80 caracteres.")
     private String name;
 
-    public CategoryDTO(Category entity) {
+    public ProductCategoryDTO(ProductCategory entity) {
         id = entity.getId();
         name = entity.getName();
     }

@@ -2,16 +2,16 @@ package rccommerce.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import rccommerce.entities.Category;
+import rccommerce.entities.ProductCategory;
 
 @Getter
 @AllArgsConstructor
-public class CategoryMinDTO {
+public class ProductCategoryMinDTO {
 
     private Long id;
     private String name;
 
-    public CategoryMinDTO(Category entity) {
+    public ProductCategoryMinDTO(ProductCategory entity) {
         id = entity.getId();
         name = entity.getName();
     }

@@ -21,8 +21,8 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import jakarta.validation.Valid;
 import rccommerce.controllers.validators.ValidId;
-import rccommerce.dto.CategoryDTO;
-import rccommerce.dto.CategoryMinDTO;
+import rccommerce.dto.ProductCategoryDTO;
+import rccommerce.dto.ProductCategoryMinDTO;
 import rccommerce.services.CategoryService;
 
 @Validated
@@ -35,27 +35,27 @@ public class CategoryController {
 
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_OPERATOR', 'ROLE_SELLER')")
     @GetMapping(value = "/all")
-    public ResponseEntity<Page<CategoryMinDTO>> findAll(Pageable pageable) {
-        Page<CategoryMinDTO> dto = service.findAll(pageable);
+    public ResponseEntity<Page<ProductCategoryMinDTO>> findAll(Pageable pageable) {
+        Page<ProductCategoryMinDTO> dto = service.findAll(pageable);
         return ResponseEntity.ok(dto);
     }
 
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_OPERATOR', 'ROLE_SELLER')")
     @GetMapping(value = "/search")
-    public ResponseEntity<Page<CategoryMinDTO>> searchEntity(
+    public ResponseEntity<Page<ProductCategoryMinDTO>> searchEntity(
             @ValidId
             @RequestParam(name = "id", defaultValue = "") String id,
             @RequestParam(name = "name", defaultValue = "") String name,
             Pageable pageable) {
 
-        Page<CategoryMinDTO> dto = service.searchEntity(id.isEmpty() ? null : Long.valueOf(id), name, pageable);
+        Page<ProductCategoryMinDTO> dto = service.searchEntity(id.isEmpty() ? null : Long.valueOf(id), name, pageable);
         return ResponseEntity.ok(dto);
     }
 
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_OPERATOR', 'ROLE_SELLER')")
     @GetMapping(value = "/{id}")
-    public ResponseEntity<CategoryMinDTO> findById(@ValidId @PathVariable String id) {
-        CategoryMinDTO dto = service.findById(Long.valueOf(id));
+    public ResponseEntity<ProductCategoryMinDTO> findById(@ValidId @PathVariable String id) {
+        ProductCategoryMinDTO dto = service.findById(Long.valueOf(id));
         return ResponseEntity.ok(dto);
     }
 
@@ -66,8 +66,8 @@ public class CategoryController {
 //	}
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_OPERATOR', 'ROLE_SELLER')")
     @PostMapping
-    public ResponseEntity<CategoryMinDTO> insert(@Valid @RequestBody CategoryDTO dto) {
-        CategoryMinDTO minDTO = service.insert(dto);
+    public ResponseEntity<ProductCategoryMinDTO> insert(@Valid @RequestBody ProductCategoryDTO dto) {
+        ProductCategoryMinDTO minDTO = service.insert(dto);
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
                 .buildAndExpand(dto.getId()).toUri();
         return ResponseEntity.created(uri).body(minDTO);
@@ -75,8 +75,8 @@ public class CategoryController {
 
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_OPERATOR', 'ROLE_SELLER')")
     @PutMapping(value = "/{id}")
-    public ResponseEntity<CategoryMinDTO> update(@Valid @RequestBody CategoryDTO dto, @ValidId @PathVariable String id) {
-        CategoryMinDTO minDTO = service.update(dto, Long.valueOf(id));
+    public ResponseEntity<ProductCategoryMinDTO> update(@Valid @RequestBody ProductCategoryDTO dto, @ValidId @PathVariable String id) {
+        ProductCategoryMinDTO minDTO = service.update(dto, Long.valueOf(id));
         return ResponseEntity.ok(minDTO);
     }
 

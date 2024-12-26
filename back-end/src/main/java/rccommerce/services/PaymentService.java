@@ -106,7 +106,7 @@ public class PaymentService implements GenericService<Payment, PaymentDTO, Payme
             }
             cashRegister.addMovement(cashMovement);
         }
-        cashRegisterService.update(new CashRegisterDTO(cashRegister), cashRegister.getId());
+        cashRegisterService.insert(new CashRegisterDTO(cashRegister));
     }
 
     // Aanlisa as formas de pagamento indicando troco, caso tenha

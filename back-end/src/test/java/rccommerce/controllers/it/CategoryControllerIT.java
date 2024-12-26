@@ -1,5 +1,12 @@
 package rccommerce.controllers.it;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,18 +15,12 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import rccommerce.dto.CategoryDTO;
-import rccommerce.entities.Category;
+import rccommerce.dto.ProductCategoryDTO;
+import rccommerce.entities.ProductCategory;
 import rccommerce.tests.FactoryCategory;
 import rccommerce.tests.TokenUtil;
 
@@ -44,8 +45,8 @@ public class CategoryControllerIT {
 
     private long existingId, nonExistingId, existingUpdateId;
     private Integer countCategory;
-    private Category category;
-    private CategoryDTO categoryDTO;
+    private ProductCategory category;
+    private ProductCategoryDTO categoryDTO;
 
     @BeforeEach
     void setUp() throws Exception {
