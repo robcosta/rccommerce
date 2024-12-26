@@ -87,7 +87,7 @@ public class ControllerExceptionHandler {
 
     @ExceptionHandler(MessageToUsersException.class)
     public ResponseEntity<CustomError> messageToUsers(MessageToUsersException e, HttpServletRequest request) {
-        HttpStatus status = HttpStatus.CONTINUE;
+        HttpStatus status = HttpStatus.OK;
         CustomError err = new CustomError(Instant.now(), status.value(), e.getMessage(), request.getRequestURI());
         return ResponseEntity.status(status).body(err);
     }

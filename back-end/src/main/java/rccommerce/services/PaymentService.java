@@ -24,7 +24,7 @@ import rccommerce.entities.Order;
 import rccommerce.entities.OrderItem;
 import rccommerce.entities.Payment;
 import rccommerce.entities.enums.CashMovementType;
-import rccommerce.entities.enums.MovimentType;
+import rccommerce.entities.enums.MovementType;
 import rccommerce.entities.enums.OrderStatus;
 import rccommerce.entities.enums.StockMoviment;
 import rccommerce.repositories.OrderRepository;
@@ -77,7 +77,7 @@ public class PaymentService implements GenericService<Payment, PaymentDTO, Payme
 
             // Verificar se há pagamento em dinheiro
             MovementDetail moneyPayment = entity.getMovementDetails().stream()
-                    .filter(detail -> detail.getMovementType().equals(MovimentType.MONEY))
+                    .filter(detail -> detail.getMovementType().equals(MovementType.MONEY))
                     .findFirst()
                     .orElse(null);
 
@@ -108,15 +108,17 @@ public class PaymentService implements GenericService<Payment, PaymentDTO, Payme
         //Atualiza o estoque
         updateStock(order, entity.getMoment());
 
-        // Atualiza o caixa        
-        updateCash(dto);
-
         //Salva o pagamento
         try {
-            repository.save(entity);
+            entity = repository.save(entity);
         } catch (DataIntegrityViolationException e) {
             handleDataIntegrityViolation(e);
         }
+
+        dto = new PaymentDTO(entity);
+
+        // Atualiza o caixa        
+        updateCash(dto);
 
         PaymentMinDTO paymentMinDTO = new PaymentMinDTO(entity);
         paymentMinDTO.setMessage(message.toString());
@@ -177,7 +179,7 @@ public class PaymentService implements GenericService<Payment, PaymentDTO, Payme
         });
 
         // Criar um mapa para agrupar e somar os valores por tipo de pagamento
-        Map<MovimentType, BigDecimal> groupedPayments = dto.getMovementDetails().stream()
+        Map<MovementType, BigDecimal> groupedPayments = dto.getMovementDetails().stream()
                 .collect(Collectors.toMap(
                         MovementDetailDTO::getMovementType,
                         MovementDetailDTO::getAmount,
@@ -189,7 +191,10 @@ public class PaymentService implements GenericService<Payment, PaymentDTO, Payme
 
         // Converter os valores agrupados em MovementDetail e adicionar à entidade
         groupedPayments.forEach((movementType, totalAmount) -> {
-            MovementDetail movementDetail = new MovementDetail(movementType, totalAmount);
+            MovementDetail movementDetail = MovementDetail.builder()
+                    .movementType(movementType)
+                    .amount(totalAmount)
+                    .build();
             entity.addPaymentDetail(movementDetail);
         });
     }

@@ -7,8 +7,10 @@ import java.util.Set;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.MapsId;
 import jakarta.persistence.OneToMany;
@@ -46,17 +48,24 @@ public class Payment implements Convertible<PaymentDTO, PaymentMinDTO> {
     @Column(columnDefinition = "TIMESTAMP WITHOUT TIME ZONE")
     private Instant moment;
 
-    @Builder.Default
-    @OneToMany(mappedBy = "payment")//, cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    // @OneToMany(mappedBy = "payment")//, cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    // private Set<MovementDetail> movementDetails = new HashSet<>();
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private Set<MovementDetail> movementDetails = new HashSet<>();
 
+    // public void addPaymentDetail(MovementDetail movementDetail) {
+    //     if (movementDetail == null) {
+    //         throw new IllegalArgumentException("MovementDetail não pode ser nulo.");
+    //     }
+    //     // Configurar a relação bidirecional
+    //     movementDetail.setPayment(this);
+    //     this.movementDetails.add(movementDetail);
+    // }
     public void addPaymentDetail(MovementDetail movementDetail) {
         if (movementDetail == null) {
             throw new IllegalArgumentException("MovementDetail não pode ser nulo.");
         }
-        // Configurar a relação bidirecional
-        movementDetail.setPayment(this);
-        this.movementDetails.add(movementDetail);
+        this.movementDetails.add(movementDetail); // Adiciona sem configurar relação reversa
     }
 
     public void removePaymentDetail(MovementDetail movementDetail) {

@@ -28,7 +28,7 @@ import rccommerce.entities.OrderItem;
 import rccommerce.entities.Payment;
 import rccommerce.entities.Product;
 import rccommerce.entities.User;
-import rccommerce.entities.enums.MovimentType;
+import rccommerce.entities.enums.MovementType;
 import rccommerce.entities.enums.OrderStatus;
 import rccommerce.repositories.ClientRepository;
 import rccommerce.repositories.OrderItemRepository;
@@ -146,7 +146,9 @@ public class OrderService implements GenericService<Order, OrderDTO, OrderMinDTO
         }
         if (movementType != null && !movementType.isEmpty()) {
             Set<MovementDetail> movementDetails = new HashSet<>();
-            movementDetails.add(new MovementDetail(MovimentType.fromValue(movementType), null));
+            movementDetails.add(MovementDetail.builder()
+                    .movementType(MovementType.fromValue(movementType))
+                    .build());
             entity.setMovementDetails(movementDetails);
             orderExample.setPayment(entity);
         }

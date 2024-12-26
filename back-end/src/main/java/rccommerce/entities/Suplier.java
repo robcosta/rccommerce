@@ -46,7 +46,6 @@ public class Suplier implements Convertible<SuplierDTO, SuplierMinDTO> {
     @Column(unique = true)
     private String cnpj;
 
-    @Builder.Default
     @OneToMany(mappedBy = "suplier")
     private Set<Product> products = new HashSet<>();
 

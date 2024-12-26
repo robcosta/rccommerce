@@ -17,7 +17,7 @@ import lombok.Builder;
 import lombok.Getter;
 import rccommerce.entities.MovementDetail;
 import rccommerce.entities.Payment;
-import rccommerce.entities.enums.MovimentType;
+import rccommerce.entities.enums.MovementType;
 
 @Builder
 @AllArgsConstructor
@@ -69,8 +69,8 @@ public class PaymentDTO {
      * Consolida os detalhes de pagamento, somando os valores para cada tipo de
      * pagamento.
      */
-    public Map<MovimentType, BigDecimal> consolidated() {
-        Map<MovimentType, BigDecimal> consolidated = movementDetails.stream()
+    public Map<MovementType, BigDecimal> consolidated() {
+        Map<MovementType, BigDecimal> consolidated = movementDetails.stream()
                 .collect(Collectors.toMap(
                         MovementDetailDTO::getMovementType,
                         MovementDetailDTO::getAmount,

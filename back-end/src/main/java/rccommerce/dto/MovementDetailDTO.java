@@ -8,12 +8,14 @@ import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Value;
 import rccommerce.entities.MovementDetail;
 import rccommerce.entities.enums.MovementType;
 import rccommerce.util.BigDecimalTwoDecimalSerializer;
 
+@Builder
 @AllArgsConstructor
 @Getter
 @Value

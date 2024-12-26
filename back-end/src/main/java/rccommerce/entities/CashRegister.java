@@ -3,7 +3,9 @@ package rccommerce.entities;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -13,8 +15,8 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -23,6 +25,7 @@ import lombok.Getter;
 import lombok.Setter;
 import rccommerce.dto.CashRegisterDTO;
 import rccommerce.dto.CashRegisterMinDTO;
+import rccommerce.entities.enums.MovementType;
 import rccommerce.services.exceptions.InvalidArgumentExecption;
 import rccommerce.services.interfaces.Convertible;
 
@@ -49,16 +52,17 @@ public class CashRegister implements Convertible<CashRegisterDTO, CashRegisterMi
     @Column(columnDefinition = "TIMESTAMP WITHOUT TIME ZONE")
     private Instant closeTime;
 
-    @OneToOne(optional = false, fetch = FetchType.EAGER)
-    @JoinColumn(name = "operator_id", unique = true, nullable = false)
+    @ManyToOne
+    @JoinColumn(name = "operator_id", nullable = false)
     private Operator operator;
-    // @JsonBackReference
-    @OneToMany(mappedBy = "cashRegister", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
 
+    @OneToMany(mappedBy = "cashRegister", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @Builder.Default
     private List<CashMovement> cashMovements = new ArrayList<>();
 
     public CashRegister() {
         this.balance = BigDecimal.ZERO;
+        this.cashMovements = new ArrayList<>();
     }
 
     public CashRegister(Operator operator) {
@@ -76,34 +80,24 @@ public class CashRegister implements Convertible<CashRegisterDTO, CashRegisterMi
         this.operator = operator;
     }
 
-    public List<CashMovement> getMovements() {
+    public List<CashMovement> getCashMovements() {
         return cashMovements;
     }
 
     public void addMovement(CashMovement movement) {
-
         if (movement.getMovementDetails() == null) {
             throw new InvalidArgumentExecption("Movimentos de entrada devem conter um tipo de pagamento.");
         }
-        cashMovements = new ArrayList<>();
-        // Verifica o tipo do movimento
-        switch (movement.getCashMovementType()) {
-            case WITHDRAWAL, OPERATIONAL_EXPENSE, REIMBURSEMENT, DISCOUNT, OTHER_EXPENSES, CLOSING_BALANCE -> {
-                subtractFromBalance(movement.getTotalAmount());
-            }
-            case SALE, REINFORCEMENT, DIVERSE_RECEIPT, INTEREST_OR_FINE, OTHER_RECEIPTS, OPENING_BALANCE -> {
-                addToBalance(movement.getTotalAmount());
-            }
-            default ->
-                throw new InvalidArgumentExecption("Movimento de caixa inválido: " + movement.getCashMovementType().getName());
-        }
+
+        addToBalance(movement.getTotalAmount());
+
         // Relacionamento bidirecional
         movement.setCashRegister(this);
         // Adiciona o movimento ao caixa
         cashMovements.add(movement);
     }
 
-    public void addToBalance(BigDecimal amount) {
+    private void addToBalance(BigDecimal amount) {
         balance = balance.add(amount);
     }
 
@@ -112,6 +106,39 @@ public class CashRegister implements Convertible<CashRegisterDTO, CashRegisterMi
             throw new InvalidArgumentExecption("Saldo insuficiente no caixa.");
         }
         balance = balance.subtract(amount);
+    }
+
+    public void subtractFromBalanceFinal(BigDecimal amount) {
+        balance = balance.subtract(amount);
+    }
+
+    public BigDecimal getTotalAmount() {
+        return cashMovements.stream()
+                .flatMap(cashMovement -> cashMovement.getMovementDetails().stream())
+                .map(MovementDetail::getAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    // Mapeia os MovementType para o relatório final do caixa
+    public Map<MovementType, BigDecimal> getMovementTotals() {
+        Map<MovementType, BigDecimal> movementTotals = new EnumMap<>(MovementType.class);
+
+        if (cashMovements != null) {
+            cashMovements.stream()
+                    .flatMap(cashMovement -> cashMovement.getMovementDetails().stream())
+                    .forEach(detail -> {
+                        MovementType type = detail.getMovementType();
+                        BigDecimal amount = detail.getAmount();
+
+                        // Adiciona o valor ao total acumulado ou inicializa se ainda não existe
+                        movementTotals.merge(type, amount, BigDecimal::add);
+                    });
+        }
+
+        // Remove entradas com total igual a zero
+        movementTotals.entrySet().removeIf(entry -> entry.getValue().compareTo(BigDecimal.ZERO) == 0);
+
+        return movementTotals;
     }
 
     @Override

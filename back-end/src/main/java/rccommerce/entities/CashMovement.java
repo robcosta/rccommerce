@@ -51,7 +51,8 @@ public class CashMovement implements Convertible<CashMovementDTO, CashMovementMi
     @Column(nullable = false, length = 50)
     private CashMovementType cashMovementType;
 
-    @OneToMany(mappedBy = "cashMovement", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "cashMovement", cascade = CascadeType.ALL, fetch = FetchType.EAGER)//, orphanRemoval = true)
+    @Builder.Default
     private Set<MovementDetail> movementDetails = new HashSet<>();
 
     @Column(length = 255)
@@ -60,9 +61,8 @@ public class CashMovement implements Convertible<CashMovementDTO, CashMovementMi
     @Column(columnDefinition = "TIMESTAMP WITHOUT TIME ZONE")
     private Instant timestamp;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
+    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.PERSIST)
     @JoinColumn(name = "cash_register_id", nullable = false)
-    // @JsonManagedReference
     private CashRegister cashRegister;
 
     @JsonSerialize(using = BigDecimalTwoDecimalSerializer.class)
@@ -80,10 +80,11 @@ public class CashMovement implements Convertible<CashMovementDTO, CashMovementMi
         if (movementDetail == null) {
             throw new IllegalArgumentException("MovementDetail não pode ser nulo.");
         }
-        movementDetails = new HashSet<>();
         // Relacionamento bidirecional
         movementDetail.setCashMovement(this);
-        this.movementDetails.add(movementDetail);
+        if (movementDetail.getAmount().compareTo(BigDecimal.ZERO) != 0) {
+            this.movementDetails.add(movementDetail);
+        }
     }
 
     public void removeMovementDetail(MovementDetail movementDetail) {

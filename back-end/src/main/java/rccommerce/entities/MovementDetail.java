@@ -47,6 +47,5 @@ public class MovementDetail {
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinColumn(name = "cashMovement_id", nullable = false)
-    // @JsonIgnore
     private CashMovement cashMovement;
 }

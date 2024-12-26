@@ -61,7 +61,6 @@ public class Order implements Convertible<OrderDTO, OrderMinDTO> {
     @OneToOne(mappedBy = "order", cascade = CascadeType.ALL)
     private Payment payment;
 
-    @Builder.Default
     @OneToMany(mappedBy = "id.order")
     private Set<OrderItem> itens = new HashSet<>();
 
