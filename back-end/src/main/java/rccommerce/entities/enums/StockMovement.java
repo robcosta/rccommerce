@@ -8,7 +8,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 
 import rccommerce.services.exceptions.InvalidArgumentExecption;
 
-public enum StockMoviment {
+public enum StockMovement {
 
     BUY(1, "Compra"),
     SALE(2, "Venda"),
@@ -19,7 +19,7 @@ public enum StockMoviment {
     private final Integer code;
     private final String description;
 
-    private StockMoviment(int code, String description) {
+    private StockMovement(int code, String description) {
         this.code = code;
         this.description = description;
     }
@@ -32,11 +32,11 @@ public enum StockMoviment {
         return description;
     }
 
-    public static Optional<StockMoviment> searchCode(Integer code) {
+    public static Optional<StockMovement> searchCode(Integer code) {
         return Arrays.stream(values()).sequential().filter(t -> t.code.equals(code)).findFirst();
     }
 
-    public static Optional<StockMoviment> searchDescription(String description) {
+    public static Optional<StockMovement> searchDescription(String description) {
         return Arrays.stream(values())
                 .sequential()
                 .filter(t -> t.description.equals(description))
@@ -49,8 +49,8 @@ public enum StockMoviment {
     }
 
     @JsonCreator
-    public static StockMoviment fromValue(String value) {
-        for (StockMoviment type : StockMoviment.values()) {
+    public static StockMovement fromValue(String value) {
+        for (StockMovement type : StockMovement.values()) {
             if (type.name().equalsIgnoreCase(value)) {
                 return type;
             }

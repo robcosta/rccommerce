@@ -19,7 +19,7 @@ public class ProductStockMinDTO {
     private BigDecimal quantity;
     private BigDecimal qttMoved;
     private Instant moment;
-    private String moviment;
+    private String movement;
 
     public ProductStockMinDTO(ProductStock entity) {
         id = entity.getId();

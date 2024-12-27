@@ -25,7 +25,7 @@ public class OrderItem {
 
     @EqualsAndHashCode.Include
     @EmbeddedId
-    private OrderItemPK id = new OrderItemPK();
+    private final OrderItemPK id = new OrderItemPK();
 
     @Column(precision = 15, scale = 2)
     private BigDecimal quantity;

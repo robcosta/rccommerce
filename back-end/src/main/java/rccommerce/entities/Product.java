@@ -69,11 +69,13 @@ public class Product implements Convertible<ProductDTO, ProductMinDTO> {
     @JoinColumn(name = "suplier_id")
     private Suplier suplier;
 
+    @Builder.Default
     @ManyToMany
     @JoinTable(name = "tb_product_category_id",
             joinColumns = @JoinColumn(name = "product_id"), inverseJoinColumns = @JoinColumn(name = "category_id"))
     private Set<ProductCategory> categories = new HashSet<>();
 
+    @Builder.Default
     @OneToMany(mappedBy = "id.product")
     private Set<OrderItem> itens = new HashSet<>();
 
@@ -94,7 +96,7 @@ public class Product implements Convertible<ProductDTO, ProductMinDTO> {
         this.suplier = suplier;
     }
 
-    public void setName(String name) {
+    public final void setName(String name) {
         this.name = name;
         setNameUnaccented(name);
     }

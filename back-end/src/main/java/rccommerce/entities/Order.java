@@ -11,6 +11,8 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -49,6 +51,8 @@ public class Order implements Convertible<OrderDTO, OrderMinDTO> {
 
     @Column(columnDefinition = "TIMESTAMP WITHOUT TIME ZONE")
     private Instant moment;
+
+    @Enumerated(EnumType.STRING)
     private OrderStatus status;
 
     @ManyToOne
@@ -62,6 +66,7 @@ public class Order implements Convertible<OrderDTO, OrderMinDTO> {
     @OneToOne(mappedBy = "order", cascade = CascadeType.ALL)
     private Payment payment;
 
+    @Builder.Default
     @OneToMany(mappedBy = "id.order", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private Set<OrderItem> itens = new HashSet<>();
 

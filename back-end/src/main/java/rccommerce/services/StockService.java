@@ -13,7 +13,7 @@ import rccommerce.dto.ProductStockMinDTO;
 import rccommerce.entities.Product;
 import rccommerce.entities.ProductStock;
 import rccommerce.entities.User;
-import rccommerce.entities.enums.StockMoviment;
+import rccommerce.entities.enums.StockMovement;
 import rccommerce.repositories.ProductRepository;
 import rccommerce.repositories.StockRepository;
 import rccommerce.repositories.UserRepository;
@@ -59,9 +59,8 @@ public class StockService implements GenericService<ProductStock, ProductStockDT
                 .orElseThrow(() -> new ResourceNotFoundException(String.format("Produto %s não encontrado", dto.getProduct().getName())));
         entity.setUser(user);
         entity.setProduct(product);
-        entity.setMoviment(StockMoviment.valueOf(dto.getMoviment()));
+        entity.setMovement(StockMovement.valueOf(dto.getMovement()));
         entity.setMoment(dto.getMoment());
-        entity.setQuantity(product.getQuantity());
         entity.setQttMoved(dto.getQttMoved());
     }
 

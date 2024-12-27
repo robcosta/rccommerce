@@ -23,15 +23,18 @@ import rccommerce.entities.Order;
 import rccommerce.entities.OrderItem;
 import rccommerce.entities.Payment;
 import rccommerce.entities.ProductStock;
+import rccommerce.entities.User;
 import rccommerce.entities.enums.CashMovementType;
 import rccommerce.entities.enums.OrderStatus;
-import rccommerce.entities.enums.StockMoviment;
+import rccommerce.entities.enums.StockMovement;
 import rccommerce.repositories.OrderRepository;
 import rccommerce.repositories.PaymentRepository;
 import rccommerce.repositories.StockRepository;
+import rccommerce.repositories.UserRepository;
 import rccommerce.services.exceptions.InvalidArgumentExecption;
 import rccommerce.services.exceptions.ResourceNotFoundException;
 import rccommerce.services.interfaces.GenericService;
+import rccommerce.services.util.SecurityContextUtil;
 
 @Service
 public class PaymentService implements GenericService<Payment, PaymentDTO, PaymentMinDTO, Long> {
@@ -46,41 +49,20 @@ public class PaymentService implements GenericService<Payment, PaymentDTO, Payme
     private StockRepository stockRepository;
 
     @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
     private CashRegisterService cashRegisterService;
 
     @Autowired
     private MessageSource messageSource;
 
-    private Order order;
-
-    private CashRegister cashRegister;
-
-    private Instant moment;
-
     private StringBuilder message;
 
     @Transactional
     public PaymentMinDTO insertPayment(PaymentDTO dto) {
-        moment = Instant.now();
+        // Mensagem para o usuário informando que o pagamento foi concluído e se tem troco
         message = new StringBuilder("Pagamento Concluído.");
-
-        // Verifica se o operador tem caixa aberto e realiza as tratativas do caixa
-        updateCash(dto);
-
-        // Verifica se o pedido existe
-        order = orderRepository.findById(dto.getOrderId())
-                .orElseThrow(() -> new ResourceNotFoundException("Pedido não encontrado"));
-
-        //Verifica se opedido já foi pago
-        if (order.getPayment() != null) {
-            throw new InvalidArgumentExecption("Pedido de Id: '" + dto.getOrderId() + "' já foi pago.");
-        }
-
-        //Analisa as formas de pagamento indicando troco, caso tenha e atualiza a mensagem
-        paymentAnalysis(dto, order);
-
-        // Atualiza o pedido para PAGO e o estoque
-        updateOrderAndStock(order, moment);
 
         //Salva o pagamento
         PaymentMinDTO minDTO = insert(dto);
@@ -88,10 +70,49 @@ public class PaymentService implements GenericService<Payment, PaymentDTO, Payme
         return minDTO;
     }
 
+    // Altera o Status do pedido para PAGO e atualiza o estoque
+    @Transactional
+    private Order updateOrderAndStock(PaymentDTO dto, Instant moment) {
+        // Verifica se o pedido existe
+        Order order = orderRepository.findById(dto.getOrderId())
+                .orElseThrow(() -> new ResourceNotFoundException("Pedido não encontrado"));
+
+        //Verifica se opedido já foi pago
+        if (order.getPayment() != null) {
+            throw new InvalidArgumentExecption("Pedido de Id: '" + dto.getOrderId() + "' já foi pago.");
+        }
+
+        // Busca o usuário logado
+        User user = userRepository.getReferenceById(SecurityContextUtil.getUserId());
+
+        //Salva o pedido e atualiza o estoque
+        try {
+            for (OrderItem item : order.getItens()) {
+                // Atualiza o estoque do produto
+                ProductStock stock = ProductStock.builder()
+                        .user(user)
+                        .product(item.getProduct())
+                        .quantity(item.getProduct().getQuantity())
+                        .moment(moment)
+                        .movement(StockMovement.SALE)
+                        .build();
+                stock.setQttMoved(item.getQuantity());
+
+                stockRepository.save(stock);
+            }
+            order.setStatus(OrderStatus.PAID);
+            // Atualiza o estatus do pedido
+            orderRepository.save(order);
+        } catch (DataIntegrityViolationException e) {
+            handleDataIntegrityViolation(e);
+        }
+        return order;
+    }
+
     //Atualiza o caixa
-    private void updateCash(PaymentDTO dto) {
+    private CashRegister updateCash(PaymentDTO dto) {
         // Verifica se exite caixa aberto para o operador
-        cashRegister = cashRegisterService.validateOpenCashRegister();
+        CashRegister cashRegister = cashRegisterService.validateOpenCashRegister();
         CashMovement cashMovement = new CashMovement();
         cashMovement.setCashMovementType(CashMovementType.SALE);
         for (CashMovementDTO cashMovementDTD : dto.getCashRegister().getCashMovements()) {
@@ -107,6 +128,7 @@ public class PaymentService implements GenericService<Payment, PaymentDTO, Payme
             cashRegister.addMovement(cashMovement);
         }
         cashRegisterService.insert(new CashRegisterDTO(cashRegister));
+        return cashRegister;
     }
 
     // Aanlisa as formas de pagamento indicando troco, caso tenha
@@ -136,34 +158,6 @@ public class PaymentService implements GenericService<Payment, PaymentDTO, Payme
         message.append(String.format(" Troco: R$ %.2f", excessAmount));
     }
 
-    // Altera o Status do pedido para PAGO e atualiza o estoque
-    @Transactional
-    private void updateOrderAndStock(Order order, Instant moment) {
-
-        // Atualiza o estoque
-        for (OrderItem item : order.getItens()) {
-            try {
-                stockRepository.save(ProductStock.builder()
-                        .product(item.getProduct())
-                        .moment(moment)
-                        .moviment(StockMoviment.SALE)
-                        .quantity(item.getQuantity())
-                        .build());
-            } catch (DataIntegrityViolationException e) {
-                handleDataIntegrityViolation(e);
-            }
-
-        }
-
-        // Atualiza o status do pedido
-        order.setStatus(OrderStatus.PAID);
-        try {
-            orderRepository.save(order);
-        } catch (DataIntegrityViolationException e) {
-            handleDataIntegrityViolation(e);
-        }
-    }
-
     @Override
     public JpaRepository<Payment, Long> getRepository() {
         return repository;
@@ -171,6 +165,10 @@ public class PaymentService implements GenericService<Payment, PaymentDTO, Payme
 
     @Override
     public void copyDtoToEntity(PaymentDTO dto, Payment entity) {
+        Instant moment = Instant.now();
+        Order order = updateOrderAndStock(dto, moment);
+        paymentAnalysis(dto, order);
+        CashRegister cashRegister = cashRegisterService.validateOpenCashRegister();
         entity.setMoment(moment);
         entity.setOrder(order);
         entity.setCashRegister(cashRegister);

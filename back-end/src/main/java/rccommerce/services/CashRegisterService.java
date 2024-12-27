@@ -28,7 +28,6 @@ import rccommerce.entities.enums.MovementType;
 import rccommerce.entities.enums.PermissionAuthority;
 import rccommerce.repositories.CashRegisterRepository;
 import rccommerce.repositories.OperatorRepository;
-import rccommerce.repositories.PaymentRepository;
 import rccommerce.services.exceptions.InvalidArgumentExecption;
 import rccommerce.services.exceptions.MessageToUsersException;
 import rccommerce.services.interfaces.GenericService;
@@ -42,9 +41,6 @@ public class CashRegisterService implements GenericService<CashRegister, CashReg
 
     @Autowired
     private OperatorRepository operatorRepository;
-
-    @Autowired
-    private PaymentRepository paymentRepository;
 
     @Autowired
     private MessageSource messageSource;

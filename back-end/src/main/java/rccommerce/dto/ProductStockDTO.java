@@ -19,12 +19,12 @@ public class ProductStockDTO {
     private BigDecimal quantity;
     private BigDecimal qttMoved;
     private Instant moment;
-    private String moviment;
+    private String movement;
 
-    public ProductStockDTO(ProductDTO product, Instant moment, String moviment, BigDecimal qttMoved) {
+    public ProductStockDTO(ProductDTO product, Instant moment, String movement, BigDecimal qttMoved) {
         this.product = product;
         this.moment = moment;
-        this.moviment = moviment;
+        this.movement = movement;
         this.qttMoved = qttMoved;
     }
 
