@@ -9,6 +9,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -75,11 +76,25 @@ public class CashRegisterController {
         return ResponseEntity.created(uri).body(minDTO);
     }
 
-    @PostMapping("/close")
+    @PutMapping("/close")
     @PreAuthorize("hasAnyRole('ROLE_CASH')")
     public ResponseEntity<CashReportMinDTO> closeBalance(@Valid @RequestBody CashRegisterDTO dto) {
         long startTime = System.currentTimeMillis();
         CashReportMinDTO minDTO = service.closingBalance(dto);
+        URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(dto.getId()).toUri();
+        long endTime = System.currentTimeMillis();
+        long queryTime = endTime - startTime;
+        System.out.println("**************************************************************************************************************");
+        System.out.println("TEMPO TOTAL: " + queryTime);
+        System.out.println("**************************************************************************************************************");
+        return ResponseEntity.created(uri).body(minDTO);
+    }
+
+    @PutMapping("/register")
+    @PreAuthorize("hasAnyRole('ROLE_CASH')")
+    public ResponseEntity<CashRegisterMinDTO> registerBalance(@Valid @RequestBody CashRegisterDTO dto) {
+        long startTime = System.currentTimeMillis();
+        CashRegisterMinDTO minDTO = service.registerBalance(dto);
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(dto.getId()).toUri();
         long endTime = System.currentTimeMillis();
         long queryTime = endTime - startTime;

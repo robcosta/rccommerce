@@ -84,7 +84,7 @@ public interface GenericService<T extends Convertible<DTO, MINDTO>, DTO, MINDTO,
     @Transactional
     default MINDTO insert(DTO dto, boolean checkpermisson) {
         if (checkpermisson) {
-            checkUserPermissions(PermissionAuthority.PERMISSION_READER);
+            checkUserPermissions(PermissionAuthority.PERMISSION_CREATE);
         }
 
         T entity = createEntity();
@@ -100,7 +100,14 @@ public interface GenericService<T extends Convertible<DTO, MINDTO>, DTO, MINDTO,
 
     @Transactional
     default MINDTO update(DTO dto, ID id) {
-        checkUserPermissions(PermissionAuthority.PERMISSION_UPDATE, (Long) id);
+        return update(dto, id, true);
+    }
+
+    @Transactional
+    default MINDTO update(DTO dto, ID id, boolean checkpermisson) {
+        if (checkpermisson) {
+            checkUserPermissions(PermissionAuthority.PERMISSION_UPDATE, (Long) id);
+        }
 
         try {
             T entity = getRepository().getReferenceById(id);

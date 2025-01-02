@@ -8,12 +8,10 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import jakarta.persistence.EntityNotFoundException;
 import rccommerce.dto.CashMovementDTO;
 import rccommerce.dto.CashRegisterDTO;
 import rccommerce.dto.CashRegisterMinDTO;
@@ -51,6 +49,9 @@ public class CashRegisterService implements GenericService<CashRegister, CashReg
      */
     @Transactional
     public CashRegisterMinDTO openBalance(CashRegisterDTO dto) {
+        checkUserPermissions(PermissionAuthority.PERMISSION_CASH);
+
+        // Certifica que a abertura de caixa só contém movimentos do tipo 'MONEY'
         if (hasInvalidMovementType(dto, MovementType.MONEY)) {
             throw new InvalidArgumentExecption("A abertura de caixa só pode conter movimentos do tipo 'MONEY'.");
         }
@@ -59,7 +60,7 @@ public class CashRegisterService implements GenericService<CashRegister, CashReg
         validateNoOpenCashRegister();
 
         // Cria um novo caixa para o operador atual
-        return GenericService.super.insert(dto);
+        return GenericService.super.insert(dto, false);
     }
 
     /*
@@ -68,6 +69,8 @@ public class CashRegisterService implements GenericService<CashRegister, CashReg
      */
     @Transactional
     public CashReportMinDTO closingBalance(CashRegisterDTO dto) {
+        checkUserPermissions(PermissionAuthority.PERMISSION_CASH);
+
         CashRegister cashRegister = validateOpenCashRegister();
         BigDecimal totalAmount = cashRegister.getTotalAmount();
 
@@ -83,7 +86,7 @@ public class CashRegisterService implements GenericService<CashRegister, CashReg
 
         // Atualiza o caixa com os dados de fechamento enviados pelo operador
         cashRegister.setCloseTime(Instant.now());
-        CashRegisterMinDTO cashRegisterMinDTO = GenericService.super.update(dto, cashRegister.getId());
+        CashRegisterMinDTO cashRegisterMinDTO = update(dto, cashRegister.getId(), false);
 
         BigDecimal difference = dto.getTotalAmount().subtract(totalAmount);
 
@@ -105,38 +108,29 @@ public class CashRegisterService implements GenericService<CashRegister, CashReg
     }
 
     /*
-     * Realiza o fechamento do caixa comparando os dados enviados pelo usuário
-     * com os dados do sistema.
+     * Realiza a movimentação de valores do caixa como: Retirada, Depósito, etc.
      */
     @Transactional
-    public void registerBalance(CashMovementDTO dto) {
-        checkUserPermissions(PermissionAuthority.PERMISSION_CASH, getOperatorId());
-        CashRegister cashRegister = validateOpenCashRegister();
-        CashRegisterDTO cashRegisterDTO = new CashRegisterDTO(cashRegister);
-        cashRegisterDTO.getCashMovements().add(dto);
+    public CashRegisterMinDTO registerBalance(CashRegisterDTO dto) {
+        checkUserPermissions(PermissionAuthority.PERMISSION_CASH);
 
-        copyDtoToEntity(cashRegisterDTO, cashRegister);
-        try {
-            repository.save(cashRegister);
-        } catch (EntityNotFoundException e) {
-            handleResourceNotFound();
-        } catch (DataIntegrityViolationException e) {
-            handleDataIntegrityViolation(e);
+        if (hasInvalidMovementType(dto, MovementType.MONEY)) {
+            throw new InvalidArgumentExecption("Para reforço ou retirada do caixa apenas tipo 'MONEY'.");
         }
+        CashRegister entity = validateOpenCashRegister();
+        return update(dto, entity.getId(), false);
+
+        // copyDtoToEntity(dto, entity);
+        // try {
+        //     repository.save(entity);
+        // } catch (EntityNotFoundException e) {
+        //     handleResourceNotFound();
+        // } catch (DataIntegrityViolationException e) {
+        //     handleDataIntegrityViolation(e);
+        // }
+        // return null;
     }
 
-    // /**
-    //  * Retorna o caixa aberto do operador atual. Lança exceção se não houver um
-    //  * caixa aberto.
-    //  */
-    // @Transactional(readOnly = true)
-    // public CashRegister getOpenCashRegisterByOperator() {
-    //     List<CashRegister> cashRegisters = repository.findByOperatorId(getOperatorId());
-    //     return cashRegisters.stream()
-    //             .filter(cashRegister -> cashRegister.getCloseTime() == null)
-    //             .findFirst()
-    //             .orElseThrow(() -> new InvalidArgumentExecption("O operador não possui um caixa aberto."));
-    // }
     /**
      * Valida se o operador já possui um caixa aberto. Lança exceção se um caixa
      * estiver aberto.
@@ -168,18 +162,13 @@ public class CashRegisterService implements GenericService<CashRegister, CashReg
                 .orElseThrow(() -> new InvalidArgumentExecption("O operador não possui um caixa aberto."));
     }
 
-    // /**
-    //  * Valida se o operador já possui um caixa aberto ou não *
-    //  */
-    // @Transactional(readOnly = true)
-    // public boolean hasOpenCashRegister() {
-    //     List<CashRegister> cashRegisters = repository.findByOperatorId(getOperatorId());
-    //     return cashRegisters.stream().anyMatch(cashRegister -> cashRegister.getCloseTime() == null);
-    // }
     public Long getOperatorId() {
         return SecurityContextUtil.getUserId();
     }
 
+    /*
+     *  Verifica se o tipo de movimento é diferente do esperado.
+     */
     private boolean hasInvalidMovementType(CashRegisterDTO dto, MovementType movementType) {
         return dto.getCashMovements().stream()
                 .flatMap(cashMovementDTO -> cashMovementDTO.getMovementDetails().stream())
@@ -199,17 +188,13 @@ public class CashRegisterService implements GenericService<CashRegister, CashReg
             CashMovement cashMovement = new CashMovement();
             CashMovementType movementType = CashMovementType.valueOf(cashMovementDTDO.getCashMovementType());
             cashMovement.setCashMovementType(movementType);
-            cashMovement.setDescription(movementType.getDescription());
+            cashMovement.setDescription(movementType.getDescription() + " - Usuário:" + getOperatorId());
             cashMovement.setTimestamp(Instant.now());
             //cashMovement.getMovementDetails().clear();
             for (MovementDetailDTO movementDetailDTO : cashMovementDTDO.getMovementDetails()) {
                 MovementDetail movementDetail = new MovementDetail();
                 movementDetail.setMovementType(movementDetailDTO.getMovementType());
                 movementDetail.setAmount(movementType.applyFactor(movementDetailDTO.getAmount()));
-                // movementDetail.setPayment(movementDetailDTO.getPaymentDTO() != null
-                //         ? paymentRepository.getReferenceById(movementDetailDTO.getPaymentDTO().getId())
-                //         : null);
-                // Adiciona MovementDetail ao CashMovement respeitando o relacionamento bidirecional 
                 movementDetail.setPayment(null);
                 cashMovement.addMovementDetail(movementDetail);
             }
