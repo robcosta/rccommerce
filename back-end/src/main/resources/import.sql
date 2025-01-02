@@ -115,9 +115,9 @@ INSERT INTO tb_product_category_id (product_id, category_id) VALUES (23, 3);
 INSERT INTO tb_product_category_id (product_id, category_id) VALUES (24, 3);
 INSERT INTO tb_product_category_id (product_id, category_id) VALUES (25, 3);
 
-INSERT INTO tb_order (moment, status, client_id, user_id) VALUES (TIMESTAMP WITH TIME ZONE '2022-07-25T13:00:00Z', 1, 4, 2);
-INSERT INTO tb_order (moment, status, client_id, user_id) VALUES (TIMESTAMP WITH TIME ZONE '2022-07-29T15:50:00Z', 3, 5, 2);
-INSERT INTO tb_order (moment, status, client_id, user_id) VALUES (TIMESTAMP WITH TIME ZONE '2022-08-03T14:20:00Z', 0, 4, 1);
+INSERT INTO tb_order (moment, status, client_id, user_id) VALUES (TIMESTAMP WITH TIME ZONE '2022-07-25T13:00:00Z', 'WAITING_PAYMENT', 4, 2);
+INSERT INTO tb_order (moment, status, client_id, user_id) VALUES (TIMESTAMP WITH TIME ZONE '2022-07-29T15:50:00Z', 'SHIPPED', 5, 2);
+INSERT INTO tb_order (moment, status, client_id, user_id) VALUES (TIMESTAMP WITH TIME ZONE '2022-08-03T14:20:00Z', 'WAITING_PAYMENT', 4, 1);
 
 INSERT INTO tb_order_item (order_id, product_id, quantity, price) VALUES (1, 1, 2.0, 90.5);
 INSERT INTO tb_order_item (order_id, product_id, quantity, price) VALUES (1, 3, 1.0, 1250.0);
@@ -133,11 +133,11 @@ INSERT INTO tb_order_item (order_id, product_id, quantity, price) VALUES (3, 1, 
 -- INSERT INTO tb_payment_payment_detail (payment_id, payment_detail_id) VALUES (1,1);
 -- INSERT INTO tb_payment_payment_detail (payment_id, payment_detail_id) VALUES (2,2);
 
-INSERT INTO tb_Product_stock (user_id, product_id, quantity, moment, qtt_Moved, moviment) VALUES (1, 3, 12, TIMESTAMP WITH TIME ZONE '2022-07-30T11:00:00Z', 2, 1);
-INSERT INTO tb_Product_stock (user_id, product_id, quantity, moment, qtt_Moved, moviment) VALUES (1, 3, 10, TIMESTAMP WITH TIME ZONE '2022-07-30T11:00:00Z', 2, 1);
-INSERT INTO tb_Product_stock (user_id, product_id, quantity, moment, qtt_Moved, moviment) VALUES (1, 4, 12, TIMESTAMP WITH TIME ZONE '2022-07-30T11:00:00Z', 2, 1);
-INSERT INTO tb_Product_stock (user_id, product_id, quantity, moment, qtt_Moved, moviment) VALUES (1, 3, 7, TIMESTAMP WITH TIME ZONE '2022-07-30T11:00:00Z', 3, 1);
-INSERT INTO tb_Product_stock (user_id, product_id, quantity, moment, qtt_Moved, moviment) VALUES (1, 3, 6, TIMESTAMP WITH TIME ZONE '2022-07-30T11:00:00Z', 1, 1);
-INSERT INTO tb_Product_stock (user_id, product_id, quantity, moment, qtt_Moved, moviment) VALUES (1, 4, 10, TIMESTAMP WITH TIME ZONE '2022-07-30T11:00:00Z', 2, 1);
-INSERT INTO tb_Product_stock (user_id, product_id, quantity, moment, qtt_Moved, moviment) VALUES (1, 3, 2, TIMESTAMP WITH TIME ZONE '2022-07-30T11:00:00Z', 4, 1);
+INSERT INTO tb_Product_stock (user_id, product_id, quantity, moment, qtt_Moved, movement) VALUES (1, 3, 12, TIMESTAMP WITH TIME ZONE '2022-07-30T11:00:00Z', 2, 1);
+INSERT INTO tb_Product_stock (user_id, product_id, quantity, moment, qtt_Moved, movement) VALUES (1, 3, 10, TIMESTAMP WITH TIME ZONE '2022-07-30T11:00:00Z', 2, 1);
+INSERT INTO tb_Product_stock (user_id, product_id, quantity, moment, qtt_Moved, movement) VALUES (1, 4, 12, TIMESTAMP WITH TIME ZONE '2022-07-30T11:00:00Z', 2, 1);
+INSERT INTO tb_Product_stock (user_id, product_id, quantity, moment, qtt_Moved, movement) VALUES (1, 3, 7, TIMESTAMP WITH TIME ZONE '2022-07-30T11:00:00Z', 3, 1);
+INSERT INTO tb_Product_stock (user_id, product_id, quantity, moment, qtt_Moved, movement) VALUES (1, 3, 6, TIMESTAMP WITH TIME ZONE '2022-07-30T11:00:00Z', 1, 1);
+INSERT INTO tb_Product_stock (user_id, product_id, quantity, moment, qtt_Moved, movement) VALUES (1, 4, 10, TIMESTAMP WITH TIME ZONE '2022-07-30T11:00:00Z', 2, 1);
+INSERT INTO tb_Product_stock (user_id, product_id, quantity, moment, qtt_Moved, movement) VALUES (1, 3, 2, TIMESTAMP WITH TIME ZONE '2022-07-30T11:00:00Z', 4, 1);
 

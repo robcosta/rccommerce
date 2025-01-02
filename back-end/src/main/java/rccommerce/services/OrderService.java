@@ -20,7 +20,6 @@ import rccommerce.dto.OrderMinDTO;
 import rccommerce.entities.Client;
 import rccommerce.entities.Order;
 import rccommerce.entities.OrderItem;
-import rccommerce.entities.Payment;
 import rccommerce.entities.Product;
 import rccommerce.entities.User;
 import rccommerce.entities.enums.OrderStatus;
@@ -53,28 +52,14 @@ public class OrderService implements GenericService<Order, OrderDTO, OrderMinDTO
     @Transactional(readOnly = true)
     public Page<OrderMinDTO> searchEntity(Pageable pageable) {
         Long userId = SecurityContextUtil.getUserId();
-        return findBy(example(null, null, null, userId, null, null, null), false, pageable);
+        return findBy(example(null, null, userId, null, null, null), false, pageable);
     }
 
     @Transactional(readOnly = true)
     public Page<OrderMinDTO> searchEntity(Long id, String status, String payment, Long userId, String user, Long clientId, String client, Pageable pageable) {
-        return findBy(example(id, status, payment, userId, user, clientId, client), pageable);
+        return findBy(example(id, status, userId, user, clientId, client), pageable);
     }
 
-    //Necessário para atualizar o OrderItem
-    // @Override
-    // @Transactional
-    // public OrderMinDTO insert(OrderDTO dto) {
-    //     List<OrderItem> orderItens = new ArrayList<>();
-    //     OrderMinDTO orderMinDto = GenericService.super.insert(dto, false);
-    //     Order order = new Order(orderMinDto.getId());
-    //     for (OrderItemDTO orderItemDto : orderMinDto.getItens()) {
-    //         Product product = new Product(orderItemDto.getProductId());
-    //         orderItens.add(new OrderItem(order, product, orderItemDto.getQuantity(), orderItemDto.getPrice()));
-    //     }
-    //     orderItemRepository.saveAllAndFlush(orderItens);
-    //     return orderMinDto;
-    // }
     @Override
     public JpaRepository<Order, Long> getRepository() {
         return repository;
@@ -112,11 +97,10 @@ public class OrderService implements GenericService<Order, OrderDTO, OrderMinDTO
         return messageSource.getMessage("entity.Order", null, Locale.getDefault());
     }
 
-    private Example<Order> example(Long id, String status, String movementType, Long userId, String user, Long clientId, String client) {
+    private Example<Order> example(Long id, String status, Long userId, String user, Long clientId, String client) {
         Order orderExample = createEntity();
         User userOrder = new User();
         Client clientOrder = new Client();
-        Payment entity = new Payment();
 
         if (id != null) {
             orderExample.setId(id);
@@ -135,18 +119,12 @@ public class OrderService implements GenericService<Order, OrderDTO, OrderMinDTO
         if (status != null && !status.isEmpty()) {
             orderExample.setStatus(OrderStatus.fromValue(status));
         }
-        // if (movementType != null && !movementType.isEmpty()) {
-        //     Set<MovementDetail> movementDetails = new HashSet<>();
-        //     movementDetails.add(MovementDetail.builder()
-        //             .movementType(MovementType.fromValue(movementType))
-        //             .build());
-        //     entity.setMovementDetails(movementDetails);
-        //     orderExample.setPayment(entity);
-        // }
+
         if (user != null && !user.isEmpty()) {
             userOrder.setNameUnaccented(user);
             orderExample.setUser(userOrder);
         }
+
         if (client != null && !client.isEmpty()) {
             clientOrder.setNameUnaccented(client);
             orderExample.setClient(clientOrder);
@@ -155,7 +133,6 @@ public class OrderService implements GenericService<Order, OrderDTO, OrderMinDTO
         ExampleMatcher matcher = ExampleMatcher.matching()
                 .withMatcher("id", ExampleMatcher.GenericPropertyMatchers.exact())
                 .withMatcher("status", ExampleMatcher.GenericPropertyMatchers.exact())
-                // .withMatcher("movementType", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase())
                 .withMatcher("user.id", ExampleMatcher.GenericPropertyMatchers.exact())
                 .withMatcher("user.nameUnaccented", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase())
                 .withMatcher("client.id", ExampleMatcher.GenericPropertyMatchers.exact())

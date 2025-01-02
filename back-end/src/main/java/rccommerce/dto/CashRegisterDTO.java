@@ -45,8 +45,8 @@ public class CashRegisterDTO {
         this.balance = entity.getBalance();
         this.openTime = entity.getOpenTime();
         this.closeTime = entity.getCloseTime();
-        this.cashMovements = new ArrayList<>();
         this.operatorName = entity.getOperator() != null ? entity.getOperator().getName() : null;
+        this.cashMovements = new ArrayList<>();
         for (CashMovementDTO cashMovementDTO : entity.getCashMovements().stream().map(CashMovementDTO::new).collect(Collectors.toList())) {
             cashMovements.add(cashMovementDTO);
         }

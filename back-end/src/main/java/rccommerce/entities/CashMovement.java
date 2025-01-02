@@ -51,7 +51,7 @@ public class CashMovement implements Convertible<CashMovementDTO, CashMovementMi
     @Column(nullable = false, length = 50)
     private CashMovementType cashMovementType;
 
-    @OneToMany(mappedBy = "cashMovement", cascade = CascadeType.ALL, fetch = FetchType.EAGER)//, orphanRemoval = true)
+    @OneToMany(mappedBy = "cashMovement", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
     @Builder.Default
     private Set<MovementDetail> movementDetails = new HashSet<>();
 

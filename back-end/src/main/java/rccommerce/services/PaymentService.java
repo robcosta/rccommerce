@@ -2,6 +2,7 @@ package rccommerce.services;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.List;
 import java.util.Locale;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,7 +13,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import rccommerce.dto.CashMovementDTO;
-import rccommerce.dto.CashRegisterDTO;
 import rccommerce.dto.MovementDetailDTO;
 import rccommerce.dto.PaymentDTO;
 import rccommerce.dto.PaymentMinDTO;
@@ -25,8 +25,10 @@ import rccommerce.entities.Payment;
 import rccommerce.entities.ProductStock;
 import rccommerce.entities.User;
 import rccommerce.entities.enums.CashMovementType;
+import rccommerce.entities.enums.MovementType;
 import rccommerce.entities.enums.OrderStatus;
 import rccommerce.entities.enums.StockMovement;
+import rccommerce.repositories.CashRegisterRepository;
 import rccommerce.repositories.OrderRepository;
 import rccommerce.repositories.PaymentRepository;
 import rccommerce.repositories.StockRepository;
@@ -52,20 +54,32 @@ public class PaymentService implements GenericService<Payment, PaymentDTO, Payme
     private UserRepository userRepository;
 
     @Autowired
-    private CashRegisterService cashRegisterService;
+    private CashRegisterRepository cashRegisterRepository;
 
     @Autowired
     private MessageSource messageSource;
 
     private StringBuilder message;
 
+    private BigDecimal moneyPayment; // Valor em dinheiro
+
     @Transactional
     public PaymentMinDTO insertPayment(PaymentDTO dto) {
         // Mensagem para o usuário informando que o pagamento foi concluído e se tem troco
         message = new StringBuilder("Pagamento Concluído.");
+        Payment entity = createEntity();
+        copyDtoToEntity(dto, entity);
+        try {
+            entity = getRepository().save(entity);
+        } catch (DataIntegrityViolationException e) {
+            handleDataIntegrityViolation(e);
+            return null;
+        }
 
+        //Atualiza o caixa
+        updateCash(entity, dto, moneyPayment);
         //Salva o pagamento
-        PaymentMinDTO minDTO = insert(dto);
+        PaymentMinDTO minDTO = entity.convertMinDTO();
         minDTO.setMessage(message.toString());
         return minDTO;
     }
@@ -110,29 +124,30 @@ public class PaymentService implements GenericService<Payment, PaymentDTO, Payme
     }
 
     //Atualiza o caixa
-    private CashRegister updateCash(PaymentDTO dto) {
-        // Verifica se exite caixa aberto para o operador
-        CashRegister cashRegister = cashRegisterService.validateOpenCashRegister();
+    @Transactional
+    private void updateCash(Payment entity, PaymentDTO dto, BigDecimal moneyPayment) {
+        CashRegister cashRegister = entity.getCashRegister();
         CashMovement cashMovement = new CashMovement();
         cashMovement.setCashMovementType(CashMovementType.SALE);
+        cashMovement.setTimestamp(entity.getMoment());
+        cashMovement.setDescription(CashMovementType.SALE.getDescription() + " - Pedido: " + entity.getOrder().getId() + " - Pagamento: " + entity.getId());
         for (CashMovementDTO cashMovementDTD : dto.getCashRegister().getCashMovements()) {
             for (MovementDetailDTO movementDetailDTO : cashMovementDTD.getMovementDetails()) {
-                MovementDetail detail = new MovementDetail();
-                Payment payment = new Payment();
-                payment.setId(dto.getId());
-                detail.setAmount(movementDetailDTO.getAmount());
-                detail.setMovementType(movementDetailDTO.getMovementType());
-                detail.setPayment(payment);
-                cashMovement.addMovementDetail(detail);
+                cashMovement.addMovementDetail(MovementDetail.builder()
+                        .amount((moneyPayment != null && movementDetailDTO.getMovementType().equals(MovementType.MONEY))
+                                ? moneyPayment
+                                : movementDetailDTO.getAmount())
+                        .movementType(movementDetailDTO.getMovementType())
+                        .payment(entity)
+                        .build());
             }
             cashRegister.addMovement(cashMovement);
         }
-        cashRegisterService.insert(new CashRegisterDTO(cashRegister));
-        return cashRegister;
+        cashRegisterRepository.save(cashRegister);
     }
 
-    // Aanlisa as formas de pagamento indicando troco, caso tenha
-    private void paymentAnalysis(PaymentDTO dto, Order order) {
+    // Analisa as formas de pagamento retornando a aparte em dinheiro e indicando o troco, caso tenha.
+    private BigDecimal paymentAnalysis(PaymentDTO dto, Order order) {
         BigDecimal totalPayments = dto.getCashRegister().getTotalAmount();
         BigDecimal totalMoney = dto.getCashRegister().getTotalMoneyPayments();
         BigDecimal totalOrder = order.getTotalOrder();
@@ -156,6 +171,8 @@ public class PaymentService implements GenericService<Payment, PaymentDTO, Payme
 
         // Ajustar o valor em dinheiro para refletir o troco
         message.append(String.format(" Troco: R$ %.2f", excessAmount));
+
+        return totalMoney.subtract(excessAmount);
     }
 
     @Override
@@ -167,11 +184,24 @@ public class PaymentService implements GenericService<Payment, PaymentDTO, Payme
     public void copyDtoToEntity(PaymentDTO dto, Payment entity) {
         Instant moment = Instant.now();
         Order order = updateOrderAndStock(dto, moment);
-        paymentAnalysis(dto, order);
-        CashRegister cashRegister = cashRegisterService.validateOpenCashRegister();
+        moneyPayment = paymentAnalysis(dto, order);
+
         entity.setMoment(moment);
         entity.setOrder(order);
-        entity.setCashRegister(cashRegister);
+        entity.setCashRegister(validateOpenCashRegister());
+    }
+
+    @Transactional(readOnly = true)
+    public CashRegister validateOpenCashRegister() {
+        List<CashRegister> cashRegisters = cashRegisterRepository.findByOperatorId(getOperatorId());
+        return cashRegisters.stream()
+                .filter(cashRegister -> cashRegister.getCloseTime() == null)
+                .findFirst()
+                .orElseThrow(() -> new InvalidArgumentExecption("O operador não possui um caixa aberto."));
+    }
+
+    private Long getOperatorId() {
+        return SecurityContextUtil.getUserId();
     }
 
     @Override

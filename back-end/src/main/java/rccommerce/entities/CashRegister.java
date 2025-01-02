@@ -80,8 +80,8 @@ public class CashRegister implements Convertible<CashRegisterDTO, CashRegisterMi
         this.operator = operator;
     }
 
-    public List<CashMovement> getCashMovements() {
-        return cashMovements;
+    public void addCashMovements(CashMovement cashMovement) {
+        cashMovements.add(cashMovement);
     }
 
     public void addMovement(CashMovement movement) {

@@ -69,9 +69,10 @@ public class User implements UserDetails {
         this.id = id;
     }
 
+    @SuppressWarnings("OverridableMethodCallInConstructor")
     public User(Long id, String name, String email, String password) {
         this.id = id;
-        this.name = name;
+        setName(name);
         this.email = email;
         this.password = password;
     }

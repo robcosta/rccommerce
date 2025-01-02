@@ -48,6 +48,7 @@ public class ProductCategory implements Convertible<ProductCategoryDTO, ProductC
     @ManyToMany(mappedBy = "categories")
     private Set<Product> products = new HashSet<>();
 
+    @SuppressWarnings("OverridableMethodCallInConstructor")
     public ProductCategory(Long id, String name) {
         this.id = id;
         setName(name);
