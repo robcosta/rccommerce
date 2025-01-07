@@ -52,8 +52,10 @@ public class CashRegisterController {
             @ValidId @RequestParam(name = "id", defaultValue = "") String id,
             @ValidId @RequestParam(name = "operatorId", defaultValue = "") String operatorId,
             @RequestParam(name = "status", defaultValue = "") String status,
+            @RequestParam(name = "timeStart", defaultValue = "") String timeStart,
+            @RequestParam(name = "timeEnd", defaultValue = "") String timeEnd,
             Pageable pageable) {
-        Page<CashRegisterMinDTO> pageDto = service.searchEntity(id, operatorId, status, pageable);
+        Page<CashRegisterMinDTO> pageDto = service.searchEntity(id, operatorId, status, timeStart, timeEnd, pageable);
         return ResponseEntity.ok(pageDto);
     }
 
