@@ -4,8 +4,10 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.EnumMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -58,11 +60,11 @@ public class CashRegister implements Convertible<CashRegisterDTO, CashRegisterMi
 
     @OneToMany(mappedBy = "cashRegister", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @Builder.Default
-    private List<CashMovement> cashMovements = new ArrayList<>();
+    private Set<CashMovement> cashMovements = new HashSet<>();
 
     public CashRegister() {
         this.balance = BigDecimal.ZERO;
-        this.cashMovements = new ArrayList<>();
+        this.cashMovements = new HashSet<>();
     }
 
     public CashRegister(Operator operator) {

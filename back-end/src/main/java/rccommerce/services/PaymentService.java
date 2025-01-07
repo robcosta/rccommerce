@@ -68,6 +68,8 @@ public class PaymentService implements GenericService<Payment, PaymentDTO, Payme
         // Mensagem para o usuário informando que o pagamento foi concluído e se tem troco
         message = new StringBuilder("Pagamento Concluído.");
         Payment entity = createEntity();
+
+        // Atualiza, inclusive o pedido e o estoque
         copyDtoToEntity(dto, entity);
         try {
             entity = getRepository().save(entity);
@@ -154,7 +156,7 @@ public class PaymentService implements GenericService<Payment, PaymentDTO, Payme
 
         // Lança exceção caso o valor informado seja inferior ao valor do pedido
         if (totalPayments.compareTo(totalOrder) < 0) {
-            throw new InvalidArgumentExecption(String.format("Pagamento não concluído. Valor pago de R$ %.2f é "
+            throw new InvalidArgumentExecption(String.format("Pagamento não concluído. Valor informado de R$ %.2f é "
                     + "insuficiente para cobrir o total do pedido: R$ %.2f.", totalPayments, totalOrder));
         }
 
@@ -163,7 +165,7 @@ public class PaymentService implements GenericService<Payment, PaymentDTO, Payme
 
         // Lança exceção caso o valor informado em dinheiro seja inferior ao troco
         if (totalMoney.compareTo(excessAmount) < 0) {
-            throw new InvalidArgumentExecption(String.format("Pagamento não concluído. Valor pago de R$ %.2f excede"
+            throw new InvalidArgumentExecption(String.format("Pagamento não concluído. Valor informado R$ %.2f excede"
                     + " o valor do pedido R$ %.2f. Troco de R$ %.2f só pode ser devolvido em dinheiro, contudo a "
                     + "parcela em dinheiro (R$ %.2f) recebida é inferior ao troco.",
                     totalPayments, totalOrder, totalPayments.subtract(totalOrder), totalMoney));

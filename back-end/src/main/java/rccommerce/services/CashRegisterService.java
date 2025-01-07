@@ -8,6 +8,8 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,6 +44,39 @@ public class CashRegisterService implements GenericService<CashRegister, CashReg
 
     @Autowired
     private MessageSource messageSource;
+
+    /*
+     * Busca caixa por id, id do operador, caixa aberto, fechado ou todos
+     */
+    @Transactional(readOnly = true)
+    public Page<CashRegisterMinDTO> searchEntity(String id, String operatorId, String status, Pageable pageable) {
+        // Conversão de id e operatorId para Long
+        Long cashRegisterId = (id != null && !id.isEmpty()) ? Long.valueOf(id) : null;
+        Long operator = (operatorId != null && !operatorId.isEmpty()) ? Long.valueOf(operatorId) : null;
+
+        // Normalização do status
+        status = (status == null || status.isEmpty()) ? "ALL" : status.trim().toUpperCase();
+
+        // Validação do status
+        Boolean isOpen;
+        switch (status) {
+            case "OPEN" ->
+                isOpen = true;
+            case "CLOSED" ->
+                isOpen = false;
+            case "ALL" ->
+                isOpen = null;
+            default ->
+                throw new InvalidArgumentExecption("Status inválido. Use 'OPEN', 'CLOSED' ou 'ALL'.");
+        }
+
+        // Consulta ao repositório
+        // Page<CashRegister> cashRegisters = repository.findCashRegisters(cashRegisterId, operator, isOpen, pageable);
+        Page<CashRegister> result = repository.findCashRegister(cashRegisterId, operator, isOpen, pageable);
+
+        // Mapeamento para DTO
+        return result.map(x -> x.convertMinDTO());
+    }
 
     /*
      * Realiza a abertura do caixa, lançando uma exceção caso o 
@@ -119,16 +154,6 @@ public class CashRegisterService implements GenericService<CashRegister, CashReg
         }
         CashRegister entity = validateOpenCashRegister();
         return update(dto, entity.getId(), false);
-
-        // copyDtoToEntity(dto, entity);
-        // try {
-        //     repository.save(entity);
-        // } catch (EntityNotFoundException e) {
-        //     handleResourceNotFound();
-        // } catch (DataIntegrityViolationException e) {
-        //     handleDataIntegrityViolation(e);
-        // }
-        // return null;
     }
 
     /**

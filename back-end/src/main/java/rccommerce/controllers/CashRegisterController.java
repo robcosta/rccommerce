@@ -3,6 +3,8 @@ package rccommerce.controllers;
 import java.net.URI;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
@@ -12,6 +14,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -43,25 +46,17 @@ public class CashRegisterController {
     //     Page<OrderMinDTO> pageDto = service.searchEntity(pageable);
     //     return ResponseEntity.ok(pageDto);
     // }
-    // @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_OPERATOR')")
-    // @GetMapping(value = "/search")
-    // public ResponseEntity<Page<OrderMinDTO>> searchEntity(
-    //         @ValidId @RequestParam(name = "id", defaultValue = "") String id,
-    //         @RequestParam(name = "status", defaultValue = "") String status,
-    //         @RequestParam(name = "payment", defaultValue = "") String payment,
-    //         @ValidId @RequestParam(name = "userid", defaultValue = "") String userId,
-    //         @RequestParam(name = "user", defaultValue = "") String user,
-    //         @ValidId @RequestParam(name = "clientid", defaultValue = "") String clientId,
-    //         @RequestParam(name = "client", defaultValue = "") String client, Pageable pageable) {
-    //     Page<OrderMinDTO> pageDto = service.searchEntity(
-    //             id.isEmpty() ? null : Long.valueOf(id),
-    //             status, payment,
-    //             userId.isEmpty() ? null : Long.valueOf(userId),
-    //             user,
-    //             clientId.isEmpty() ? null : Long.valueOf(clientId),
-    //             client, pageable);
-    //     return ResponseEntity.ok(pageDto);
-    // }
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_CASH')")
+    @GetMapping(value = "/search")
+    public ResponseEntity<Page<CashRegisterMinDTO>> searchEntity(
+            @ValidId @RequestParam(name = "id", defaultValue = "") String id,
+            @ValidId @RequestParam(name = "operatorId", defaultValue = "") String operatorId,
+            @RequestParam(name = "status", defaultValue = "") String status,
+            Pageable pageable) {
+        Page<CashRegisterMinDTO> pageDto = service.searchEntity(id, operatorId, status, pageable);
+        return ResponseEntity.ok(pageDto);
+    }
+
     @PostMapping("/open")
     @PreAuthorize("hasAnyRole('ROLE_CASH')")
     public ResponseEntity<CashRegisterMinDTO> openBalance(@Valid @RequestBody CashRegisterDTO dto) {
