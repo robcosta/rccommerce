@@ -1,6 +1,7 @@
 package rccommerce.services;
 
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Locale;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -73,7 +74,7 @@ public class OrderService implements GenericService<Order, OrderDTO, OrderMinDTO
         entity.setUser(user);
 
         entity.setClient(virifyClient(entity.getUser(), dto));
-        entity.setMoment(Instant.now());
+        entity.setMoment(Instant.now().truncatedTo(ChronoUnit.SECONDS));
         entity.setStatus(OrderStatus.WAITING_PAYMENT);
         entity.setPayment(null);
 

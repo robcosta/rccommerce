@@ -40,7 +40,7 @@ public interface CashRegisterRepository extends JpaRepository<CashRegister, Long
     // Hibernate o MySql        
     // AND (:closeTimeStart IS NULL OR c.openTime >= CAST(:closeTimeStart AS TIMESTAMP))
     // AND (:closeTimeEnd IS NULL OR c.openTime <= CAST(:closeTimeEnd AS TIMESTAMP))
-    //  Ou em PostgreSQL:
+    // PostgreSQL:
     // AND (:closeTimeStart IS NULL OR c.openTime >= DATE_TRUNC('second', :closeTimeStart))
     // AND (:closeTimeEnd IS NULL OR c.openTime <= DATE_TRUNC('second', :closeTimeEnd))
 }

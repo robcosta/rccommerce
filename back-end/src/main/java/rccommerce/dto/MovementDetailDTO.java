@@ -1,6 +1,7 @@
 package rccommerce.dto;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
@@ -39,5 +40,9 @@ public class MovementDetailDTO {
         this.movementType = entity.getMovementType();
         this.amount = entity.getAmount();
         this.paymentDTO = new PaymentDTO(entity.getPayment());
+    }
+
+    public BigDecimal getAmount() {
+        return amount.setScale(2, RoundingMode.HALF_UP);
     }
 }

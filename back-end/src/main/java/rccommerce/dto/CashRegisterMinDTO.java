@@ -10,19 +10,18 @@ import java.util.stream.Collectors;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.Value;
 import rccommerce.entities.CashRegister;
+import rccommerce.entities.enums.CashMovementType;
 import rccommerce.entities.enums.MovementType;
 
 @AllArgsConstructor
 @Getter
-@Value
 public class CashRegisterMinDTO {
 
-    private Long id;
-    private BigDecimal balance;
-    private Instant openTime;
-    private Instant closeTime;
+    private final Long id;
+    private final BigDecimal balance;
+    private final Instant openTime;
+    private final Instant closeTime;
     private List<CashMovementMinDTO> cashMovements = new ArrayList<>();
 
     public CashRegisterMinDTO(CashRegister entity) {
@@ -30,9 +29,50 @@ public class CashRegisterMinDTO {
         this.balance = entity.getBalance();
         this.openTime = entity.getOpenTime();
         this.closeTime = entity.getCloseTime();
-        for (CashMovementMinDTO cashMovementDTO : entity.getCashMovements().stream().map(CashMovementMinDTO::new).collect(Collectors.toList())) {
-            cashMovements.add(cashMovementDTO);
-        }
+        this.cashMovements = entity.getCashMovements().stream()
+                .map(CashMovementMinDTO::new)
+                .collect(Collectors.toList());
+    }
+
+    // Construtor com filtro de CashMovementType
+    public CashRegisterMinDTO(CashRegister entity, CashMovementType filterCashMovement) {
+        this.id = entity.getId();
+        this.balance = entity.getBalance();
+        this.openTime = entity.getOpenTime();
+        this.closeTime = entity.getCloseTime();
+
+        // Aplica o filtro, se especificado
+        this.cashMovements = entity.getCashMovements().stream()
+                .filter(cashMovement -> filterCashMovement == null || cashMovement.getCashMovementType() == filterCashMovement)
+                .map(CashMovementMinDTO::new)
+                .collect(Collectors.toList());
+    }
+
+    // Construtor com filtro de MovementType
+    public CashRegisterMinDTO(CashRegister entity, MovementType filterMovementType) {
+        this.id = entity.getId();
+        this.balance = entity.getBalance();
+        this.openTime = entity.getOpenTime();
+        this.closeTime = entity.getCloseTime();
+
+        // Aplica os filtros para CashMovements e MovementDetails, se especificados
+        this.cashMovements = entity.getCashMovements().stream()
+                .map(cashMovement -> new CashMovementMinDTO(cashMovement, filterMovementType)) // Aplica filtro no MovementType no DTO
+                .collect(Collectors.toList());
+    }
+
+    // Construtor com filtro de CashMovementType e MovementType
+    public CashRegisterMinDTO(CashRegister entity, CashMovementType filterCashMovement, MovementType filterMovementType) {
+        this.id = entity.getId();
+        this.balance = entity.getBalance();
+        this.openTime = entity.getOpenTime();
+        this.closeTime = entity.getCloseTime();
+
+        // Aplica os filtros para CashMovements e MovementDetails, se especificados
+        this.cashMovements = entity.getCashMovements().stream()
+                .filter(cashMovement -> filterCashMovement == null || cashMovement.getCashMovementType() == filterCashMovement) // Filtro pelo CashMovementType
+                .map(cashMovement -> new CashMovementMinDTO(cashMovement, filterMovementType)) // Aplica filtro no MovementType no DTO
+                .collect(Collectors.toList());
     }
 
     public BigDecimal getTotalAmount() {

@@ -2,6 +2,7 @@ package rccommerce.services;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Locale;
 
@@ -184,7 +185,7 @@ public class PaymentService implements GenericService<Payment, PaymentDTO, Payme
 
     @Override
     public void copyDtoToEntity(PaymentDTO dto, Payment entity) {
-        Instant moment = Instant.now();
+        Instant moment = Instant.now().truncatedTo(ChronoUnit.SECONDS);
         Order order = updateOrderAndStock(dto, moment);
         moneyPayment = paymentAnalysis(dto, order);
 

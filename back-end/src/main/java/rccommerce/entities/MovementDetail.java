@@ -1,6 +1,7 @@
 package rccommerce.entities;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
@@ -48,4 +49,8 @@ public class MovementDetail {
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinColumn(name = "cashMovement_id", nullable = false)
     private CashMovement cashMovement;
+
+    public BigDecimal getAmount() {
+        return amount.setScale(2, RoundingMode.HALF_UP);
+    }
 }

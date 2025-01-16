@@ -2,10 +2,8 @@ package rccommerce.entities;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -114,6 +112,15 @@ public class CashRegister implements Convertible<CashRegisterDTO, CashRegisterMi
         balance = balance.subtract(amount);
     }
 
+// Retorna o total em dinheiro do caixa
+    public BigDecimal totalMoney() {
+        return cashMovements.stream()
+                .flatMap(cashMovement -> cashMovement.getMovementDetails().stream()) // Obtém os detalhes de cada movimento
+                .filter(movementDetail -> movementDetail.getMovementType().equals(MovementType.MONEY)) // Filtra apenas os do tipo MONEY
+                .map(MovementDetail::getAmount) // Mapeia para o valor (BigDecimal) do movimento
+                .reduce(BigDecimal.ZERO, BigDecimal::add); // Soma os valores, começando do ZERO
+    }
+
     public BigDecimal getTotalAmount() {
         return cashMovements.stream()
                 .flatMap(cashMovement -> cashMovement.getMovementDetails().stream())
@@ -121,7 +128,7 @@ public class CashRegister implements Convertible<CashRegisterDTO, CashRegisterMi
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
-    // Mapeia os MovementType para o relatório final do caixa
+    // Mapeia os MovementType para o relatório final do caixa   
     public Map<MovementType, BigDecimal> getMovementTotals() {
         Map<MovementType, BigDecimal> movementTotals = new EnumMap<>(MovementType.class);
 

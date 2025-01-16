@@ -47,7 +47,9 @@ public class CashRegisterDTO {
         this.closeTime = entity.getCloseTime();
         this.operatorName = entity.getOperator() != null ? entity.getOperator().getName() : null;
         this.cashMovements = new ArrayList<>();
-        for (CashMovementDTO cashMovementDTO : entity.getCashMovements().stream().map(CashMovementDTO::new).collect(Collectors.toList())) {
+        for (CashMovementDTO cashMovementDTO : entity.getCashMovements().stream()
+                .map(CashMovementDTO::new)
+                .collect(Collectors.toList())) {
             cashMovements.add(cashMovementDTO);
         }
         this.forceClose = false; // Default value

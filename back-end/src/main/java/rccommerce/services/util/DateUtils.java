@@ -10,7 +10,7 @@ import rccommerce.services.exceptions.InvalidArgumentExecption;
 
 public class DateUtils {
 
-    public static Instant convertToStartOfDay(String dateString, String pattern) {
+    public static Instant convertDay(String dateString, String pattern) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern(pattern);
         try {
             LocalDate localDate = LocalDate.parse(dateString, formatter);

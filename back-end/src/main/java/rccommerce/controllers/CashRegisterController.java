@@ -3,7 +3,6 @@ package rccommerce.controllers;
 import java.net.URI;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -20,10 +19,11 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import jakarta.validation.Valid;
 import rccommerce.controllers.validators.ValidId;
+import rccommerce.dto.CashClosingMinDTO;
 import rccommerce.dto.CashRegisterDTO;
 import rccommerce.dto.CashRegisterMinDTO;
-import rccommerce.dto.CashReportMinDTO;
 import rccommerce.services.CashRegisterService;
+import rccommerce.util.CustomPage;
 
 @Validated
 @RestController
@@ -36,7 +36,13 @@ public class CashRegisterController {
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_OPERATOR')")
     @GetMapping(value = "/{id}")
     public ResponseEntity<CashRegisterMinDTO> findById(@ValidId @PathVariable String id) {
+        long startTime = System.currentTimeMillis();
         CashRegisterMinDTO dto = service.findById(Long.valueOf(id));
+        long endTime = System.currentTimeMillis();
+        long queryTime = endTime - startTime;
+        System.out.println("**************************************************************************************************************");
+        System.out.println("TEMPO TOTAL: " + queryTime);
+        System.out.println("**************************************************************************************************************");
         return ResponseEntity.ok(dto);
     }
 
@@ -46,17 +52,38 @@ public class CashRegisterController {
     //     Page<OrderMinDTO> pageDto = service.searchEntity(pageable);
     //     return ResponseEntity.ok(pageDto);
     // }
+    // @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_CASH')")
+    // @GetMapping(value = "/search")
+    // public ResponseEntity<Page<CashRegisterMinDTO>> searchEntity(
+    //         @ValidId @RequestParam(name = "id", defaultValue = "") String id,
+    //         @ValidId @RequestParam(name = "operatorId", defaultValue = "") String operatorId,
+    //         @RequestParam(name = "status", defaultValue = "") String status,
+    //         @RequestParam(name = "timeStart", defaultValue = "") String timeStart,
+    //         @RequestParam(name = "timeEnd", defaultValue = "") String timeEnd,
+    //         Pageable pageable) {
+    //     Page<CashRegisterMinDTO> pageDto = service.searchEntity(id, operatorId, status, timeStart, timeEnd, pageable);
+    //     return ResponseEntity.ok(pageDto);
+    // }
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_CASH')")
-    @GetMapping(value = "/search")
-    public ResponseEntity<Page<CashRegisterMinDTO>> searchEntity(
+    @GetMapping(value = "/total-sales")
+    public ResponseEntity<CustomPage<CashRegisterMinDTO>> searchEntity(
             @ValidId @RequestParam(name = "id", defaultValue = "") String id,
-            @ValidId @RequestParam(name = "operatorId", defaultValue = "") String operatorId,
+            @RequestParam(name = "operatorId", defaultValue = "") String operatorId,
             @RequestParam(name = "status", defaultValue = "") String status,
             @RequestParam(name = "timeStart", defaultValue = "") String timeStart,
             @RequestParam(name = "timeEnd", defaultValue = "") String timeEnd,
+            @RequestParam(name = "cashMovementType", defaultValue = "") String cashMovementType,
+            @RequestParam(name = "movementType", defaultValue = "") String movementType,
             Pageable pageable) {
-        Page<CashRegisterMinDTO> pageDto = service.searchEntity(id, operatorId, status, timeStart, timeEnd, pageable);
-        return ResponseEntity.ok(pageDto);
+        long startTime = System.currentTimeMillis();
+        CustomPage<CashRegisterMinDTO> response = service.searchEntity(
+                id, operatorId, status, cashMovementType, movementType, timeStart, timeEnd, pageable);
+        long endTime = System.currentTimeMillis();
+        long queryTime = endTime - startTime;
+        System.out.println("**************************************************************************************************************");
+        System.out.println("TEMPO TOTAL: " + queryTime);
+        System.out.println("**************************************************************************************************************");
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/open")
@@ -75,9 +102,9 @@ public class CashRegisterController {
 
     @PutMapping("/close")
     @PreAuthorize("hasAnyRole('ROLE_CASH')")
-    public ResponseEntity<CashReportMinDTO> closeBalance(@Valid @RequestBody CashRegisterDTO dto) {
+    public ResponseEntity<CashClosingMinDTO> closeBalance(@Valid @RequestBody CashRegisterDTO dto) {
         long startTime = System.currentTimeMillis();
-        CashReportMinDTO minDTO = service.closingBalance(dto);
+        CashClosingMinDTO minDTO = service.closingBalance(dto);
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(dto.getId()).toUri();
         long endTime = System.currentTimeMillis();
         long queryTime = endTime - startTime;
