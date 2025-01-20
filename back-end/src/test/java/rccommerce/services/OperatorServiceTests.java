@@ -72,6 +72,7 @@ public class OperatorServiceTests {
         dependentId = 3L;
 
         when(repository.getReferenceById(existsId)).thenReturn(operator);
+        when(repository.save(ArgumentMatchers.any())).thenReturn(operator);
         when(repository.saveAndFlush(ArgumentMatchers.any())).thenReturn(operator);
         when(repository.existsById(existsId)).thenReturn(true);
         when(repository.existsById(dependentId)).thenReturn(true);
@@ -136,7 +137,7 @@ public class OperatorServiceTests {
 
     @Test
     public void insertShouldTrowDatabaseExceptionWhenEamilDoesNotUnique() {
-        Mockito.doThrow(DataIntegrityViolationException.class).when(repository).saveAndFlush(ArgumentMatchers.any());
+        Mockito.doThrow(DataIntegrityViolationException.class).when(repository).save(ArgumentMatchers.any());
 
         Assertions.assertThrows(DatabaseException.class, () -> {
             serviceSpy.insert(dto);

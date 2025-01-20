@@ -112,7 +112,7 @@ public interface GenericService<T extends Convertible<DTO, MINDTO>, DTO, MINDTO,
         try {
             T entity = getRepository().getReferenceById(id);
             copyDtoToEntity(dto, entity);
-            entity = getRepository().save(entity);
+            entity = getRepository().saveAndFlush(entity);
             return entity.convertMinDTO();
         } catch (EntityNotFoundException e) {
             handleResourceNotFound();

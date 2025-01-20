@@ -83,6 +83,7 @@ public class ClientServiceTests {
         dependentId = 3L;
 
         when(repository.getReferenceById(existsId)).thenReturn(client);
+        when(repository.save(any())).thenReturn(client);
         when(repository.saveAndFlush(any())).thenReturn(client);
         when(repository.existsById(existsId)).thenReturn(true);
         when(repository.existsById(dependentId)).thenReturn(true);
@@ -146,7 +147,7 @@ public class ClientServiceTests {
 
     @Test
     public void insertShouldReturnClientMinDTOWhenEmailIsUnique() {
-        ClientMinDTO result = serviceSpy.insert(dto);
+        ClientMinDTO result = serviceSpy.insert(dto, false);
 
         assertNotNull(result);
         assertEquals(client.getName(), result.getName());
@@ -158,7 +159,7 @@ public class ClientServiceTests {
         DataIntegrityViolationException e = new DataIntegrityViolationException("");
         e.toString().concat("EMAIL NULLS FIRST");
 
-        doThrow(e).when(repository).saveAndFlush(ArgumentMatchers.any());
+        doThrow(e).when(repository).save(ArgumentMatchers.any());
 
         assertThrows(DatabaseException.class, () -> {
             serviceSpy.insert(dto);
@@ -167,7 +168,7 @@ public class ClientServiceTests {
 
     @Test
     public void insertShouldTrowDatabaseExceptionWhenCpfDoesNotUnique() {
-        doThrow(DataIntegrityViolationException.class).when(repository).saveAndFlush(ArgumentMatchers.any());
+        doThrow(DataIntegrityViolationException.class).when(repository).save(ArgumentMatchers.any());
 
         assertThrows(DatabaseException.class, () -> {
             serviceSpy.insert(dto);
