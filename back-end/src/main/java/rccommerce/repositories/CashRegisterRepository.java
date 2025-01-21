@@ -18,7 +18,7 @@ public interface CashRegisterRepository extends JpaRepository<CashRegister, Long
     List<CashRegister> findByOperatorId(Long operatorId); // Caixas de operador específico
 
     @Query("""
-        SELECT DISTINCT c 
+        SELECT c 
         FROM CashRegister c
         JOIN FETCH c.operator o
         JOIN FETCH c.cashMovements cm

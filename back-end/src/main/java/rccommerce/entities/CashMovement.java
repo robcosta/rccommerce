@@ -16,6 +16,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
@@ -39,7 +40,9 @@ import rccommerce.util.BigDecimalTwoDecimalSerializer;
 @Getter
 @Setter
 @Entity
-@Table(name = "tb_cash_movement")
+@Table(name = "tb_cash_movement", indexes = {
+    @Index(name = "idx_cash_movement_cash_register_id", columnList = "cash_register_id")
+})
 public class CashMovement implements Convertible<CashMovementDTO, CashMovementMinDTO> {
 
     @EqualsAndHashCode.Include

@@ -14,6 +14,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
@@ -35,7 +36,12 @@ import rccommerce.services.interfaces.Convertible;
 @Getter
 @Setter
 @Entity
-@Table(name = "tb_cash_register")
+@Table(name = "tb_cash_register", indexes = {
+    @Index(name = "idx_cash_register_id", columnList = "id"),
+    @Index(name = "idx_cash_register_operator_id", columnList = "operator_id"),
+    @Index(name = "idx_cash_register_open_time", columnList = "openTime"),
+    @Index(name = "idx_cash_register_close_time", columnList = "closeTime")
+})
 public class CashRegister implements Convertible<CashRegisterDTO, CashRegisterMinDTO> {
 
     @EqualsAndHashCode.Include
