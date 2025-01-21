@@ -36,7 +36,9 @@ import rccommerce.services.util.AccentUtils;
 @Setter
 @Entity
 @Table(name = "tb_product", indexes = {
-    @Index(name = "idx_product_name_unaccented", columnList = "nameUnaccented")
+    @Index(name = "idx_product_name_unaccented", columnList = "nameUnaccented"),
+    @Index(name = "idx_product_reference", columnList = "reference"),
+    @Index(name = "idx_product_suplier_id", columnList = "suplier_id")
 })
 public class Product implements Convertible<ProductDTO, ProductMinDTO> {
 
@@ -71,8 +73,15 @@ public class Product implements Convertible<ProductDTO, ProductMinDTO> {
 
     @Builder.Default
     @ManyToMany
-    @JoinTable(name = "tb_product_category_id",
-            joinColumns = @JoinColumn(name = "product_id"), inverseJoinColumns = @JoinColumn(name = "category_id"))
+    @JoinTable(
+            name = "tb_productid_categoryid",
+            joinColumns = @JoinColumn(name = "product_id", referencedColumnName = "id"),
+            inverseJoinColumns = @JoinColumn(name = "category_id", referencedColumnName = "id"),
+            indexes = {
+                @Index(name = "idx_product_category_product_id", columnList = "product_id"),
+                @Index(name = "idx_product_category_category_id", columnList = "category_id")
+            }
+    )
     private Set<ProductCategory> categories = new HashSet<>();
 
     @Builder.Default

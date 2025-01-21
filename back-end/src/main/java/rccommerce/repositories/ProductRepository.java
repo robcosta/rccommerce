@@ -22,22 +22,37 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     Optional<Product> findByReference(String codeBarra);
 
     @Query("""
-        SELECT DISTINCT p 
-        FROM product p
-        JOIN FETCH p.suplier s
-        JOIN FETCH p.categories c       
+        SELECT p 
+        FROM Product p
+        JOIN FETCH p.suplier s            
+        JOIN FETCH p.categories c            
         WHERE (:id IS NULL OR p.id = :id)
-        AND (:name IS NULL OR UPPER(p.name) LIKE UPPER(CONCAT('%', :name,'%')))
+        AND (:name IS NULL OR UPPER(p.nameUnaccented) LIKE UPPER(CONCAT('%', :name,'%')))
         AND (:reference IS NULL OR UPPER(p.reference) LIKE UPPER(CONCAT('%', :reference,'%')))
-        AND (:suplier IS NULL OR UPPER(s.name) LIKE UPPER(CONCAT('%', :suplier,'%')))
-        AND (:suplier IS NULL OR UPPER(c.name) LIKE UPPER(CONCAT('%', :category,'%')))
+        AND (:suplierId IS NULL OR s.id = :suplierId)
+        AND (:categoryId IS NULL OR c.id = :categoryId)        
         """)
     Page<Product> findProduct(
             @Param("id") Long id,
             @Param("name") String name,
             @Param("reference") String reference,
-            @Param("suplier") String suplier,
-            @Param("category") String category,
+            @Param("suplierId") Long suplierId,
+            @Param("categoryId") Long categoryId,
             Pageable pageable);
 
+    // Hibernate o MySql        
+    // AND (:closeTimeStart IS NULL OR c.openTime >= CAST(:closeTimeStart AS TIMESTAMP))
+    // AND (:closeTimeEnd IS NULL OR c.openTime <= CAST(:closeTimeEnd AS TIMESTAMP))
+    // PostgreSQL:
+    // AND (:closeTimeStart IS NULL OR c.openTime >= DATE_TRUNC('second', :closeTimeStart))
+    // AND (:closeTimeEnd IS NULL OR c.openTime <= DATE_TRUNC('second', :closeTimeEnd))
+    // 4. Otimizações Avançadas
+    //  A. Full-Text Search (Busca Textual Completa)
+    //  Se buscas por nomes são frequentes e precisam de flexibilidade:
+    //  No PostgreSQL, use índices GIN para buscas textuais com extensões como pg_trgm.
+    //  Exemplo de sql
+    //      CREATE INDEX idx_product_name_trgm ON tb_product USING gin (nameUnaccented gin_trgm_ops);
+    //  B. Cache para Consultas Frequentes
+    //  Se algumas consultas são executadas repetidamente, implemente um cache na aplicação para 
+    //  reduzir a carga no banco.
 }

@@ -6,8 +6,6 @@ import java.util.Locale;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
-import org.springframework.data.domain.Example;
-import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -30,6 +28,7 @@ import rccommerce.services.exceptions.InvalidArgumentExecption;
 import rccommerce.services.exceptions.ResourceNotFoundException;
 import rccommerce.services.interfaces.GenericService;
 import rccommerce.services.util.AccentUtils;
+import rccommerce.services.util.ConvertString;
 
 @Service
 public class ProductService implements GenericService<Product, ProductDTO, ProductMinDTO, Long> {
@@ -50,8 +49,17 @@ public class ProductService implements GenericService<Product, ProductDTO, Produ
     private MessageSource messageSource;
 
     @Transactional(readOnly = true)
-    public Page<ProductMinDTO> searchEntity(Long id, String name, String reference, Pageable pageable) {
-        return findBy(example(id, name, reference), false, pageable);
+    public Page<ProductMinDTO> searchEntity(String id, String name, String reference, String suplierId, String categoryId, Pageable pageable) {
+        Page<Product> result = repository.findProduct(ConvertString.parseLongOrNull(id),
+                AccentUtils.removeAccents(name),
+                reference,
+                ConvertString.parseLongOrNull(suplierId),
+                ConvertString.parseLongOrNull(categoryId),
+                pageable);
+        if (result.getContent().isEmpty()) {
+            throw new ResourceNotFoundException("Nenhum produto encontrado para estes critérios de busca.");
+        }
+        return result.map(ProductMinDTO::new);
     }
 
     @Transactional(readOnly = true)
@@ -183,25 +191,5 @@ public class ProductService implements GenericService<Product, ProductDTO, Produ
     @Override
     public String getTranslatedEntityName() {
         return messageSource.getMessage("entity.Product", null, Locale.getDefault());
-    }
-
-    private Example<Product> example(Long id, String name, String reference) {
-        Product productExample = createEntity();
-        if (id != null) {
-            productExample.setId(id);
-        }
-        if (name != null && !name.isEmpty()) {
-            productExample.setNameUnaccented(AccentUtils.removeAccents(name));
-        }
-        if (reference != null && !reference.isEmpty()) {
-            productExample.setReference(AccentUtils.removeAccents(reference));
-        }
-
-        ExampleMatcher matcher = ExampleMatcher.matching()
-                .withMatcher("id", ExampleMatcher.GenericPropertyMatchers.exact())
-                .withMatcher("nameUnaccented", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase())
-                .withMatcher("reference", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase());
-
-        return Example.of(productExample, matcher);
     }
 }

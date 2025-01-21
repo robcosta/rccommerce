@@ -46,8 +46,12 @@ public class ProductController {
             @RequestParam(name = "id", defaultValue = "") String id,
             @RequestParam(name = "name", defaultValue = "") String name,
             @RequestParam(name = "reference", defaultValue = "") String reference,
+            @ValidId
+            @RequestParam(name = "suplierId", defaultValue = "") String suplierId,
+            @ValidId
+            @RequestParam(name = "categoryId", defaultValue = "") String categoryId,
             Pageable pageable) {
-        Page<ProductMinDTO> pageMinDto = service.searchEntity(id.isEmpty() ? null : Long.valueOf(id), name, reference, pageable);
+        Page<ProductMinDTO> pageMinDto = service.searchEntity(id, name, reference, suplierId, categoryId, pageable);
         return ResponseEntity.ok(pageMinDto);
     }
 
