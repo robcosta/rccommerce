@@ -41,7 +41,7 @@ public class OperatorController {
         return ResponseEntity.ok(dto);
     }
 
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_OPERATOR', 'ROLE_SELLER', 'ROLE_CLIENT')")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_OPERATOR', 'ROLE_SELLER')")
     @GetMapping(value = "/search")
     public ResponseEntity<Page<OperatorMinDTO>> searchEntity(
             @ValidId

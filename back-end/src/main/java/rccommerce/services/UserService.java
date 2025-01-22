@@ -67,7 +67,7 @@ public class UserService implements UserDetailsService {
     }
 
     @Transactional(readOnly = true)
-    public Page<UserMinDTO> findAll(String name, String email, Pageable pageable) {
+    public Page<UserMinDTO> searchEntity(String name, String email, Pageable pageable) {
         Page<User> result = repository.searchAll(name, email, pageable);
         if (result.getContent().isEmpty()) {
             throw new ResourceNotFoundException("Usuário não encontrado");

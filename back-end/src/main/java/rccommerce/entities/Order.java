@@ -63,7 +63,7 @@ public class Order implements Convertible<OrderDTO, OrderMinDTO> {
     @JoinColumn(name = "client_id")
     private Client client;
 
-    @OneToOne(mappedBy = "order", cascade = CascadeType.ALL)
+    @OneToOne(mappedBy = "order", fetch = FetchType.LAZY, cascade = CascadeType.ALL, optional = true)
     private Payment payment;
 
     @Builder.Default

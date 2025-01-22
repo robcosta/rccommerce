@@ -33,15 +33,8 @@ public class ProductController {
     @Autowired
     private ProductService service;
 
-    @GetMapping(value = "/all")
-    public ResponseEntity<Page<ProductMinDTO>> findAll(
-            Pageable pageable) {
-        Page<ProductMinDTO> dto = service.findAll(pageable);
-        return ResponseEntity.ok(dto);
-    }
-
     @GetMapping(value = "/search")
-    public ResponseEntity<Page<ProductMinDTO>> findAll(
+    public ResponseEntity<Page<ProductMinDTO>> searchEntity(
             @ValidId
             @RequestParam(name = "id", defaultValue = "") String id,
             @RequestParam(name = "name", defaultValue = "") String name,

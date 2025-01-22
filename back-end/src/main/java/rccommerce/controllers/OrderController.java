@@ -50,20 +50,16 @@ public class OrderController {
     @GetMapping(value = "/search")
     public ResponseEntity<Page<OrderMinDTO>> searchEntity(
             @ValidId @RequestParam(name = "id", defaultValue = "") String id,
+            @ValidId @RequestParam(name = "userid", defaultValue = "") String userid,
+            @RequestParam(name = "username", defaultValue = "") String username,
+            @ValidId @RequestParam(name = "clientid", defaultValue = "") String clientid,
+            @RequestParam(name = "clientname", defaultValue = "") String clientname,
             @RequestParam(name = "status", defaultValue = "") String status,
-            @RequestParam(name = "movementType", defaultValue = "") String movementType,
-            @ValidId @RequestParam(name = "userid", defaultValue = "") String userId,
-            @RequestParam(name = "user", defaultValue = "") String user,
-            @ValidId @RequestParam(name = "clientid", defaultValue = "") String clientId,
-            @RequestParam(name = "client", defaultValue = "") String client, Pageable pageable) {
+            @RequestParam(name = "timeStart", defaultValue = "") String timeStart,
+            @RequestParam(name = "timeEnd", defaultValue = "") String timeEnd,
+            Pageable pageable) {
 
-        Page<OrderMinDTO> pageDto = service.searchEntity(
-                id.isEmpty() ? null : Long.valueOf(id),
-                status, movementType,
-                userId.isEmpty() ? null : Long.valueOf(userId),
-                user,
-                clientId.isEmpty() ? null : Long.valueOf(clientId),
-                client, pageable);
+        Page<OrderMinDTO> pageDto = service.searchEntity(id, userid, username, clientid, clientname, status, timeStart, timeEnd, pageable);
         return ResponseEntity.ok(pageDto);
     }
 

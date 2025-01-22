@@ -6,8 +6,6 @@ import java.util.Locale;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
-import org.springframework.data.domain.Example;
-import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -25,11 +23,12 @@ import rccommerce.entities.Product;
 import rccommerce.entities.User;
 import rccommerce.entities.enums.OrderStatus;
 import rccommerce.repositories.ClientRepository;
-import rccommerce.repositories.OrderItemRepository;
 import rccommerce.repositories.OrderRepository;
 import rccommerce.repositories.ProductRepository;
 import rccommerce.services.exceptions.ResourceNotFoundException;
 import rccommerce.services.interfaces.GenericService;
+import rccommerce.services.util.AccentUtils;
+import rccommerce.services.util.ConvertString;
 import rccommerce.services.util.SecurityContextUtil;
 
 @Service
@@ -45,20 +44,43 @@ public class OrderService implements GenericService<Order, OrderDTO, OrderMinDTO
     private ClientRepository clientRepository;
 
     @Autowired
-    private OrderItemRepository orderItemRepository;
-
-    @Autowired
     private MessageSource messageSource;
 
     @Transactional(readOnly = true)
     public Page<OrderMinDTO> searchEntity(Pageable pageable) {
-        Long userId = SecurityContextUtil.getUserId();
-        return findBy(example(null, null, userId, null, null, null), false, pageable);
+        String userid = SecurityContextUtil.getUserId().toString();
+        return searchEntity(null, userid, null, null, null, null, null, null, pageable);
     }
 
     @Transactional(readOnly = true)
-    public Page<OrderMinDTO> searchEntity(Long id, String status, String payment, Long userId, String user, Long clientId, String client, Pageable pageable) {
-        return findBy(example(id, status, userId, user, clientId, client), pageable);
+    public Page<OrderMinDTO> searchEntity(
+            String id,
+            String userid,
+            String username,
+            String clientId,
+            String clientname,
+            String status,
+            String timeStart,
+            String timeEnd,
+            Pageable pageable) {
+
+        Page<Order> result = repository.findOrder(
+                ConvertString.parseLongOrNull(id),
+                ConvertString.parseLongOrNull(userid),
+                AccentUtils.removeAccents(username),
+                ConvertString.parseLongOrNull(clientId),
+                AccentUtils.removeAccents(clientname),
+                (status == null || status.isEmpty()) ? null : OrderStatus.fromValue(status).getName(),
+                ConvertString.parseDateOrNull(timeStart),
+                ConvertString.parseDateOrNull(timeEnd),
+                pageable
+        );
+
+        if (result.getContent().isEmpty()) {
+            throw new ResourceNotFoundException("Nenhum pedido encontrado para estes critérios de busca.");
+        }
+
+        return result.map(OrderMinDTO::new);
     }
 
     @Override
@@ -98,49 +120,6 @@ public class OrderService implements GenericService<Order, OrderDTO, OrderMinDTO
         return messageSource.getMessage("entity.Order", null, Locale.getDefault());
     }
 
-    private Example<Order> example(Long id, String status, Long userId, String user, Long clientId, String client) {
-        Order orderExample = createEntity();
-        User userOrder = new User();
-        Client clientOrder = new Client();
-
-        if (id != null) {
-            orderExample.setId(id);
-        }
-
-        if (userId != null) {
-            userOrder.setId(userId);
-            orderExample.setUser(userOrder);
-        }
-
-        if (clientId != null) {
-            clientOrder.setId(clientId);
-            orderExample.setClient(clientOrder);
-        }
-
-        if (status != null && !status.isEmpty()) {
-            orderExample.setStatus(OrderStatus.fromValue(status));
-        }
-
-        if (user != null && !user.isEmpty()) {
-            userOrder.setNameUnaccented(user);
-            orderExample.setUser(userOrder);
-        }
-
-        if (client != null && !client.isEmpty()) {
-            clientOrder.setNameUnaccented(client);
-            orderExample.setClient(clientOrder);
-        }
-
-        ExampleMatcher matcher = ExampleMatcher.matching()
-                .withMatcher("id", ExampleMatcher.GenericPropertyMatchers.exact())
-                .withMatcher("status", ExampleMatcher.GenericPropertyMatchers.exact())
-                .withMatcher("user.id", ExampleMatcher.GenericPropertyMatchers.exact())
-                .withMatcher("user.nameUnaccented", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase())
-                .withMatcher("client.id", ExampleMatcher.GenericPropertyMatchers.exact())
-                .withMatcher("client.nameUnaccented", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase());
-        return Example.of(orderExample, matcher);
-    }
-
     private Client virifyClient(User user, OrderDTO dto) {
 
         if (user instanceof Client clientUser) {
@@ -150,7 +129,6 @@ public class OrderService implements GenericService<Order, OrderDTO, OrderMinDTO
         if (dto.getClient().getId() == null) {
             Client client = new Client();
             client.setId(4L);
-            //return clientRepository.getReferenceById(4L);
             return client;
         }
 

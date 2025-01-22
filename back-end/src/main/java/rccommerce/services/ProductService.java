@@ -50,7 +50,8 @@ public class ProductService implements GenericService<Product, ProductDTO, Produ
 
     @Transactional(readOnly = true)
     public Page<ProductMinDTO> searchEntity(String id, String name, String reference, String suplierId, String categoryId, Pageable pageable) {
-        Page<Product> result = repository.findProduct(ConvertString.parseLongOrNull(id),
+        Page<Product> result = repository.findProduct(
+                ConvertString.parseLongOrNull(id),
                 AccentUtils.removeAccents(name),
                 reference,
                 ConvertString.parseLongOrNull(suplierId),

@@ -1,5 +1,7 @@
 package rccommerce.services;
 
+import static org.mockito.Mockito.when;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -10,7 +12,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import static org.mockito.Mockito.when;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -136,7 +137,7 @@ public class UserServiceTests {
         Mockito.when(repository.searchAll(emptyNameUser, emptyEmail, pageable))
                 .thenReturn(new PageImpl<>(List.of(user, user, user)));
 
-        Page<UserMinDTO> result = service.findAll(emptyNameUser, emptyEmail, pageable);
+        Page<UserMinDTO> result = service.searchEntity(emptyNameUser, emptyEmail, pageable);
 
         Assertions.assertFalse(result.isEmpty());
         Assertions.assertEquals(3L, result.getSize());
@@ -149,7 +150,7 @@ public class UserServiceTests {
         Mockito.when(repository.searchAll(existsNameUser, emptyEmail, pageable))
                 .thenReturn(new PageImpl<>(List.of(user, user, user)));
 
-        Page<UserMinDTO> result = service.findAll(existsNameUser, emptyEmail, pageable);
+        Page<UserMinDTO> result = service.searchEntity(existsNameUser, emptyEmail, pageable);
 
         Assertions.assertFalse(result.isEmpty());
         Assertions.assertEquals(3, result.getSize());
@@ -161,7 +162,7 @@ public class UserServiceTests {
         Mockito.when(repository.searchAll(emptyNameUser, existsEmail, pageable))
                 .thenReturn(new PageImpl<>(List.of(user, user, user)));
 
-        Page<UserMinDTO> result = service.findAll(emptyNameUser, existsEmail, pageable);
+        Page<UserMinDTO> result = service.searchEntity(emptyNameUser, existsEmail, pageable);
 
         Assertions.assertFalse(result.isEmpty());
         Assertions.assertEquals(3, result.getSize());
@@ -173,7 +174,7 @@ public class UserServiceTests {
         Mockito.when(repository.searchAll(existsNameUser, existsEmail, pageable))
                 .thenReturn(new PageImpl<>(List.of(user, user, user)));
 
-        Page<UserMinDTO> result = service.findAll(existsNameUser, existsEmail, pageable);
+        Page<UserMinDTO> result = service.searchEntity(existsNameUser, existsEmail, pageable);
 
         Assertions.assertFalse(result.isEmpty());
         Assertions.assertEquals(3L, result.getSize());
@@ -187,7 +188,7 @@ public class UserServiceTests {
                 .thenReturn(new PageImpl<>(List.of()));
 
         Assertions.assertThrows(ResourceNotFoundException.class, () -> {
-            service.findAll(nonExistsNameUser, emptyEmail, pageable);
+            service.searchEntity(nonExistsNameUser, emptyEmail, pageable);
         });
     }
 
@@ -197,7 +198,7 @@ public class UserServiceTests {
                 .thenReturn(new PageImpl<>(List.of()));
 
         Assertions.assertThrows(ResourceNotFoundException.class, () -> {
-            service.findAll(emptyNameUser, nonExistsEmail, pageable);
+            service.searchEntity(emptyNameUser, nonExistsEmail, pageable);
         });
     }
 
@@ -207,7 +208,7 @@ public class UserServiceTests {
                 .thenReturn(new PageImpl<>(List.of()));
 
         Assertions.assertThrows(ResourceNotFoundException.class, () -> {
-            service.findAll(nonExistsNameUser, nonExistsEmail, pageable);
+            service.searchEntity(nonExistsNameUser, nonExistsEmail, pageable);
         });
     }
 
