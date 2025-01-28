@@ -5,6 +5,7 @@ import java.util.List;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.Index;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -20,7 +21,8 @@ import rccommerce.services.interfaces.Convertible;
 @Getter
 @Setter
 @Entity
-@Table(name = "tb_client")
+@Table(name = "tb_client", indexes = {
+    @Index(name = "idx_client_cpf", columnList = "cpf")})
 public class Client extends User implements Convertible<ClientDTO, ClientMinDTO> {
 
     @Column(unique = true)

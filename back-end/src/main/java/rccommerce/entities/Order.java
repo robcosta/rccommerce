@@ -17,6 +17,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
@@ -41,7 +42,8 @@ import rccommerce.util.BigDecimalTwoDecimalSerializer;
 @Getter
 @Setter
 @Entity
-@Table(name = "tb_order")
+@Table(name = "tb_order", indexes = {
+    @Index(name = "idx_order_moment", columnList = "moment")})
 public class Order implements Convertible<OrderDTO, OrderMinDTO> {
 
     @EqualsAndHashCode.Include

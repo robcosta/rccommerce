@@ -40,9 +40,9 @@ public class ProductController {
             @RequestParam(name = "name", defaultValue = "") String name,
             @RequestParam(name = "reference", defaultValue = "") String reference,
             @ValidId
-            @RequestParam(name = "suplierId", defaultValue = "") String suplierId,
+            @RequestParam(name = "suplierid", defaultValue = "") String suplierId,
             @ValidId
-            @RequestParam(name = "categoryId", defaultValue = "") String categoryId,
+            @RequestParam(name = "categoryid", defaultValue = "") String categoryId,
             Pageable pageable) {
         Page<ProductMinDTO> pageMinDto = service.searchEntity(id, name, reference, suplierId, categoryId, pageable);
         return ResponseEntity.ok(pageMinDto);

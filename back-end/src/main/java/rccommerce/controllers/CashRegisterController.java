@@ -68,12 +68,12 @@ public class CashRegisterController {
     @GetMapping(value = "/total-sales")
     public ResponseEntity<CustomPage<CashRegisterMinDTO>> searchEntity(
             @ValidId @RequestParam(name = "id", defaultValue = "") String id,
-            @RequestParam(name = "operatorId", defaultValue = "") String operatorId,
+            @RequestParam(name = "operatorid", defaultValue = "") String operatorId,
             @RequestParam(name = "status", defaultValue = "") String status,
-            @RequestParam(name = "timeStart", defaultValue = "") String timeStart,
-            @RequestParam(name = "timeEnd", defaultValue = "") String timeEnd,
-            @RequestParam(name = "cashMovementType", defaultValue = "") String cashMovementType,
-            @RequestParam(name = "movementType", defaultValue = "") String movementType,
+            @RequestParam(name = "timestart", defaultValue = "") String timeStart,
+            @RequestParam(name = "timeend", defaultValue = "") String timeEnd,
+            @RequestParam(name = "cashmovementtype", defaultValue = "") String cashMovementType,
+            @RequestParam(name = "movementtype", defaultValue = "") String movementType,
             Pageable pageable) {
         long startTime = System.currentTimeMillis();
         CustomPage<CashRegisterMinDTO> response = service.searchEntity(

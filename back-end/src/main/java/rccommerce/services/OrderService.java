@@ -48,29 +48,53 @@ public class OrderService implements GenericService<Order, OrderDTO, OrderMinDTO
 
     @Transactional(readOnly = true)
     public Page<OrderMinDTO> searchEntity(Pageable pageable) {
-        String userid = SecurityContextUtil.getUserId().toString();
-        return searchEntity(null, userid, null, null, null, null, null, null, pageable);
+        String userId = SecurityContextUtil.getUserId().toString();
+        return searchEntity(null, userId, "", "", null, "", null, null, pageable);
     }
 
+    // @Transactional(readOnly = true)
+    // public Page<OrderMinDTO> searchEntity(
+    //         String id,
+    //         String userid,
+    //         String username,
+    //         String clientId,
+    //         String clientname,
+    //         // String status,
+    //         // String timeStart,
+    //         // String timeEnd,
+    //         Pageable pageable) {
+    //     Instant timeStart = Instant.parse("2023-01-01T04:00:00Z"); // ISO-8601
+    //     Page<Order> result = repository.findOrder(
+    //             ConvertString.parseLongOrNull(id),
+    //             ConvertString.parseLongOrNull(userid),
+    //             AccentUtils.removeAccents(username),
+    //             ConvertString.parseLongOrNull(clientId),
+    //             AccentUtils.removeAccents(clientname),
+    //             // (status == null || status.isEmpty()) ? null : OrderStatus.fromValue(status).getName(),
+    //             timeStart,
+    //             pageable
+    //     );
     @Transactional(readOnly = true)
     public Page<OrderMinDTO> searchEntity(
             String id,
-            String userid,
-            String username,
-            String clientId,
-            String clientname,
+            String userId,
             String status,
+            String userName,
+            String clientId,
+            String clientName,
             String timeStart,
             String timeEnd,
             Pageable pageable) {
 
+        // String timeStart = Instant.parse("2023-01-01T04:00:00Z").toString(); // ISO-8601
+        // String time = ConvertString.parseDateOrNull(timeStart).toString(); // ISO-8601
         Page<Order> result = repository.findOrder(
                 ConvertString.parseLongOrNull(id),
-                ConvertString.parseLongOrNull(userid),
-                AccentUtils.removeAccents(username),
+                ConvertString.parseLongOrNull(userId),
+                status == null || status.isEmpty() ? "" : OrderStatus.fromValue(status).getName(),
+                AccentUtils.removeAccents(userName).toUpperCase(),
                 ConvertString.parseLongOrNull(clientId),
-                AccentUtils.removeAccents(clientname),
-                (status == null || status.isEmpty()) ? null : OrderStatus.fromValue(status).getName(),
+                AccentUtils.removeAccents(clientName).toUpperCase(),
                 ConvertString.parseDateOrNull(timeStart),
                 ConvertString.parseDateOrNull(timeEnd),
                 pageable

@@ -12,6 +12,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
@@ -34,7 +35,8 @@ import rccommerce.util.BigDecimalTwoDecimalSerializer;
 @Getter
 @Setter
 @Entity
-@Table(name = "tb_payment")
+@Table(name = "tb_payment", indexes = {
+    @Index(name = "idx_payment_cpf", columnList = "moment")})
 public class Payment implements Convertible<PaymentDTO, PaymentMinDTO> {
 
     @EqualsAndHashCode.Include

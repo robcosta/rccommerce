@@ -34,7 +34,13 @@ public class OrderController {
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_OPERATOR')")
     @GetMapping(value = "/{id}")
     public ResponseEntity<OrderMinDTO> findById(@ValidId @PathVariable String id) {
+        long startTime = System.currentTimeMillis();
         OrderMinDTO dto = service.findById(Long.valueOf(id));
+        long endTime = System.currentTimeMillis();
+        long queryTime = endTime - startTime;
+        System.out.println("**************************************************************************************************************");
+        System.out.println("TEMPO TOTAL: " + queryTime);
+        System.out.println("**************************************************************************************************************");
         return ResponseEntity.ok(dto);
     }
 
@@ -50,16 +56,16 @@ public class OrderController {
     @GetMapping(value = "/search")
     public ResponseEntity<Page<OrderMinDTO>> searchEntity(
             @ValidId @RequestParam(name = "id", defaultValue = "") String id,
-            @ValidId @RequestParam(name = "userid", defaultValue = "") String userid,
-            @RequestParam(name = "username", defaultValue = "") String username,
-            @ValidId @RequestParam(name = "clientid", defaultValue = "") String clientid,
-            @RequestParam(name = "clientname", defaultValue = "") String clientname,
+            @ValidId @RequestParam(name = "userid", defaultValue = "") String userId,
+            @RequestParam(name = "username", defaultValue = "") String userName,
+            @ValidId @RequestParam(name = "clientid", defaultValue = "") String clientId,
+            @RequestParam(name = "clientname", defaultValue = "") String clientName,
             @RequestParam(name = "status", defaultValue = "") String status,
-            @RequestParam(name = "timeStart", defaultValue = "") String timeStart,
-            @RequestParam(name = "timeEnd", defaultValue = "") String timeEnd,
+            @RequestParam(name = "timestart", defaultValue = "") String timeStart,
+            @RequestParam(name = "timeend", defaultValue = "") String timeEnd,
             Pageable pageable) {
 
-        Page<OrderMinDTO> pageDto = service.searchEntity(id, userid, username, clientid, clientname, status, timeStart, timeEnd, pageable);
+        Page<OrderMinDTO> pageDto = service.searchEntity(id, userId, status, userName, clientId, clientName, timeStart, timeEnd, pageable);
         return ResponseEntity.ok(pageDto);
     }
 

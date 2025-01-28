@@ -39,7 +39,9 @@ import rccommerce.services.util.AccentUtils;
 @Setter
 @Entity
 @Table(name = "tb_user", indexes = {
-    @Index(name = "idx_user_name_unaccented", columnList = "nameUnaccented")})
+    @Index(name = "idx_user_name_unaccented", columnList = "nameUnaccented"),
+    @Index(name = "idx_user_name_email", columnList = "email")
+})
 @Inheritance(strategy = InheritanceType.JOINED)
 public class User implements UserDetails {
 

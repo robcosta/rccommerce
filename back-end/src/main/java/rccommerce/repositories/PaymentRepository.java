@@ -7,7 +7,5 @@ import rccommerce.entities.Payment;
 
 @Repository
 public interface PaymentRepository extends JpaRepository<Payment, Long> {
-	
-	
 
 }
