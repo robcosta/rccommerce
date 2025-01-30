@@ -18,6 +18,7 @@ import rccommerce.entities.enums.RoleAuthority;
 import rccommerce.repositories.ClientRepository;
 import rccommerce.repositories.PermissionRepository;
 import rccommerce.repositories.RoleRepository;
+import rccommerce.services.exceptions.ResourceNotFoundException;
 import rccommerce.services.interfaces.GenericService;
 import rccommerce.services.util.AccentUtils;
 import rccommerce.services.util.SecurityContextUtil;
@@ -40,12 +41,16 @@ public class ClientService implements GenericService<Client, ClientDTO, ClientMi
 
     @Transactional(readOnly = true)
     public Page<ClientMinDTO> searchEntity(Long id, String name, String email, String cpf, Pageable pageable) {
-        return repository.searchAll(
+        Page<Client> result = repository.searchAll(
                 id,
                 AccentUtils.removeAccents(name),
                 AccentUtils.removeAccents(email),
                 cpf,
-                pageable).map(ClientMinDTO::new);
+                pageable);
+        if (result.isEmpty()) {
+            throw new ResourceNotFoundException("Nenhum cliente encontrado");
+        }
+        return result.map(ClientMinDTO::new);
     }
 
     @Override

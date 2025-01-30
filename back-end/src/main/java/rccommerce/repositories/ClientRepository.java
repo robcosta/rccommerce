@@ -21,9 +21,9 @@ public interface ClientRepository extends JpaRepository<Client, Long> {
             JOIN FETCH c.roles
             JOIN FETCH c.permissions
             WHERE (:id IS NULL OR c.id = :id)
-            AND (UPPER(c.nameUnaccented) LIKE '%' || :name || '%')
-            AND (UPPER(c.email)  LIKE '%' || :email || '%')
-            AND (UPPER(c.cpf)  LIKE '%' || :cpf || '%')
+            AND (UPPER(c.nameUnaccented) LIKE '%' || UPPER(:name) || '%')
+            AND (UPPER(c.email)  LIKE '%' || UPPER(:email) || '%')
+            AND (UPPER(c.cpf)  LIKE '%' || UPPER(:cpf) || '%')
             """)
     public Page<Client> searchAll(
             @Param("id") Long id,

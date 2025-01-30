@@ -88,8 +88,8 @@ public class UserService implements UserDetailsService {
                 pageable
         );
 
-        if (result == null || result.isEmpty()) {
-            throw new ResourceNotFoundException("Recurso não encontrado");
+        if (result.isEmpty()) {
+            throw new ResourceNotFoundException("Nenhum usuário encontrado");
         }
 
         return result.map(x -> new UserMinDTO(x));

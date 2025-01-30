@@ -4,8 +4,6 @@ import java.util.Locale;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
-import org.springframework.data.domain.Example;
-import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -22,7 +20,9 @@ import rccommerce.repositories.OperatorRepository;
 import rccommerce.repositories.PermissionRepository;
 import rccommerce.repositories.RoleRepository;
 import rccommerce.services.exceptions.InvalidArgumentExecption;
+import rccommerce.services.exceptions.ResourceNotFoundException;
 import rccommerce.services.interfaces.GenericService;
+import rccommerce.services.util.AccentUtils;
 import rccommerce.services.util.SecurityContextUtil;
 import rccommerce.services.util.ValidPassword;
 
@@ -43,7 +43,15 @@ public class OperatorService implements GenericService<Operator, OperatorDTO, Op
 
     @Transactional(readOnly = true)
     public Page<OperatorMinDTO> searchEntity(Long id, String name, String email, Pageable pageable) {
-        return findBy(example(id, name, email), pageable);
+        Page<Operator> result = repository.searchAll(
+                id,
+                AccentUtils.removeAccents(name),
+                AccentUtils.removeAccents(email),
+                pageable);
+        if (result.isEmpty()) {
+            throw new ResourceNotFoundException("Nenhum operador encontrado");
+        }
+        return result.map(OperatorMinDTO::new);
     }
 
     @Override
@@ -109,25 +117,5 @@ public class OperatorService implements GenericService<Operator, OperatorDTO, Op
             }
             entity.addRole(result);
         }
-    }
-
-    private Example<Operator> example(Long id, String name, String email) {
-        Operator OperatorExample = createEntity();
-        if (id != null) {
-            OperatorExample.setId(id);
-        }
-        if (name != null && !name.isEmpty()) {
-            OperatorExample.setNameUnaccented(name);
-        }
-        if (email != null && !email.isEmpty()) {
-            OperatorExample.setEmail(email);
-        }
-
-        ExampleMatcher matcher = ExampleMatcher.matching()
-                .withMatcher("id", ExampleMatcher.GenericPropertyMatchers.exact())
-                .withMatcher("nameUnaccented", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase())
-                .withMatcher("email", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase());
-
-        return Example.of(OperatorExample, matcher);
     }
 }
