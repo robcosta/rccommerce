@@ -54,7 +54,8 @@ public class Suplier implements Convertible<SuplierDTO, SuplierMinDTO> {
     public Suplier(Long id, String name, String cnpj) {
         this.id = id;
         setName(name);
-        this.cnpj = cnpj;
+        setCnpj(cnpj);
+        this.products = new HashSet<>();
     }
 
     public void setName(String name) {

@@ -157,8 +157,8 @@ public class PaymentService implements GenericService<Payment, PaymentDTO, Payme
 
         // Lança exceção caso o valor informado seja inferior ao valor do pedido
         if (totalPayments.compareTo(totalOrder) < 0) {
-            throw new InvalidArgumentExecption(String.format("Pagamento não concluído. Valor informado de R$ %.2f é "
-                    + "insuficiente para cobrir o total do pedido: R$ %.2f.", totalPayments, totalOrder));
+            throw new InvalidArgumentExecption(("Pagamento não concluído. Valor informado de R$ %.2f é "
+                    + "insuficiente para cobrir o total do pedido: R$ %.2f.").formatted(totalPayments, totalOrder));
         }
 
         // Valor excedente
@@ -166,14 +166,14 @@ public class PaymentService implements GenericService<Payment, PaymentDTO, Payme
 
         // Lança exceção caso o valor informado em dinheiro seja inferior ao troco
         if (totalMoney.compareTo(excessAmount) < 0) {
-            throw new InvalidArgumentExecption(String.format("Pagamento não concluído. Valor informado R$ %.2f excede"
+            throw new InvalidArgumentExecption(("Pagamento não concluído. Valor informado R$ %.2f excede"
                     + " o valor do pedido R$ %.2f. Troco de R$ %.2f só pode ser devolvido em dinheiro, contudo a "
-                    + "parcela em dinheiro (R$ %.2f) recebida é inferior ao troco.",
-                    totalPayments, totalOrder, totalPayments.subtract(totalOrder), totalMoney));
+                    + "parcela em dinheiro (R$ %.2f) recebida é inferior ao troco.").formatted(
+                            totalPayments, totalOrder, totalPayments.subtract(totalOrder), totalMoney));
         }
 
         // Ajustar o valor em dinheiro para refletir o troco
-        message.append(String.format(" Troco: R$ %.2f", excessAmount));
+        message.append(" Troco: R$ %.2f".formatted(excessAmount));
 
         return totalMoney.subtract(excessAmount);
     }

@@ -65,7 +65,7 @@ public class ProductService implements GenericService<Product, ProductDTO, Produ
 
     @Transactional(readOnly = true)
     public ProductDTO findByReference(String codBarra) {
-        codBarra = String.format("0000000000000" + codBarra).substring(codBarra.length());
+        codBarra = ("0000000000000" + codBarra).formatted().substring(codBarra.length());
 
         Product result = repository.findByReference(codBarra)
                 .orElseThrow(() -> new ResourceNotFoundException("Produto não encontrado."));
@@ -132,7 +132,7 @@ public class ProductService implements GenericService<Product, ProductDTO, Produ
 
     private String generateEAN13(Long id) {
         String codEan13 = id.toString();
-        codEan13 = String.format("000000000000" + codEan13).substring(codEan13.length());
+        codEan13 = ("000000000000" + codEan13).formatted().substring(codEan13.length());
         int digit = checkDigit(codEan13);
 
         return codEan13 + Integer.toString(digit);

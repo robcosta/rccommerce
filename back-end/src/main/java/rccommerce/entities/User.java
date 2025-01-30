@@ -58,17 +58,23 @@ public class User implements UserDetails {
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "tb_user_role", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
+    @Builder.Default
     private Set<Role> roles = new HashSet<>();
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "tb_user_permission", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "permission_id"))
+    @Builder.Default
     private Set<Permission> permissions = new HashSet<>();
 
     @OneToMany(mappedBy = "user")
+    @Builder.Default
     private List<Order> orders = new ArrayList<>();
 
     public User(Long id) {
         this.id = id;
+        this.roles = new HashSet<>();
+        this.permissions = new HashSet<>();
+        this.orders = new ArrayList<>();
     }
 
     @SuppressWarnings("OverridableMethodCallInConstructor")
@@ -77,6 +83,9 @@ public class User implements UserDetails {
         setName(name);
         this.email = email;
         this.password = password;
+        this.roles = new HashSet<>();
+        this.permissions = new HashSet<>();
+        this.orders = new ArrayList<>();
     }
 
     public void setName(String name) {
