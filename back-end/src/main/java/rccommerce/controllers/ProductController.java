@@ -36,9 +36,9 @@ public class ProductController {
     @GetMapping(value = "/search")
     public ResponseEntity<Page<ProductMinDTO>> searchEntity(
             @ValidId
-            @RequestParam(name = "id", defaultValue = "") String id,
-            @RequestParam(name = "name", defaultValue = "") String name,
-            @RequestParam(name = "reference", defaultValue = "") String reference,
+            @RequestParam(defaultValue = "") String id,
+            @RequestParam(defaultValue = "") String name,
+            @RequestParam(defaultValue = "") String reference,
             @ValidId
             @RequestParam(name = "suplierid", defaultValue = "") String suplierId,
             @ValidId

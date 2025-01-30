@@ -51,6 +51,17 @@ INSERT INTO tb_client(id, cpf) VALUES (4, '73995808042');
 INSERT INTO tb_client(id, cpf) VALUES (5, '46311990083');
 INSERT INTO tb_client(id, cpf) VALUES (6, '83563189048');
 
+INSERT INTO tb_user (name, name_unaccented, email, password) VALUES ('Ney Green', 'Ney Green', 'ney@gmail.com','$2a$10$bPi3ofxG3lv/.M4WnzHnR.qj7S2c7sKVRINI7fteO0GYz0e/9YrZ6');
+INSERT INTO tb_operator(id, commission) VALUES (7, 1.0);
+INSERT INTO tb_user_role(user_id, role_id) VALUES(7,2)
+INSERT INTO tb_user_permission(user_id, permission_id) VALUES(7,6)
+
+INSERT INTO tb_user (name, name_unaccented, email, password) VALUES ('Pedro Red', 'Pedro Red', 'pedro@gmail.com','$2a$10$bPi3ofxG3lv/.M4WnzHnR.qj7S2c7sKVRINI7fteO0GYz0e/9YrZ6');
+INSERT INTO tb_client(id, cpf) VALUES (8, '14496637022');
+INSERT INTO tb_user_role(user_id, role_id) VALUES(8,4)
+INSERT INTO tb_user_permission(user_id, permission_id) VALUES(8,2)
+
+
 INSERT INTO tb_suplier(name,name_unaccented,cnpj) VALUES ('Diversos','Diversos','00000000000000'); 
 INSERT INTO tb_suplier(name,name_unaccented,cnpj) VALUES ('Lojas FOO','Lojas FOO','28104874000108'); 
 INSERT INTO tb_suplier(name,name_unaccented,cnpj) VALUES ('Inova Tech','Inova Tech','40543322000100'); 

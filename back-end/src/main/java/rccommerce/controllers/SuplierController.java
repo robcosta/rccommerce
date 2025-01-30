@@ -43,9 +43,9 @@ public class SuplierController {
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_OPERATOR', 'ROLE_SELLER', 'ROLE_CLIENT')")
     @GetMapping(value = "/search")
     public ResponseEntity<Page<SuplierMinDTO>> searchEntity(
-            @ValidId @RequestParam(name = "id", defaultValue = "") String id,
-            @RequestParam(name = "name", defaultValue = "") String name,
-            @RequestParam(name = "cnpj", defaultValue = "") String cnpj, Pageable pageable) {
+            @ValidId @RequestParam(defaultValue = "") String id,
+            @RequestParam(defaultValue = "") String name,
+            @RequestParam(defaultValue = "") String cnpj, Pageable pageable) {
 
         Page<SuplierMinDTO> pageDto = service.searchEntity(id.isEmpty() ? null : Long.valueOf(id), name, cnpj,
                 pageable);

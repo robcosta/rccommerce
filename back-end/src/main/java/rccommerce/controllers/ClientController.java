@@ -43,10 +43,10 @@ public class ClientController {
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_OPERATOR', 'ROLE_SELLER', 'ROLE_CLIENT')")
     @GetMapping(value = "/search")
     public ResponseEntity<Page<ClientMinDTO>> searchEntity(
-            @ValidId @RequestParam(name = "id", defaultValue = "") String id,
-            @RequestParam(name = "name", defaultValue = "") String name,
-            @RequestParam(name = "email", defaultValue = "") String email,
-            @RequestParam(name = "cpf", defaultValue = "") String cpf, Pageable pageable) {
+            @ValidId @RequestParam(defaultValue = "") String id,
+            @RequestParam(defaultValue = "") String name,
+            @RequestParam(defaultValue = "") String email,
+            @RequestParam(defaultValue = "") String cpf, Pageable pageable) {
 
         Page<ClientMinDTO> pageDto = service.searchEntity(id.isEmpty() ? null : Long.valueOf(id), name, email, cpf,
                 pageable);

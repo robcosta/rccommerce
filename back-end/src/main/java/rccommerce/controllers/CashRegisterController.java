@@ -67,9 +67,9 @@ public class CashRegisterController {
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_CASH')")
     @GetMapping(value = "/total-sales")
     public ResponseEntity<CustomPage<CashRegisterMinDTO>> searchEntity(
-            @ValidId @RequestParam(name = "id", defaultValue = "") String id,
+            @ValidId @RequestParam(defaultValue = "") String id,
             @RequestParam(name = "operatorid", defaultValue = "") String operatorId,
-            @RequestParam(name = "status", defaultValue = "") String status,
+            @RequestParam(defaultValue = "") String status,
             @RequestParam(name = "timestart", defaultValue = "") String timeStart,
             @RequestParam(name = "timeend", defaultValue = "") String timeEnd,
             @RequestParam(name = "cashmovementtype", defaultValue = "") String cashMovementType,

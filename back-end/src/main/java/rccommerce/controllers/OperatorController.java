@@ -45,9 +45,9 @@ public class OperatorController {
     @GetMapping(value = "/search")
     public ResponseEntity<Page<OperatorMinDTO>> searchEntity(
             @ValidId
-            @RequestParam(name = "id", defaultValue = "") String id,
-            @RequestParam(name = "name", defaultValue = "") String name,
-            @RequestParam(name = "email", defaultValue = "") String email,
+            @RequestParam(defaultValue = "") String id,
+            @RequestParam(defaultValue = "") String name,
+            @RequestParam(defaultValue = "") String email,
             Pageable pageable) {
         Page<OperatorMinDTO> pageMinDto = service.searchEntity(id.isEmpty() ? null : Long.valueOf(id), name, email, pageable);
         return ResponseEntity.ok(pageMinDto);

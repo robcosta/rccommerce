@@ -44,8 +44,8 @@ public class CategoryController {
     @GetMapping(value = "/search")
     public ResponseEntity<Page<ProductCategoryMinDTO>> searchEntity(
             @ValidId
-            @RequestParam(name = "id", defaultValue = "") String id,
-            @RequestParam(name = "name", defaultValue = "") String name,
+            @RequestParam(defaultValue = "") String id,
+            @RequestParam(defaultValue = "") String name,
             Pageable pageable) {
 
         Page<ProductCategoryMinDTO> dto = service.searchEntity(id.isEmpty() ? null : Long.valueOf(id), name, pageable);

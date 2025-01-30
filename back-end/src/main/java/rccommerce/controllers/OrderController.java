@@ -55,12 +55,12 @@ public class OrderController {
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_OPERATOR')")
     @GetMapping(value = "/search")
     public ResponseEntity<Page<OrderMinDTO>> searchEntity(
-            @ValidId @RequestParam(name = "id", defaultValue = "") String id,
+            @ValidId @RequestParam(defaultValue = "") String id,
             @ValidId @RequestParam(name = "userid", defaultValue = "") String userId,
             @RequestParam(name = "username", defaultValue = "") String userName,
             @ValidId @RequestParam(name = "clientid", defaultValue = "") String clientId,
             @RequestParam(name = "clientname", defaultValue = "") String clientName,
-            @RequestParam(name = "status", defaultValue = "") String status,
+            @RequestParam(defaultValue = "") String status,
             @RequestParam(name = "timestart", defaultValue = "") String timeStart,
             @RequestParam(name = "timeend", defaultValue = "") String timeEnd,
             Pageable pageable) {
