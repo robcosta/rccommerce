@@ -1,9 +1,9 @@
 package rccommerce.controllers.validators;
 
+import java.util.Arrays;
+
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
-
-import java.util.Arrays;
 
 public class EnumExistsValidator implements ConstraintValidator<EnumExists, Object> {
 
@@ -21,8 +21,8 @@ public class EnumExistsValidator implements ConstraintValidator<EnumExists, Obje
         }
 
         // Verifica se o valor é uma lista ou coleção
-        if (value instanceof Iterable<?>) {
-            for (Object element : (Iterable<?>) value) {
+        if (value instanceof Iterable<?> iterable) {
+            for (Object element : iterable) {
                 if (!isEnumValueValid(element)) {
                     return false;  // Um ou mais elementos da lista não são válidos
                 }
@@ -44,4 +44,3 @@ public class EnumExistsValidator implements ConstraintValidator<EnumExists, Obje
                 .anyMatch(enumConstant -> enumConstant.equals(value));
     }
 }
-

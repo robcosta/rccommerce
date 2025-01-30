@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 
 import rccommerce.entities.Order;
@@ -16,8 +17,8 @@ import rccommerce.entities.Order;
 @Repository
 public interface OrderRepository extends JpaRepository<Order, Long> {
 
-    @SuppressWarnings("null")
     @Override
+    @NonNull
     @EntityGraph(attributePaths = {"user", "client"})
     @Query("""
         SELECT o
@@ -29,7 +30,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
         LEFT JOIN FETCH i.id.product prod
         WHERE (:id IS NULL OR o.id = :id)        
     """)
-    Optional<Order> findById(@Param("id") Long id);
+    Optional<Order> findById(@NonNull @Param("id") Long id);
 
     // Banco H2
     @EntityGraph(attributePaths = {"user", "client"})

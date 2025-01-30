@@ -1,11 +1,14 @@
 package rccommerce.services.exceptions;
 
-public class ResourceNotFoundException extends RuntimeException{
-	
-	private static final long serialVersionUID = 1L;
+import java.io.Serial;
 
-	public ResourceNotFoundException(String msg) {
-		super(msg);
-	}
+public class ResourceNotFoundException extends RuntimeException {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
+
+    public ResourceNotFoundException(String msg) {
+        super(msg);
+    }
 
 }

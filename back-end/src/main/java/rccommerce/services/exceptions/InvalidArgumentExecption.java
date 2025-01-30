@@ -1,11 +1,14 @@
 package rccommerce.services.exceptions;
 
-public class InvalidArgumentExecption extends RuntimeException{
-	
-	private static final long serialVersionUID = 1L;
+import java.io.Serial;
 
-	public InvalidArgumentExecption(String msg) {
-		super(msg);
-	}
+public class InvalidArgumentExecption extends RuntimeException {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
+
+    public InvalidArgumentExecption(String msg) {
+        super(msg);
+    }
 
 }

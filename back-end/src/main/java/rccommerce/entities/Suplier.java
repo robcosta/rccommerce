@@ -47,6 +47,7 @@ public class Suplier implements Convertible<SuplierDTO, SuplierMinDTO> {
     private String cnpj;
 
     @OneToMany(mappedBy = "suplier")
+    @Builder.Default
     private Set<Product> products = new HashSet<>();
 
     @SuppressWarnings("OverridableMethodCallInConstructor")
