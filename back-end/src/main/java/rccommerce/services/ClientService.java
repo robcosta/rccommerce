@@ -10,8 +10,11 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import rccommerce.dto.AddressDTO;
 import rccommerce.dto.ClientDTO;
+import rccommerce.dto.ClientFullDTO;
 import rccommerce.dto.ClientMinDTO;
+import rccommerce.entities.Address;
 import rccommerce.entities.Client;
 import rccommerce.entities.enums.PermissionAuthority;
 import rccommerce.entities.enums.RoleAuthority;
@@ -48,9 +51,16 @@ public class ClientService implements GenericService<Client, ClientDTO, ClientMi
                 cpf,
                 pageable);
         if (result.isEmpty()) {
-            throw new ResourceNotFoundException("Nenhum cliente encontrado");
+            throw new ResourceNotFoundException("Nenhum cliente encontrado para estes critérios de busca.");
         }
         return result.map(ClientMinDTO::new);
+    }
+
+    @Transactional(readOnly = true)
+    public ClientFullDTO findByIdWithAddresses(Long id) {
+        Client client = repository.findByIdWithAddresses(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Cliente não encontrado: " + id));
+        return new ClientFullDTO(client);
     }
 
     @Override
@@ -92,6 +102,20 @@ public class ClientService implements GenericService<Client, ClientDTO, ClientMi
         entity.addRole(roleRepository.findByAuthority(RoleAuthority.ROLE_CLIENT.getName()));
         entity.getPermissions().clear();
         entity.addPermission(permissionRepository.findByAuthority(PermissionAuthority.PERMISSION_NONE.getName()));
+
+        entity.getAddresses().clear();
+        for (AddressDTO AdressDTO : dto.getAddresses()) {
+            Address address = Address.builder()
+                    .street(AdressDTO.getStreet())
+                    .number(AdressDTO.getNumber())
+                    .complement(AdressDTO.getComplement())
+                    .district(AdressDTO.getDistrict())
+                    .city(AdressDTO.getCity())
+                    .state(AdressDTO.getState())
+                    .zipCode(AdressDTO.getZipCode())
+                    .build();
+            entity.addAddresses(address);
+        }
     }
 
     @Override

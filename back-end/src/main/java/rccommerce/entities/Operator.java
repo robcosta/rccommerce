@@ -4,6 +4,8 @@ import java.math.BigDecimal;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -11,6 +13,8 @@ import rccommerce.dto.OperatorDTO;
 import rccommerce.dto.OperatorMinDTO;
 import rccommerce.services.interfaces.Convertible;
 
+@Builder(builderMethodName = "operatorBuilder")
+@AllArgsConstructor
 @NoArgsConstructor
 @Getter
 @Setter

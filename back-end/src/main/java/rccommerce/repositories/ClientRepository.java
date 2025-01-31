@@ -15,11 +15,9 @@ import rccommerce.entities.Client;
 @Repository
 public interface ClientRepository extends JpaRepository<Client, Long> {
 
-    @EntityGraph(attributePaths = {"roles", "permissions"})
+    @EntityGraph(attributePaths = {"addresses", "roles", "permissions"})
     @Query("""
             SELECT c FROM Client c
-            JOIN FETCH c.roles
-            JOIN FETCH c.permissions
             WHERE (:id IS NULL OR c.id = :id)
             AND (UPPER(c.nameUnaccented) LIKE '%' || UPPER(:name) || '%')
             AND (UPPER(c.email)  LIKE '%' || UPPER(:email) || '%')
@@ -31,6 +29,10 @@ public interface ClientRepository extends JpaRepository<Client, Long> {
             @Param("email") String email,
             @Param("cpf") String cpf,
             Pageable pageable);
+
+    @EntityGraph(attributePaths = {"addresses", "roles", "permissions"})
+    @Query("SELECT c FROM Client c WHERE c.id = :id")
+    Optional<Client> findByIdWithAddresses(@Param("id") Long id);
 
     public Optional<Client> findByEmail(String email);
 }

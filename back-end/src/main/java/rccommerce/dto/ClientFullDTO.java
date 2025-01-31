@@ -9,20 +9,20 @@ import rccommerce.entities.Client;
 
 @NoArgsConstructor
 @Getter
-public class ClientMinDTO extends UserMinDTO {
+public class ClientFullDTO extends UserMinDTO {
 
     private String cpf;
-    private List<AddressMinDTO> addresses = new ArrayList<>();
+    private List<AddressDTO> addresses = new ArrayList<>();
 
-    public ClientMinDTO(Long id, String name, String email, String cpf) {
+    public ClientFullDTO(Long id, String name, String email, String cpf) {
         super(id, name, email);
         this.cpf = cpf;
     }
 
-    public ClientMinDTO(Client entity) {
+    public ClientFullDTO(Client entity) {
         super(entity);
         cpf = entity.getCpf();
-        entity.getAddresses().forEach(address -> this.addresses.add(new AddressMinDTO(address)));
+        entity.getAddresses().forEach(address -> this.addresses.add(new AddressDTO(address)));
     }
 
     public String getCpf() {

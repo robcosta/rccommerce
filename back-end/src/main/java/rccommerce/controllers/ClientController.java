@@ -22,6 +22,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import jakarta.validation.Valid;
 import rccommerce.controllers.validators.ValidId;
 import rccommerce.dto.ClientDTO;
+import rccommerce.dto.ClientFullDTO;
 import rccommerce.dto.ClientMinDTO;
 import rccommerce.services.ClientService;
 
@@ -55,8 +56,8 @@ public class ClientController {
 
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_OPERATOR', 'ROLE_SELLER', 'ROLE_CLIENT')")
     @GetMapping(value = "/{id}")
-    public ResponseEntity<ClientMinDTO> findById(@ValidId @PathVariable String id) {
-        ClientMinDTO dto = service.findById(Long.valueOf(id));
+    public ResponseEntity<ClientFullDTO> findById(@ValidId @PathVariable String id) {
+        ClientFullDTO dto = service.findByIdWithAddresses(Long.valueOf(id));
         return ResponseEntity.ok(dto);
     }
 

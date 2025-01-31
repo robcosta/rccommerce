@@ -34,13 +34,6 @@ public class SuplierController {
     private SuplierService service;
 
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_OPERATOR', 'ROLE_SELLER', 'ROLE_CLIENT')")
-    @GetMapping(value = "/all")
-    public ResponseEntity<Page<SuplierMinDTO>> findAll(Pageable pageable) {
-        Page<SuplierMinDTO> dto = service.findAll(pageable);
-        return ResponseEntity.ok(dto);
-    }
-
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_OPERATOR', 'ROLE_SELLER', 'ROLE_CLIENT')")
     @GetMapping(value = "/search")
     public ResponseEntity<Page<SuplierMinDTO>> searchEntity(
             @ValidId @RequestParam(defaultValue = "") String id,
