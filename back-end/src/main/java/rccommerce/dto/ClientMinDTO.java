@@ -3,11 +3,13 @@ package rccommerce.dto;
 import java.util.ArrayList;
 import java.util.List;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import rccommerce.entities.Client;
 
 @NoArgsConstructor
+@AllArgsConstructor
 @Getter
 public class ClientMinDTO extends UserMinDTO {
 

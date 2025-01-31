@@ -3,8 +3,10 @@ package rccommerce.entities;
 import java.util.HashSet;
 import java.util.Set;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -50,12 +52,17 @@ public class Suplier implements Convertible<SuplierDTO, SuplierMinDTO> {
     @Builder.Default
     private Set<Product> products = new HashSet<>();
 
+    @OneToMany(mappedBy = "suplier", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
+    @Builder.Default
+    private Set<Address> addresses = new HashSet<>();
+
     @SuppressWarnings("OverridableMethodCallInConstructor")
     public Suplier(Long id, String name, String cnpj) {
         this.id = id;
         setName(name);
         setCnpj(cnpj);
         this.products = new HashSet<>();
+        this.addresses = new HashSet<>();
     }
 
     public void setName(String name) {
@@ -73,6 +80,16 @@ public class Suplier implements Convertible<SuplierDTO, SuplierMinDTO> {
 
     public void addProduct(Product product) {
         this.products.add(product);
+    }
+
+    public Set<Address> addAddresses(Address address) {
+        if (addresses == null) {
+            addresses = new HashSet<>();
+        }
+        // Relacionamento bidirecional
+        address.setSuplier(this);
+        addresses.add(address);
+        return addresses;
     }
 
     @Override

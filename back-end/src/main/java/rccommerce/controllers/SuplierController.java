@@ -22,6 +22,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import jakarta.validation.Valid;
 import rccommerce.controllers.validators.ValidId;
 import rccommerce.dto.SuplierDTO;
+import rccommerce.dto.SuplierFullDTO;
 import rccommerce.dto.SuplierMinDTO;
 import rccommerce.services.SuplierService;
 
@@ -47,8 +48,8 @@ public class SuplierController {
 
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_OPERATOR', 'ROLE_SELLER', 'ROLE_CLIENT')")
     @GetMapping(value = "/{id}")
-    public ResponseEntity<SuplierMinDTO> findById(@ValidId @PathVariable String id) {
-        SuplierMinDTO dto = service.findById(Long.valueOf(id));
+    public ResponseEntity<SuplierFullDTO> findById(@ValidId @PathVariable String id) {
+        SuplierFullDTO dto = service.findByIdWithAddresses(Long.valueOf(id));
         return ResponseEntity.ok(dto);
     }
 

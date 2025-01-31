@@ -3,10 +3,12 @@ package rccommerce.dto;
 import java.util.ArrayList;
 import java.util.List;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import rccommerce.entities.Client;
 
+@AllArgsConstructor
 @NoArgsConstructor
 @Getter
 public class ClientFullDTO extends UserMinDTO {

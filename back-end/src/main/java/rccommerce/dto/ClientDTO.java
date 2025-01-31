@@ -5,16 +5,19 @@ import java.util.List;
 
 import org.hibernate.validator.constraints.br.CPF;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import rccommerce.entities.Client;
 
+@AllArgsConstructor
 @NoArgsConstructor
 @Getter
 public class ClientDTO extends UserDTO {
 
     @CPF
     private String cpf;
+
     private List<AddressDTO> addresses = new ArrayList<>();
 
     public ClientDTO(Long id, String name, String email, String password, String cpf) {

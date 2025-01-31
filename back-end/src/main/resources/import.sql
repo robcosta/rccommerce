@@ -258,4 +258,34 @@ UPDATE tb_product SET quantity = 12 WHERE id = 5;
 UPDATE tb_product SET quantity = 0 WHERE id = 10;
 UPDATE tb_product SET quantity = 4 WHERE id = 15;
 
+-- Endereços para clients
+-- INSERT INTO tb_address (street, number, complement, district, city, state, zip_code) VALUES ('Rua das Flores', '123', 'Apto 101', 'Centro', 'São Paulo', 'SP', '01001000');
+-- INSERT INTO tb_address (street, number, complement, district, city, state, zip_code) VALUES ('Rua das Árvores', '456', 'Casa', 'Jardins', 'São Paulo', 'SP', '01002000');
+INSERT INTO tb_address (street, number, complement, district, city, state, zip_code) VALUES ('Av Principal', '789', null, 'Centro', 'Rio de Janeiro', 'RJ', '20001000');
+INSERT INTO tb_address (street, number, complement, district, city, state, zip_code) VALUES ('Rua do Comércio', '321', 'Sala 2', 'Downtown', 'Rio de Janeiro', 'RJ', '20002000');
+INSERT INTO tb_address (street, number, complement, district, city, state, zip_code) VALUES ('Av das Nações', '654', null, 'Boa Vista', 'Curitiba', 'PR', '80001000');
+INSERT INTO tb_address (street, number, complement, district, city, state, zip_code) VALUES ('Rua da Paz', '987', 'Bloco B', 'Jardim América', 'São Paulo', 'SP', '01003000');
+
+-- Associação dos endereços aos clients (client_id 4, 5, 6 e 8)
+-- UPDATE tb_address SET client_id = 4 WHERE id IN (1, 2); -- Venda ao Consumidor (2 endereços)
+UPDATE tb_address SET client_id = 5 WHERE id = 1;       -- Maria Yellow (1 endereço)
+UPDATE tb_address SET client_id = 6 WHERE id IN (2, 3); -- John Black (2 endereços)
+UPDATE tb_address SET client_id = 8 WHERE id = 4;       -- Pedro Red (1 endereço)
+
+-- Endereços para supliers
+INSERT INTO tb_address (street, number, complement, district, city, state, zip_code) VALUES ('Rua Industrial', '100', 'Galpão 1', 'Distrito Industrial', 'São Paulo', 'SP', '01010100');
+INSERT INTO tb_address (street, number, complement, district, city, state, zip_code) VALUES ('Av Comercial', '200', 'Sala 301', 'Centro Empresarial', 'São Paulo', 'SP', '01010200');
+INSERT INTO tb_address (street, number, complement, district, city, state, zip_code) VALUES ('Rua dos Negócios', '300', null, 'Setor Comercial', 'Rio de Janeiro', 'RJ', '20010300');
+INSERT INTO tb_address (street, number, complement, district, city, state, zip_code) VALUES ('Av Empresarial', '400', 'Andar 5', 'Centro', 'Curitiba', 'PR', '80010400');
+INSERT INTO tb_address (street, number, complement, district, city, state, zip_code) VALUES ('Rua do Mercado', '500', 'Loja 2', 'Setor Sul', 'Brasília', 'DF', '70010500');
+INSERT INTO tb_address (street, number, complement, district, city, state, zip_code) VALUES ('Av do Comércio', '600', null, 'Zona Industrial', 'Salvador', 'BA', '40010600');
+
+-- Associação dos endereços aos supliers (suplier_id 1 a 6)
+UPDATE tb_address SET suplier_id = 1 WHERE id = 5;  -- Diversos
+UPDATE tb_address SET suplier_id = 2 WHERE id = 6;  -- Lojas FOO
+UPDATE tb_address SET suplier_id = 3 WHERE id = 7;  -- Inova Tech
+UPDATE tb_address SET suplier_id = 4 WHERE id = 8; -- Soluções Nexus
+UPDATE tb_address SET suplier_id = 5 WHERE id = 9; -- Nova Onda
+UPDATE tb_address SET suplier_id = 6 WHERE id = 10; -- PixelPower
+
 

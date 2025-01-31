@@ -57,6 +57,14 @@ public class Address {
     @JoinColumn(name = "client_id", nullable = true)
     private Client client;
 
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
+    @JoinColumn(name = "suplier_id", nullable = true)
+    private Suplier suplier;
+
+    public void setState(String state) {
+        this.state = state.toUpperCase();
+    }
+
     public void setVipCode(String zipCode) {
         this.zipCode = zipCode.replaceAll("[^0-9]", "");
     }

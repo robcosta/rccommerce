@@ -58,9 +58,9 @@ public class ClientService implements GenericService<Client, ClientDTO, ClientMi
 
     @Transactional(readOnly = true)
     public ClientFullDTO findByIdWithAddresses(Long id) {
-        Client client = repository.findByIdWithAddresses(id)
+        Client result = repository.findByIdWithAddresses(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Cliente não encontrado: " + id));
-        return new ClientFullDTO(client);
+        return new ClientFullDTO(result);
     }
 
     @Override
