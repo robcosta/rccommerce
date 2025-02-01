@@ -139,17 +139,21 @@ public interface GenericService<T extends Convertible<DTO, MINDTO>, DTO, MINDTO,
 
     // Métodos auxiliares para lançar a exceção
     default void handleDataIntegrityViolation(DataIntegrityViolationException e) {
-        if (e.toString().contains("EMAIL NULLS FIRST")) {
+        String errorMessage = e.getMessage().toUpperCase();
+        if (errorMessage.contains("EMAIL NULLS FIRST")) {
             throw new DatabaseException("Email informado já existe");
         }
-        if (e.toString().contains("NAME NULLS FIRST")) {
+        if (errorMessage.contains("NAME NULLS FIRST")) {
             throw new DatabaseException("Nome informado já existe");
         }
-        if (e.toString().contains("CPF NULLS FIRST")) {
+        if (errorMessage.contains("CPF NULLS FIRST")) {
             throw new DatabaseException("CPF informado já existe");
         }
-        if (e.toString().contains("CNPJ NULLS FIRST")) {
+        if (errorMessage.contains("CNPJ NULLS FIRST")) {
             throw new DatabaseException("CNPJ informado já existe");
+        }
+        if (errorMessage.contains("DEPENDENT_ID")) {
+            throw new DatabaseException("Entidade com dependência de outra(s) entidade(s), operação proibida.");
         }
 
         throw new DatabaseException(getTranslatedEntityName() + " causando erro de integridade, operação proibida.");

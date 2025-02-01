@@ -178,52 +178,51 @@ INSERT INTO tb_Product_stock (user_id, product_id, quantity, moment, qtt_Moved, 
 INSERT INTO tb_Product_stock (user_id, product_id, quantity, moment, qtt_Moved, movement) VALUES (1, 3, 2, TIMESTAMP WITH TIME ZONE '2022-07-30T11:00:00Z', 4, 1);
 
 -- Insert CashRegister
-INSERT INTO tb_cash_register (id, balance, operator_id, open_time, close_time) VALUES (1, 1631.50, 2, TIMESTAMP WITH TIME ZONE '2025-01-23T13:01:02Z', TIMESTAMP WITH TIME ZONE '2025-01-23T13:04:00Z');
-INSERT INTO tb_cash_register (id, balance, operator_id, open_time, close_time) VALUES (2, 1951.49, 2, TIMESTAMP WITH TIME ZONE '2025-01-23T13:04:10Z', TIMESTAMP WITH TIME ZONE '2025-01-23T13:11:25Z');
-INSERT INTO tb_cash_register (id, balance, operator_id, open_time, close_time) VALUES (3, 2740.50, 2, TIMESTAMP WITH TIME ZONE '2025-01-23T13:11:35Z', NULL);
-
--- -- Insert CashMovement for CashRegister 1
-INSERT INTO tb_cash_movement (id, cash_register_id, cash_movement_type, description, timestamp) VALUES (1, 1, 'OPENING_BALANCE', 'Abertura de caixa - Usuário:2', TIMESTAMP WITH TIME ZONE '2025-01-23T13:01:02Z');
-INSERT INTO tb_cash_movement (id, cash_register_id, cash_movement_type, description, timestamp) VALUES (2, 1, 'WITHDRAWAL', 'Retirada de Caixa - Usuário:2', TIMESTAMP WITH TIME ZONE '2025-01-23T13:01:54Z');
-INSERT INTO tb_cash_movement (id, cash_register_id, cash_movement_type, description, timestamp) VALUES (3, 1, 'SALE', 'Venda - Pedido: 1 - Pagamento: 1', TIMESTAMP WITH TIME ZONE '2025-01-23T13:03:39Z');
-INSERT INTO tb_cash_movement (id, cash_register_id, cash_movement_type, description, timestamp) VALUES (4, 1, 'CLOSING_BALANCE', 'Fechamento de caixa - Usuário:2', TIMESTAMP WITH TIME ZONE '2025-01-23T13:04:00Z');
+INSERT INTO tb_cash_register (balance, operator_id, open_time, close_time) VALUES (1631.50, 2, TIMESTAMP WITH TIME ZONE '2025-01-23T13:01:02Z', TIMESTAMP WITH TIME ZONE '2025-01-23T13:04:00Z');
+INSERT INTO tb_cash_register (balance, operator_id, open_time, close_time) VALUES (1951.49, 2, TIMESTAMP WITH TIME ZONE '2025-01-23T13:04:10Z', TIMESTAMP WITH TIME ZONE '2025-01-23T13:11:25Z');
+INSERT INTO tb_cash_register (balance, operator_id, open_time, close_time) VALUES (2740.50, 2, TIMESTAMP WITH TIME ZONE '2025-01-23T13:11:35Z', NULL);
+-- Insert CashMovement for Register 1
+INSERT INTO tb_cash_movement (cash_register_id, cash_movement_type, description, timestamp) VALUES (1, 'OPENING_BALANCE', 'Abertura de caixa - Usuário:2', TIMESTAMP WITH TIME ZONE '2025-01-23T13:01:02Z');
+INSERT INTO tb_cash_movement (cash_register_id, cash_movement_type, description, timestamp) VALUES (1, 'WITHDRAWAL', 'Retirada de Caixa - Usuário:2', TIMESTAMP WITH TIME ZONE '2025-01-23T13:01:54Z');
+INSERT INTO tb_cash_movement (cash_register_id, cash_movement_type, description, timestamp) VALUES (1, 'SALE', 'Venda - Pedido: 1 - Pagamento: 1', TIMESTAMP WITH TIME ZONE '2025-01-23T13:03:39Z');
+INSERT INTO tb_cash_movement (cash_register_id, cash_movement_type, description, timestamp) VALUES (1, 'CLOSING_BALANCE', 'Fechamento de caixa - Usuário:2', TIMESTAMP WITH TIME ZONE '2025-01-23T13:04:00Z');
 
 -- -- Insert MovementDetail for CashMovement 1
-INSERT INTO tb_movement_detail (id, cash_movement_id, movement_type, amount) VALUES (1, 1, 'MONEY', 400.50);
-INSERT INTO tb_movement_detail (id, cash_movement_id, movement_type, amount) VALUES (2, 2, 'MONEY', -150.00);
-INSERT INTO tb_movement_detail (id, cash_movement_id, movement_type, amount) VALUES (3, 3, 'MONEY', 31.0);
-INSERT INTO tb_movement_detail (id, cash_movement_id, movement_type, amount) VALUES (4, 3, 'PIX', 1400.0);
-INSERT INTO tb_movement_detail (id, cash_movement_id, movement_type, amount) VALUES (5, 4, 'MONEY', -150.00);
+INSERT INTO tb_movement_detail (cash_movement_id, movement_type, amount) VALUES (1, 'MONEY', 400.50);
+INSERT INTO tb_movement_detail (cash_movement_id, movement_type, amount) VALUES (2, 'MONEY', -150.00);
+INSERT INTO tb_movement_detail (cash_movement_id, movement_type, amount) VALUES (3, 'MONEY', 31.0);
+INSERT INTO tb_movement_detail (cash_movement_id, movement_type, amount) VALUES (3, 'PIX', 1400.0);
+INSERT INTO tb_movement_detail (cash_movement_id, movement_type, amount) VALUES (4, 'MONEY', -150.00);
 
 -- -- Insert CashMovement for CashRegister 2
-INSERT INTO tb_cash_movement (id, cash_register_id, cash_movement_type, description, timestamp) VALUES (5, 2, 'OPENING_BALANCE', 'Abertura de caixa - Usuário:2', TIMESTAMP WITH TIME ZONE '2025-01-23T13:04:10Z');
-INSERT INTO tb_cash_movement (id, cash_register_id, cash_movement_type, description, timestamp) VALUES (6, 2, 'REINFORCEMENT', 'Reforço de Caixa - Usuário:2', TIMESTAMP WITH TIME ZONE '2025-01-23T13:04:30Z');
-INSERT INTO tb_cash_movement (id, cash_register_id, cash_movement_type, description, timestamp) VALUES (7, 2, 'SALE', 'Venda - Pedido: 6 - Pagamento: 2', TIMESTAMP WITH TIME ZONE '2025-01-23T13:07:00Z');
-INSERT INTO tb_cash_movement (id, cash_register_id, cash_movement_type, description, timestamp) VALUES (8, 2, 'SALE', 'Venda - Pedido: 11 - Pagamento: 3', TIMESTAMP WITH TIME ZONE '2025-01-23T13:08:47Z');
-INSERT INTO tb_cash_movement (id, cash_register_id, cash_movement_type, description, timestamp) VALUES (9, 2, 'WITHDRAWAL', 'Retirada de Caixa - Usuário:2', TIMESTAMP WITH TIME ZONE '2025-01-23T13:11:12Z');
-INSERT INTO tb_cash_movement (id, cash_register_id, cash_movement_type, description, timestamp) VALUES (10, 2, 'CLOSING_BALANCE', 'Fechamento de caixa - Usuário:2', TIMESTAMP WITH TIME ZONE '2025-01-23T13:11:25Z');
+INSERT INTO tb_cash_movement (cash_register_id, cash_movement_type, description, timestamp) VALUES (2, 'OPENING_BALANCE', 'Abertura de caixa - Usuário:2', TIMESTAMP WITH TIME ZONE '2025-01-23T13:04:10Z');
+INSERT INTO tb_cash_movement (cash_register_id, cash_movement_type, description, timestamp) VALUES (2, 'REINFORCEMENT', 'Reforço de Caixa - Usuário:2', TIMESTAMP WITH TIME ZONE '2025-01-23T13:04:30Z');
+INSERT INTO tb_cash_movement (cash_register_id, cash_movement_type, description, timestamp) VALUES (2, 'SALE', 'Venda - Pedido: 6 - Pagamento: 2', TIMESTAMP WITH TIME ZONE '2025-01-23T13:07:00Z');
+INSERT INTO tb_cash_movement (cash_register_id, cash_movement_type, description, timestamp) VALUES (2, 'SALE', 'Venda - Pedido: 11 - Pagamento: 3', TIMESTAMP WITH TIME ZONE '2025-01-23T13:08:47Z');
+INSERT INTO tb_cash_movement (cash_register_id, cash_movement_type, description, timestamp) VALUES (2, 'WITHDRAWAL', 'Retirada de Caixa - Usuário:2', TIMESTAMP WITH TIME ZONE '2025-01-23T13:11:12Z');
+INSERT INTO tb_cash_movement (cash_register_id, cash_movement_type, description, timestamp) VALUES ( 2, 'CLOSING_BALANCE', 'Fechamento de caixa - Usuário:2', TIMESTAMP WITH TIME ZONE '2025-01-23T13:11:25Z');
 
 -- -- Insert MovementDetail for CashMovement 2
-INSERT INTO tb_movement_detail (id, cash_movement_id, movement_type, amount) VALUES (6, 5, 'MONEY', 400.50);
-INSERT INTO tb_movement_detail (id, cash_movement_id, movement_type, amount) VALUES (7, 6, 'MONEY', 50.00);
-INSERT INTO tb_movement_detail (id, cash_movement_id, movement_type, amount) VALUES (8, 7, 'DEBIT_CARD', 50.99);
-INSERT INTO tb_movement_detail (id, cash_movement_id, movement_type, amount) VALUES (9, 7, 'CREDIT_CARD', 50.00);
-INSERT INTO tb_movement_detail (id, cash_movement_id, movement_type, amount) VALUES (10, 8, 'MONEY', 200.00);
-INSERT INTO tb_movement_detail (id, cash_movement_id, movement_type, amount) VALUES (11, 8, 'PIX', 300.00);
-INSERT INTO tb_movement_detail (id, cash_movement_id, movement_type, amount) VALUES (12, 8, 'DEBIT_CARD', 200.00);
-INSERT INTO tb_movement_detail (id, cash_movement_id, movement_type, amount) VALUES (13, 8, 'CREDIT_CARD', 1000.00);
-INSERT INTO tb_movement_detail (id, cash_movement_id, movement_type, amount) VALUES (14, 9, 'MONEY', -150.00);
-INSERT INTO tb_movement_detail (id, cash_movement_id, movement_type, amount) VALUES (15, 10, 'MONEY', -150.00);
+INSERT INTO tb_movement_detail (cash_movement_id, movement_type, amount) VALUES (5, 'MONEY', 400.50);
+INSERT INTO tb_movement_detail (cash_movement_id, movement_type, amount) VALUES (6, 'MONEY', 50.00);
+INSERT INTO tb_movement_detail (cash_movement_id, movement_type, amount) VALUES (7, 'DEBIT_CARD', 50.99);
+INSERT INTO tb_movement_detail (cash_movement_id, movement_type, amount) VALUES (7, 'CREDIT_CARD', 50.00);
+INSERT INTO tb_movement_detail (cash_movement_id, movement_type, amount) VALUES (8, 'MONEY', 200.00);
+INSERT INTO tb_movement_detail (cash_movement_id, movement_type, amount) VALUES (8, 'PIX', 300.00);
+INSERT INTO tb_movement_detail (cash_movement_id, movement_type, amount) VALUES (8, 'DEBIT_CARD', 200.00);
+INSERT INTO tb_movement_detail (cash_movement_id, movement_type, amount) VALUES (8, 'CREDIT_CARD', 1000.00);
+INSERT INTO tb_movement_detail (cash_movement_id, movement_type, amount) VALUES (9, 'MONEY', -150.00);
+INSERT INTO tb_movement_detail (cash_movement_id, movement_type, amount) VALUES (10, 'MONEY', -150.00);
 
 -- -- Insert CashMovement for CashRegister 3
-INSERT INTO tb_cash_movement (id, cash_register_id, cash_movement_type, description, timestamp) VALUES (11, 3, 'OPENING_BALANCE', 'Abertura de caixa - Usuário:2', TIMESTAMP WITH TIME ZONE '2025-01-23T13:11:35Z');
-INSERT INTO tb_cash_movement (id, cash_register_id, cash_movement_type, description, timestamp) VALUES (12, 3, 'SALE', 'Venda - Pedido: 16 - Pagamento: 4', TIMESTAMP WITH TIME ZONE '2025-01-23T13:13:10Z');
+INSERT INTO tb_cash_movement (cash_register_id, cash_movement_type, description, timestamp) VALUES (3, 'OPENING_BALANCE', 'Abertura de caixa - Usuário:2', TIMESTAMP WITH TIME ZONE '2025-01-23T13:11:35Z');
+INSERT INTO tb_cash_movement (cash_register_id, cash_movement_type, description, timestamp) VALUES (3, 'SALE', 'Venda - Pedido: 16 - Pagamento: 4', TIMESTAMP WITH TIME ZONE '2025-01-23T13:13:10Z');
 
 -- -- Insert MovementDetail for CashMovement 3
-INSERT INTO tb_movement_detail (id, cash_movement_id, movement_type, amount) VALUES (16, 11, 'MONEY', 400.50);
-INSERT INTO tb_movement_detail (id, cash_movement_id, movement_type, amount) VALUES (17, 12, 'MONEY', 210.00);
-INSERT INTO tb_movement_detail (id, cash_movement_id, movement_type, amount) VALUES (18, 12, 'PIX', 130.00);
-INSERT INTO tb_movement_detail (id, cash_movement_id, movement_type, amount) VALUES (19, 12, 'CREDIT_CARD', 2000.00);
+INSERT INTO tb_movement_detail (cash_movement_id, movement_type, amount) VALUES (11, 'MONEY', 400.50);
+INSERT INTO tb_movement_detail (cash_movement_id, movement_type, amount) VALUES (12, 'MONEY', 210.00);
+INSERT INTO tb_movement_detail (cash_movement_id, movement_type, amount) VALUES (12, 'PIX', 130.00);
+INSERT INTO tb_movement_detail (cash_movement_id, movement_type, amount) VALUES (12, 'CREDIT_CARD', 2000.00);
 
 -- -- Insert Payment
 INSERT INTO tb_Payment (cash_register_id, order_id, moment) VALUES (1, 1, TIMESTAMP WITH TIME ZONE '2025-01-23T11:05:31Z');

@@ -12,29 +12,26 @@ import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.Value;
 import rccommerce.entities.CashMovement;
 import rccommerce.entities.MovementDetail;
 
 @Builder
 @AllArgsConstructor
 @Getter
-@Value
 public class CashMovementDTO {
 
-    private Long id;
+    private final Long id;
 
     @NotNull(message = "O tipo de movimento não pode ser nulo.")
-    private String cashMovementType;
+    private final String cashMovementType;
 
-    @Builder.Default
     @NotEmpty(message = "A lista de pagamentos não pode ser nula ou vazia.")
     @Valid // Valida cada elemento da lista de acordo com as regras em MovementDetailDTO
-    private List<MovementDetailDTO> movementDetails = new ArrayList<>();
+    private final List<MovementDetailDTO> movementDetails;
 
-    private String description;
-    private Instant timestamp;
-    private CashRegisterDTO cashRegisterDTO;
+    private final String description;
+    private final Instant timestamp;
+    private final CashRegisterDTO cashRegisterDTO;
 
     public CashMovementDTO(CashMovement entity) {
         this.id = entity.getId();

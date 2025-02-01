@@ -35,13 +35,6 @@ public class ClientController {
     private ClientService service;
 
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_OPERATOR', 'ROLE_SELLER', 'ROLE_CLIENT')")
-    @GetMapping(value = "/all")
-    public ResponseEntity<Page<ClientMinDTO>> findAll(Pageable pageable) {
-        Page<ClientMinDTO> dto = service.findAll(pageable);
-        return ResponseEntity.ok(dto);
-    }
-
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_OPERATOR', 'ROLE_SELLER', 'ROLE_CLIENT')")
     @GetMapping(value = "/search")
     public ResponseEntity<Page<ClientMinDTO>> searchEntity(
             @ValidId @RequestParam(defaultValue = "") String id,
