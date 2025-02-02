@@ -8,6 +8,7 @@ import rccommerce.dto.ClientDTO;
 import rccommerce.dto.OperatorDTO;
 import rccommerce.dto.UserDTO;
 import rccommerce.dto.UserMinDTO;
+import rccommerce.entities.Address;
 import rccommerce.entities.Client;
 import rccommerce.entities.Operator;
 import rccommerce.entities.Permission;
@@ -18,7 +19,10 @@ import rccommerce.projections.UserDetailsProjection;
 public class FactoryUser {
 
     public static User createUser() {
-        User user = new User(6L, "Robert Black", "robert@gmail.com", "Rc-1234");
+        User user = new User(6L, "Administrador", "admin@gmail.com", "123456");
+        user.addRole(createRoleAdmin());
+        user.addRole(createRoleOperator());
+        user.addPermission(createPermissionAll());
         return user;
     }
 
@@ -98,9 +102,10 @@ public class FactoryUser {
     }
 
     public static Client createClient() {
-        Client client = new Client(7L, "Ana Pink", "ana@gmail.com", "An-1234", "59395734019");
+        Client client = new Client(7L, "Maria Pink", "maria@gmail.com", "An-1234", "59395734019");
         client.addRole(createRoleClient());
         client.addPermission(createPermissionNone());
+        client.addAddresses(createAddress());
         return client;
     }
 
@@ -111,6 +116,18 @@ public class FactoryUser {
     public static ClientDTO createClientDTO(Client client) {
         ClientDTO clientDto = new ClientDTO(client);
         return clientDto;
+    }
+
+    public static User createUserWithRolesAndPermissions() {
+        User user = new User(1L, "Admin Test", "admin.test@gmail.com", "123456");
+        user.addRole(createRoleAdmin());
+        user.addRole(createRoleOperator());
+        user.addPermission(createPermissionAll());
+        return user;
+    }
+
+    public static Address createAddress() {
+        return new Address(1L, "Main Street", "123", "Apt 4B", "12345-678", "City", "State", "Country", null, null);
     }
 }
 

@@ -1,5 +1,12 @@
 package rccommerce.controllers.it;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import java.math.BigDecimal;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -10,12 +17,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -43,13 +44,13 @@ public class OperatorControllerIT {
     private String userAdminEmail, userAdminPassword, nameAdmin, userSellerEmail, userSellerPassword;
     private String existsOperatorName, existsOperatorEmail, nonExistsOperatorName, nonExistsOperatorEmail, emailUnique;
 
-    private long existingId, nonExistingId, idAdmin;
+    private long existingId, nonExistingId;
     private Integer sizeOperator;
     private Operator operator;
     private OperatorDTO operatorDTO;
 
     @BeforeEach
-    void setUp() throws Exception {
+    public void setUp() throws Exception {
         userAdminEmail = "admin@gmail.com";
         userAdminPassword = "123456";
         userSellerEmail = "alex@gmail.com";
@@ -66,11 +67,10 @@ public class OperatorControllerIT {
         existingId = 3L;
         roleSeller = "ROLE_SELLER";
         nonExistingId = 100L;
-        idAdmin = 1L;
         nameAdmin = "Administrador";
         roleAdmin = "ROLE_ADMIN";
 
-        sizeOperator = 3;
+        sizeOperator = 4;
 
         adminToken = tokenUtil.obtainAccessToken(mockMvc, userAdminEmail, userAdminPassword);
         sellerToken = tokenUtil.obtainAccessToken(mockMvc, userSellerEmail, userSellerPassword);
@@ -336,7 +336,7 @@ public class OperatorControllerIT {
 
     @Test
     public void insertShouldReturnUnprocessableEntityWhenAdminLoggedAndInvalidPassword() throws Exception {
-        operator.setPassword("12A34B");;
+        operator.setPassword("12A34B");
         operator.addRole(FactoryUser.createRoleOperator());
         operatorDTO = FactoryUser.createOperatorDTO(operator);
         String jsonBody = objectMapper.writeValueAsString(operatorDTO);

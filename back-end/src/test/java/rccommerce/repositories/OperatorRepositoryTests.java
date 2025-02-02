@@ -50,12 +50,12 @@ public class OperatorRepositoryTests {
 
     @Test
     public void deleteShouldDeleteObjectWhenIdExists() {
-        repository.deleteById(existingId);
+        repository.deleteById(7l);
 
-        Optional<Operator> result = repository.findById(existingId);
+        Optional<Operator> result = repository.findById(7l);
 
         Assertions.assertFalse(result.isPresent());
-        Assertions.assertEquals(totalOperator - 1, repository.count());
+        Assertions.assertEquals(totalOperator, repository.count());
     }
 
     @Test

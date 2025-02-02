@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.hibernate.validator.constraints.br.CNPJ;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -27,6 +28,7 @@ public class SuplierDTO {
     @CNPJ
     private String cnpj;
 
+    @Valid
     private List<AddressDTO> addresses = new ArrayList<>();
 
     public SuplierDTO(Suplier entity) {

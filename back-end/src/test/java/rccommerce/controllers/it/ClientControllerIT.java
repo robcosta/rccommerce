@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import rccommerce.dto.ClientDTO;
 import rccommerce.entities.Client;
+import rccommerce.tests.FactoryClient;
 import rccommerce.tests.FactoryUser;
 import rccommerce.tests.TokenUtil;
 
@@ -42,30 +43,30 @@ public class ClientControllerIT {
     private String existsClientName, existsClientEmail, existsClientCpf, existsEmail;
     private String nonExistsClientName, nonExistsClientEmail, nonExistsClientCpf;
 
-    private long existingId, nonExistingId, existingUpdateId;
+    private long existsClientId, nonExistingId, existingUpdateId;
 
     private Client client;
     private ClientDTO clientDTO;
 
     @BeforeEach
-    void setUp() throws Exception {
+    public void setUp() throws Exception {
         userAdminEmail = "admin@gmail.com";
         userAdminPassword = "123456";
         userClientEmail = "maria@gmail.com";
         userClientPassword = "123456";
 
+        existsClientId = 5L;
         existsClientName = "Maria Yellow";
         existsClientEmail = "maria@gmail.com";
-        existsClientCpf = "46311990083";
+        existsClientCpf = "463.119.900-83";
 
         nonExistsClientName = "Peter Black";
         nonExistsClientEmail = "other@gmail.com";
-        nonExistsClientCpf = "37730902001";
+        nonExistsClientCpf = "10628198027";
 
         existsEmail = "bob@gmail.com";
 
-        existingId = 4L;
-        existingUpdateId = 5L;
+        existingUpdateId = 8L;
         nonExistingId = 100L;
 
         adminToken = tokenUtil.obtainAccessToken(mockMvc, userAdminEmail, userAdminPassword);
@@ -84,7 +85,7 @@ public class ClientControllerIT {
                 .accept(MediaType.APPLICATION_JSON));
 
         resultActions.andExpect(status().isOk());
-        resultActions.andExpect(jsonPath("$.content.size()").value(3));
+        resultActions.andExpect(jsonPath("$.content.size()").value(4));
         resultActions.andExpect(jsonPath("$.content[0].id").value(4L));
         resultActions.andExpect(jsonPath("$.content[0].name").value("Venda ao Consumidor"));
         resultActions.andExpect(jsonPath("$.content[0].email").value("venda@gmail.com"));
@@ -94,31 +95,30 @@ public class ClientControllerIT {
     @Test
     public void searchEntityShouldReturnPageWhenValidTokenParamEmpty() throws Exception {
 
-        ResultActions resultActions = mockMvc.perform(get("/clients/search?id={id}&name={name}&email={email}&cpf={cpf}", "", "", "", "")
+        ResultActions resultActions = mockMvc.perform(get("/clients/search?sort=id&id={id}&name={name}&email={email}&cpf={cpf}", "", "", "", "")
                 .header("Authorization", "Bearer " + adminToken)
                 .accept(MediaType.APPLICATION_JSON));
 
         resultActions.andExpect(status().isOk());
-        resultActions.andExpect(jsonPath("$.content[0].id").value(existingUpdateId));
-        resultActions.andExpect(jsonPath("$.content[0].name").value(existsClientName));
-        resultActions.andExpect(jsonPath("$.content[0].email").value(existsClientEmail));
+        resultActions.andExpect(jsonPath("$.content[0].id").value(4L));
+        resultActions.andExpect(jsonPath("$.content[0].name").value("Venda ao Consumidor"));
+        resultActions.andExpect(jsonPath("$.content[0].email").value("venda@gmail.com"));
         resultActions.andExpect(jsonPath("$.content[0].roles[0]").value(roleClient));
-        resultActions.andExpect(jsonPath("$.totalElements").value(3));
+        resultActions.andExpect(jsonPath("$.totalElements").value(4));
     }
 
     @Test
     public void searchEntityShouldReturnPageWhenValidTokenAndIdParamExisting() throws Exception {
 
-        ResultActions resultActions = mockMvc.perform(get("/clients/search?id={id}", existingUpdateId)
+        ResultActions resultActions = mockMvc.perform(get("/clients/search?id={id}", existsClientId)
                 .header("Authorization", "Bearer " + adminToken)
                 .accept(MediaType.APPLICATION_JSON));
 
         resultActions.andExpect(status().isOk());
-        resultActions.andExpect(jsonPath("$.content[0].id").value(existingUpdateId));
+        resultActions.andExpect(jsonPath("$.content[0].id").value(existsClientId));
         resultActions.andExpect(jsonPath("$.content[0].name").value(existsClientName));
         resultActions.andExpect(jsonPath("$.content[0].email").value(existsClientEmail));
         resultActions.andExpect(jsonPath("$.content[0].roles[0]").value(roleClient));
-
     }
 
     @Test
@@ -129,11 +129,10 @@ public class ClientControllerIT {
                 .accept(MediaType.APPLICATION_JSON));
 
         resultActions.andExpect(status().isOk());
-        resultActions.andExpect(jsonPath("$.content[0].id").value(5L));
+        resultActions.andExpect(jsonPath("$.content[0].id").value(existsClientId));
         resultActions.andExpect(jsonPath("$.content[0].name").value(existsClientName));
         resultActions.andExpect(jsonPath("$.content[0].email").value(existsClientEmail));
         resultActions.andExpect(jsonPath("$.content[0].roles[0]").value(roleClient));
-
     }
 
     @Test
@@ -144,7 +143,7 @@ public class ClientControllerIT {
                 .accept(MediaType.APPLICATION_JSON));
 
         resultActions.andExpect(status().isOk());
-        resultActions.andExpect(jsonPath("$.content[0].id").value(5L));
+        resultActions.andExpect(jsonPath("$.content[0].id").value(existsClientId));
         resultActions.andExpect(jsonPath("$.content[0].name").value(existsClientName));
         resultActions.andExpect(jsonPath("$.content[0].email").value(existsClientEmail));
         resultActions.andExpect(jsonPath("$.content[0].roles[0]").value(roleClient));
@@ -154,14 +153,15 @@ public class ClientControllerIT {
     @Test
     public void searchEntityShouldReturnPageWhenValidTokenAndCpfParamExisitng() throws Exception {
 
-        ResultActions resultActions = mockMvc.perform(get("/clients/search?cpf={cpf}", existsClientCpf)
+        ResultActions resultActions = mockMvc.perform(get("/clients/search?cpf={cpf}", "46311990083")
                 .header("Authorization", "Bearer " + adminToken)
                 .accept(MediaType.APPLICATION_JSON));
 
         resultActions.andExpect(status().isOk());
-        resultActions.andExpect(jsonPath("$.content[0].id").value(5L));
+        resultActions.andExpect(jsonPath("$.content[0].id").value(existsClientId));
         resultActions.andExpect(jsonPath("$.content[0].name").value(existsClientName));
         resultActions.andExpect(jsonPath("$.content[0].email").value(existsClientEmail));
+        resultActions.andExpect(jsonPath("$.content[0].cpf").value(existsClientCpf));
         resultActions.andExpect(jsonPath("$.content[0].roles[0]").value(roleClient));
 
     }
@@ -209,15 +209,15 @@ public class ClientControllerIT {
     @Test
     public void findByIdShoulReturClientMinDTOWhenValidTokenAndExistsId() throws Exception {
 
-        ResultActions resultActions = mockMvc.perform(get("/clients/{id}", existingId)
+        ResultActions resultActions = mockMvc.perform(get("/clients/{id}", existsClientId)
                 .header("Authorization", "Bearer " + adminToken)
                 .accept(MediaType.APPLICATION_JSON));
 
         resultActions.andExpect(status().isOk());
-        resultActions.andExpect(jsonPath("$.id").value(existingId));
-        resultActions.andExpect(jsonPath("$.name").value("Venda ao Consumidor"));
-        resultActions.andExpect(jsonPath("$.cpf").value("739.958.080-42"));
-        resultActions.andExpect(jsonPath("$.email").value("venda@gmail.com"));
+        resultActions.andExpect(jsonPath("$.id").value(existsClientId));
+        resultActions.andExpect(jsonPath("$.name").value(existsClientName));
+        resultActions.andExpect(jsonPath("$.cpf").value(existsClientCpf));
+        resultActions.andExpect(jsonPath("$.email").value(existsClientEmail));
         resultActions.andExpect(jsonPath("$.roles[0]").value(roleClient));
     }
 
@@ -234,7 +234,7 @@ public class ClientControllerIT {
     @Test
     public void findByIdShoulReturUnaauthorizedWhenInvalidToken() throws Exception {
 
-        ResultActions resultActions = mockMvc.perform(get("/clients/{id}", existingId)
+        ResultActions resultActions = mockMvc.perform(get("/clients/{id}", existsClientId)
                 .header("Authorization", "Bearer " + invalidToken)
                 .accept(MediaType.APPLICATION_JSON));
 
@@ -350,7 +350,7 @@ public class ClientControllerIT {
 
     @Test
     public void updateShouldReturnClientMinDTOWhenAdminLoggedAndAllDataIsValid() throws Exception {
-        clientDTO = FactoryUser.createClientDTO(client);
+        clientDTO = FactoryClient.createClientDTO(client);
         String jsonBody = objectMapper.writeValueAsString(clientDTO);
 
         String expectedName = client.getName();
@@ -370,11 +370,11 @@ public class ClientControllerIT {
     }
 
     @Test
-    public void updateShouldReturnForbiddenWhenClientLoggedAndDataIsValidAndSelfId() throws Exception {
+    public void updateShouldReturnOkWhenClientLoggedAndDataIsValidAndSelfId() throws Exception {
         clientDTO = FactoryUser.createClientDTO(client);
         String jsonBody = objectMapper.writeValueAsString(clientDTO);
 
-        ResultActions resultActions = mockMvc.perform(put("/clients/{id}", existingUpdateId)
+        ResultActions resultActions = mockMvc.perform(put("/clients/{id}", 5L)
                 .header("Authorization", "Bearer " + clientToken)
                 .content(jsonBody)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -388,13 +388,13 @@ public class ClientControllerIT {
         clientDTO = FactoryUser.createClientDTO(client);
         String jsonBody = objectMapper.writeValueAsString(clientDTO);
 
-        ResultActions resultActions = mockMvc.perform(put("/clients/{id}", existingId)
+        ResultActions resultActions = mockMvc.perform(put("/clients/{id}", 6L)
                 .header("Authorization", "Bearer " + clientToken)
                 .content(jsonBody)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON));
 
-        resultActions.andExpect(status().isBadRequest());
+        resultActions.andExpect(status().isForbidden());
     }
 
     @Test

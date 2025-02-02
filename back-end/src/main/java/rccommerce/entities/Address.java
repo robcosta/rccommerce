@@ -16,6 +16,8 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import rccommerce.dto.AddressDTO;
+import rccommerce.util.StringCapitalize;
 
 @Builder
 @Entity
@@ -61,11 +63,43 @@ public class Address {
     @JoinColumn(name = "suplier_id", nullable = true)
     private Suplier suplier;
 
-    public void setState(String state) {
-        this.state = state.toUpperCase();
+    public void setStreet(String street) {
+        this.street = StringCapitalize.words(street);
     }
 
-    public void setVipCode(String zipCode) {
-        this.zipCode = zipCode.replaceAll("[^0-9]", "");
+    public void setNumber(String number) {
+        this.number = number != null ? number.toUpperCase() : null;
+    }
+
+    public void setComplement(String complement) {
+        this.complement = complement != null ? StringCapitalize.words(complement) : null;
+    }
+
+    public void setDistrict(String district) {
+        this.district = StringCapitalize.words(district);
+    }
+
+    public void setCity(String city) {
+        this.city = StringCapitalize.words(city);
+    }
+
+    public void setState(String state) {
+        this.state = state != null ? state.toUpperCase() : null;
+    }
+
+    public void setZipCode(String zipCode) {
+        this.zipCode = zipCode != null ? zipCode.replaceAll("[^0-9]", "") : null;
+    }
+
+    public static Address createAddress(AddressDTO dto) {
+        Address address = new Address();
+        address.setStreet(dto.getStreet());
+        address.setNumber(dto.getNumber());
+        address.setComplement(dto.getComplement());
+        address.setDistrict(dto.getDistrict());
+        address.setCity(dto.getCity());
+        address.setState(dto.getState());
+        address.setZipCode(dto.getZipCode());
+        return address;
     }
 }

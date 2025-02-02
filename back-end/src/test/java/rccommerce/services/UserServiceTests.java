@@ -1,7 +1,5 @@
 package rccommerce.services;
 
-import static org.mockito.Mockito.when;
-
 import java.util.List;
 import java.util.Optional;
 
@@ -12,18 +10,15 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import static org.mockito.Mockito.when;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import rccommerce.dto.UserMinDTO;
 import rccommerce.entities.User;
-import rccommerce.projections.UserDetailsProjection;
-import rccommerce.repositories.RoleRepository;
 import rccommerce.repositories.UserRepository;
 import rccommerce.services.exceptions.ResourceNotFoundException;
 import rccommerce.tests.FactoryUser;
@@ -39,9 +34,6 @@ public class UserServiceTests {
     private UserRepository repository;
 
     @Mock
-    private RoleRepository roleRepository;
-
-    @Mock
     private CustomUserUtil userUtil;
 
     private String existsUsername, nonExistsUsername;
@@ -50,11 +42,10 @@ public class UserServiceTests {
     private Long existsId, nonExistsId;
     private User user;
     private Pageable pageable;
-    private List<UserDetailsProjection> userDetails;
     private UserService serviceSpy;
 
     @BeforeEach
-    void setUp() throws Exception {
+    public void setUp() throws Exception {
         user = FactoryUser.createUser();
         pageable = PageRequest.of(0, 10);
         existsUsername = user.getEmail();
@@ -66,7 +57,6 @@ public class UserServiceTests {
         emptyEmail = "";
         existsId = user.getId();
         nonExistsId = 100L;
-        userDetails = FactoryUser.createUserDetails();
         emptyNameUser = "";
 
         serviceSpy = Mockito.spy(service);
@@ -75,9 +65,9 @@ public class UserServiceTests {
 
     @Test
     public void loadUserByUsernameShouldReturnUserDetailsWhenUserExist() {
-        Mockito.when(repository.searchUserRolesAndPermissionsByEmail(existsUsername)).thenReturn(userDetails);
+        Mockito.when(repository.searchUserRolesAndPermissionsByEmail(existsUsername)).thenReturn(Optional.of(user));
 
-        UserDetails result = service.loadUserByUsername(existsUsername);
+        User result = service.loadUserByUsername(existsUsername);
 
         Assertions.assertNotNull(result);
         Assertions.assertEquals(user.getUsername(), result.getUsername());
@@ -85,17 +75,18 @@ public class UserServiceTests {
 
     @Test
     public void loadUserByUsernameShouldTrowUsernameNotFoundExceptionWhenDoesNotExistUser() {
-        Mockito.when(repository.searchUserRolesAndPermissionsByEmail(nonExistsUsername)).thenReturn(List.of());
+        Mockito.when(repository.searchUserRolesAndPermissionsByEmail(nonExistsUsername)).thenReturn(Optional.empty());
 
-        Assertions.assertThrows(UsernameNotFoundException.class, () -> {
+        ResourceNotFoundException exception = Assertions.assertThrows(ResourceNotFoundException.class, () -> {
             service.loadUserByUsername(nonExistsUsername);
         });
+        Assertions.assertEquals("Usuário não encontrado: " + nonExistsUsername, exception.getMessage());
     }
 
     @Test
     public void authenticatedShouldReturnUserWhenUserExixts() {
         when(userUtil.getLoggerUsername()).thenReturn(existsUsername);
-        when(repository.searchEmail(existsUsername)).thenReturn(Optional.of(user));
+        when(repository.searchUserRolesAndPermissionsByEmail(existsUsername)).thenReturn(Optional.of(user));
 
         User result = service.authenticated();
 
@@ -104,17 +95,18 @@ public class UserServiceTests {
     }
 
     @Test
-    public void authenticatedShouldThrowUsernameNotFoundExceptionWhenDoesNotExixtUser() {
-        Mockito.doThrow(ClassCastException.class).when(userUtil).getLoggerUsername();
-        Mockito.when(repository.findByEmail(nonExistsUsername)).thenReturn(Optional.empty());
+    public void authenticatedShouldThrowResourceNotFoundExceptionWhenDoesNotExixtUser() {
+        when(repository.searchUserRolesAndPermissionsByEmail(nonExistsUsername)).thenReturn(Optional.empty());
 
-        Assertions.assertThrows(UsernameNotFoundException.class, () -> {
+        ResourceNotFoundException exception = Assertions.assertThrows(ResourceNotFoundException.class, () -> {
             service.authenticated();
         });
+        Assertions.assertEquals("Usuário não encontrado: null", exception.getMessage());
     }
 
     @Test
-    public void getMeShouldReturnUserDTOWhenUserAuthenticated() {
+    public void getMeShouldReturnUserMinDTOWhenUserAuthenticated() {
+        // Mockito.when(repository.searchUserRolesAndPermissionsByEmail(existsUsername)).thenReturn(Optional.of(user));
         Mockito.doReturn(user).when(serviceSpy).authenticated();
 
         UserMinDTO result = serviceSpy.getMe();
@@ -125,22 +117,24 @@ public class UserServiceTests {
 
     @Test
     public void getMeShouldThrowUsernameNotFoundExceptionWhenUserDoesNotAuthenticated() {
-        Mockito.doThrow(UsernameNotFoundException.class).when(serviceSpy).authenticated();
+        Mockito.doThrow(ResourceNotFoundException.class).when(serviceSpy).authenticated();
 
-        Assertions.assertThrows(UsernameNotFoundException.class, () -> {
+        ResourceNotFoundException exception = Assertions.assertThrows(ResourceNotFoundException.class, () -> {
             service.getMe();
         });
+        Assertions.assertNotNull(exception.getMessage());
     }
 
     @Test
     public void findAllShouldReturnPagedUserMinDTOWhenEmptyNameAndEmail() {
+
         Mockito.when(repository.searchAll(emptyNameUser, emptyEmail, pageable))
                 .thenReturn(new PageImpl<>(List.of(user, user, user)));
 
-        Page<UserMinDTO> result = service.searchEntity(emptyNameUser, emptyEmail, pageable);
+        Page<UserMinDTO> result = serviceSpy.searchEntity(emptyNameUser, emptyEmail, pageable);
 
         Assertions.assertFalse(result.isEmpty());
-        Assertions.assertEquals(3L, result.getSize());
+        Assertions.assertEquals(3, result.getSize());
         Assertions.assertEquals(existsNameUser, result.toList().get(0).getName());
         Assertions.assertEquals(existsEmail, result.toList().get(1).getEmail());
     }
@@ -160,12 +154,12 @@ public class UserServiceTests {
     @Test
     public void findAllShouldReturnPagedUserMinDTOWhenEmptyNameAndNotEmptyEmail() {
         Mockito.when(repository.searchAll(emptyNameUser, existsEmail, pageable))
-                .thenReturn(new PageImpl<>(List.of(user, user, user)));
+                .thenReturn(new PageImpl<>(List.of(user)));
 
         Page<UserMinDTO> result = service.searchEntity(emptyNameUser, existsEmail, pageable);
 
         Assertions.assertFalse(result.isEmpty());
-        Assertions.assertEquals(3, result.getSize());
+        Assertions.assertEquals(1, result.getSize());
         Assertions.assertEquals(existsEmail, result.toList().get(0).getEmail());
     }
 
@@ -187,19 +181,23 @@ public class UserServiceTests {
         Mockito.when(repository.searchAll(nonExistsNameUser, emptyEmail, pageable))
                 .thenReturn(new PageImpl<>(List.of()));
 
-        Assertions.assertThrows(ResourceNotFoundException.class, () -> {
+        ResourceNotFoundException exception = Assertions.assertThrows(ResourceNotFoundException.class, () -> {
             service.searchEntity(nonExistsNameUser, emptyEmail, pageable);
         });
+        Assertions.assertEquals("Recurso não encontrado", exception.getMessage());
     }
 
     @Test
     public void findAllShouldTrhowResouceNotFoundExceptionWhenDoesNotExistsEmail() {
-        Mockito.when(repository.searchAll(emptyNameUser, nonExistsEmail, pageable))
+        when(userUtil.getLoggerUsername()).thenReturn(existsUsername);
+        when(repository.searchUserRolesAndPermissionsByEmail(existsUsername)).thenReturn(Optional.of(user));
+        when(repository.searchAll(emptyNameUser, nonExistsEmail, pageable))
                 .thenReturn(new PageImpl<>(List.of()));
 
-        Assertions.assertThrows(ResourceNotFoundException.class, () -> {
+        ResourceNotFoundException exception = Assertions.assertThrows(ResourceNotFoundException.class, () -> {
             service.searchEntity(emptyNameUser, nonExistsEmail, pageable);
         });
+        Assertions.assertEquals("Recurso não encontrado", exception.getMessage());
     }
 
     @Test
@@ -207,9 +205,10 @@ public class UserServiceTests {
         Mockito.when(repository.searchAll(nonExistsNameUser, nonExistsEmail, pageable))
                 .thenReturn(new PageImpl<>(List.of()));
 
-        Assertions.assertThrows(ResourceNotFoundException.class, () -> {
+        ResourceNotFoundException exception = Assertions.assertThrows(ResourceNotFoundException.class, () -> {
             service.searchEntity(nonExistsNameUser, nonExistsEmail, pageable);
         });
+        Assertions.assertEquals("Recurso não encontrado", exception.getMessage());
     }
 
     @Test
@@ -225,18 +224,17 @@ public class UserServiceTests {
 
     @Test
     public void findByIdShouldThrowResourceNotFoundExceptionWhenDoesNotExistsId() {
-        Mockito.doThrow(ResourceNotFoundException.class)
-                .when(repository)
-                .findById(nonExistsId);
+        Mockito.when(repository.findById(nonExistsId)).thenReturn(Optional.empty());
 
-        Assertions.assertThrows(ResourceNotFoundException.class, () -> {
+        ResourceNotFoundException exception = Assertions.assertThrows(ResourceNotFoundException.class, () -> {
             service.findById(nonExistsId);
         });
+        Assertions.assertEquals("Usuário não encontrado: " + nonExistsId, exception.getMessage());
     }
 
     @Test
     public void findByEmailShouldReturnUserMinDTOWhenExistsEmail() {
-        Mockito.when(repository.findByEmail(existsEmail)).thenReturn(Optional.of(user));
+        Mockito.when(repository.searchUserRolesAndPermissionsByEmail(existsEmail)).thenReturn(Optional.of(user));
 
         UserMinDTO result = service.findByEmail(existsEmail);
 
@@ -247,12 +245,12 @@ public class UserServiceTests {
 
     @Test
     public void findByEmailShouldThrowResourceNotFoundExceptionWhenDoesNotExistsEmail() {
-        Mockito.doThrow(ResourceNotFoundException.class)
-                .when(repository)
-                .findByEmail(nonExistsEmail);
+        Mockito.when(repository.searchUserRolesAndPermissionsByEmail(nonExistsEmail))
+                .thenReturn(Optional.empty());
 
-        Assertions.assertThrows(ResourceNotFoundException.class, () -> {
+        ResourceNotFoundException exception = Assertions.assertThrows(ResourceNotFoundException.class, () -> {
             service.findByEmail(nonExistsEmail);
         });
+        Assertions.assertEquals("Usuário não encontrado: " + nonExistsEmail, exception.getMessage());
     }
 }

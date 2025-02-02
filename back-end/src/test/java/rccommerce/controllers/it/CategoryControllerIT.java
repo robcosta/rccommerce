@@ -41,7 +41,6 @@ public class CategoryControllerIT {
     private String adminToken, invalidToken;
     private String userAdminEmail, userAdminPassword;
     private String existsCategoryName;
-    private String nonExistsCategoryName;
 
     private long existingId, nonExistingId, existingUpdateId;
     private Integer countCategory;
@@ -49,13 +48,11 @@ public class CategoryControllerIT {
     private ProductCategoryDTO categoryDTO;
 
     @BeforeEach
-    void setUp() throws Exception {
+    public void setUp() throws Exception {
         userAdminEmail = "admin@gmail.com";
         userAdminPassword = "123456";
 
         existsCategoryName = "LIVROS";
-
-        nonExistsCategoryName = "MESA";
 
         existingId = 1L;
         existingUpdateId = 3L;

@@ -44,21 +44,19 @@ public class ProductControllerIT {
     // private ProductRepository productRepository;
     private String adminToken, invalidToken;
     private String userAdminEmail, userAdminPassword;
-    private String existsProductName, existsProductreference, nonExistsProductName;
+    private String existsProductName, existsProductreference;
     private Long existingId, existingUpdateId, nonExistingId;
     private Integer countProduct;
     private Product product;
     private ProductDTO productDTO;
 
     @BeforeEach
-    void setUp() throws Exception {
+    public void setUp() throws Exception {
         userAdminEmail = "admin@gmail.com";
         userAdminPassword = "123456";
 
         existsProductName = "The Lord of the Rings";
         existsProductreference = "0000000000017";
-
-        nonExistsProductName = "MESA";
 
         existingId = 1L;
         existingUpdateId = 3L;

@@ -31,7 +31,7 @@ import rccommerce.services.interfaces.Convertible;
 @Getter
 @Setter
 @Entity
-@Table(name = "tb_Product_stock")
+@Table(name = "tb_product_stock")
 public class ProductStock implements Convertible<ProductStockDTO, ProductStockMinDTO> {
 
     @EqualsAndHashCode.Include
@@ -40,7 +40,7 @@ public class ProductStock implements Convertible<ProductStockDTO, ProductStockMi
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "User_id")
+    @JoinColumn(name = "user_id")
     private User user;
 
     @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)

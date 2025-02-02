@@ -56,17 +56,8 @@ public class SuplierService implements GenericService<Suplier, SuplierDTO, Supli
         entity.setCnpj(dto.getCnpj());
 
         entity.getAddresses().clear();
-        for (AddressDTO AdressDTO : dto.getAddresses()) {
-            Address address = Address.builder()
-                    .street(AdressDTO.getStreet())
-                    .number(AdressDTO.getNumber())
-                    .complement(AdressDTO.getComplement())
-                    .district(AdressDTO.getDistrict())
-                    .city(AdressDTO.getCity())
-                    .state(AdressDTO.getState())
-                    .zipCode(AdressDTO.getZipCode())
-                    .build();
-            entity.addAddresses(address);
+        for (AddressDTO addressDTO : dto.getAddresses()) {
+            entity.addAddresses(Address.createAddress(addressDTO));
         }
     }
 

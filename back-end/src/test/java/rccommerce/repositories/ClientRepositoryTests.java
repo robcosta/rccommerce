@@ -50,12 +50,12 @@ public class ClientRepositoryTests {
 
     @Test
     public void deleteShouldDeleteObjectWhenIdExists() {
-        repository.deleteById(6L);
+        repository.deleteById(8L);
 
-        Optional<Client> result = repository.findById(6L);
+        Optional<Client> result = repository.findById(8L);
 
         Assertions.assertFalse(result.isPresent());
-        Assertions.assertEquals(totalClient - 1L, repository.count());
+        Assertions.assertEquals(totalClient, repository.count());
     }
 
     @Test

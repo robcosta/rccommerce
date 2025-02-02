@@ -53,7 +53,7 @@ public class OperatorServiceTests {
     private UserMinDTO adminDTO, operatorDTO;
 
     @BeforeEach
-    void setUp() throws Exception {
+    public void setUp() throws Exception {
         operator = FactoryUser.createOperatorAdmin();
         dto = FactoryUser.createOperatorDTO(operator);
 
@@ -89,7 +89,7 @@ public class OperatorServiceTests {
     public void searchEntityShouldReturnPagedOperatorMinDTO() {
         when(repository.findBy(any(), any())).thenReturn(new PageImpl<>(List.of(operator)));
 
-        Page<OperatorMinDTO> result = serviceSpy.searchEntity(operator.getId(), operator.getName(), operator.getEmail(), pageable);
+        Page<OperatorMinDTO> result = service.searchEntity(operator.getId(), operator.getName(), operator.getEmail(), pageable);
 
         Assertions.assertFalse(result.isEmpty());
         Assertions.assertEquals(1, result.getSize());
@@ -189,104 +189,4 @@ public class OperatorServiceTests {
         });
     }
 
-    // @Test
-    // public void copyDtoToEntityShouldCopyAllDataDtoForOperator(){
-    // dto.getAuths().clear();
-    // dto.getAuths().add("CREATE");
-    // dto.getRoles().clear();
-    // dto.getRoles().add("ROLE_SELLER");
-    // Mockito.when(userService.getMe()).thenReturn(adminDTO);
-    // Mockito.when(roleRepository.findByAuthority(ArgumentMatchers.anyString())).thenReturn(new
-    // Role(null, "ROLE_SELLER"));
-    // Mockito.when(authRepository.findByAuth(ArgumentMatchers.anyString())).thenReturn(new
-    // Verify(null, "CREATE"));
-    // service.copyDtoToEntity(dto, operator);
-    // List<String> resultAuhts = operator.getAuths().stream().map(x ->
-    // x.getAuth()).toList();
-    // List<String> resultRoles = operator.getRoles().stream().map(x ->
-    // x.getAuthority()).toList();
-    // Assertions.assertEquals(dto.getName(), operator.getName());
-    // Assertions.assertEquals(dto.getEmail(), operator.getEmail());
-    // Assertions.assertEquals(dto.getCommission(), operator.getCommission());
-    // Assertions.assertTrue(resultAuhts.contains("CREATE"));
-    // Assertions.assertTrue(resultRoles.contains("ROLE_SELLER"));
-    // }
-    // @Test
-    // public void
-    // copyDtoToEntityShouldCopyAllDataDtoForOperatorWhenEmptyPassword(){
-    // dto.getAuths().clear();
-    // dto.getAuths().add("CREATE");
-    // dto.getRoles().clear();
-    // dto.getRoles().add("ROLE_SELLER");
-    // dto.getPassword().isEmpty();
-    // Mockito.when(userService.getMe()).thenReturn(adminDTO);
-    // Mockito.when(roleRepository.findByAuthority(ArgumentMatchers.anyString())).thenReturn(new
-    // Role(null, "ROLE_SELLER"));
-    // Mockito.when(authRepository.findByAuth(ArgumentMatchers.anyString())).thenReturn(new
-    // Verify(null, "CREATE"));
-    // service.copyDtoToEntity(dto, operator);
-    // List<String> resultAuhts = operator.getAuths().stream().map(x ->
-    // x.getAuth()).toList();
-    // List<String> resultRoles = operator.getRoles().stream().map(x ->
-    // x.getAuthority()).toList();
-    // Assertions.assertEquals(dto.getName(), operator.getName());
-    // Assertions.assertEquals(dto.getEmail(), operator.getEmail());
-    // Assertions.assertEquals(dto.getCommission(), operator.getCommission());
-    // Assertions.assertTrue(resultAuhts.contains("CREATE"));
-    // Assertions.assertTrue(resultRoles.contains("ROLE_SELLER"));
-    // }
-    // @Test
-    // public void
-    // copyDtoToEntityShouldCopyDataDtoForOperatorMinusRolesAndAuthWhenUserLoggerDoesNotAdmin(){
-    // dto.getAuths().clear();
-    // dto.getAuths().add("CREATE");
-    // dto.getRoles().clear();
-    // dto.getRoles().add("ROLE_SELLER");
-    // Mockito.when(userService.getMe()).thenReturn(operatorDTO);
-    // service.copyDtoToEntity(dto, operator);
-    // List<String> resultAuhts = operator.getAuths().stream().map(x ->
-    // x.getAuth()).toList();
-    // List<String> resultRoles = operator.getRoles().stream().map(x ->
-    // x.getAuthority()).toList();
-    // Assertions.assertEquals(dto.getName(), operator.getName());
-    // Assertions.assertEquals(dto.getEmail(), operator.getEmail());
-    // Assertions.assertEquals(dto.getCommission(), operator.getCommission());
-    // Assertions.assertFalse(resultAuhts.contains("CREATE"));
-    // Assertions.assertFalse(resultRoles.contains("ROLE_SELLER"));
-    // }
-    // @Test
-    // public void
-    // copyDtoToEntityShouldThowInvalidArgumentExecptionWhenAuthDoesNotExists(){
-    // dto.getAuths().clear();
-    // dto.getAuths().add("INEXISTENTE");
-    // dto.getRoles().clear();
-    // dto.getRoles().add("ROLE_SELLER");
-    // Mockito.when(userService.getMe()).thenReturn(adminDTO);
-    // Assertions.assertThrows(InvalidArgumentExecption.class, () -> {
-    // service.copyDtoToEntity(dto, operator);
-    // });
-    // }
-    // @Test
-    // public void
-    // copyDtoToEntityShouldThowInvalidArgumentExecptionWhenRoleDoesNotExists(){
-    // dto.getAuths().clear();
-    // dto.getAuths().add("ALL");
-    // dto.getRoles().clear();
-    // dto.getRoles().add("INEXISTENTE");
-    // Mockito.when(userService.getMe()).thenReturn(adminDTO);
-    // Assertions.assertThrows(InvalidArgumentExecption.class, () -> {
-    // service.copyDtoToEntity(dto, operator);
-    // });
-    // }
-    // @Test
-    // public void
-    // copyDtoToEntityShouldThowInvalidArgumentExecptionWhenRoleIsEmpty(){
-    // dto.getAuths().clear();
-    // dto.getAuths().add("ALL");
-    // dto.getRoles().clear();
-    // Mockito.when(userService.getMe()).thenReturn(adminDTO);
-    // Assertions.assertThrows(InvalidArgumentExecption.class, () -> {
-    // service.copyDtoToEntity(dto, operator);
-    // });
-    // }
 }

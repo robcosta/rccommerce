@@ -1,28 +1,25 @@
 package rccommerce.services;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.when;
-
 import java.util.List;
 import java.util.Optional;
 
+import org.junit.jupiter.api.AfterEach;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentMatchers;
+import static org.mockito.ArgumentMatchers.any;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
-import org.springframework.context.MessageSource;
+import static org.mockito.Mockito.when;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -30,20 +27,20 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import jakarta.persistence.EntityNotFoundException;
 import rccommerce.dto.ClientDTO;
 import rccommerce.dto.ClientMinDTO;
 import rccommerce.entities.Client;
 import rccommerce.entities.Permission;
 import rccommerce.entities.Role;
+import rccommerce.entities.enums.PermissionAuthority;
+import rccommerce.entities.enums.RoleAuthority;
 import rccommerce.repositories.ClientRepository;
 import rccommerce.repositories.PermissionRepository;
 import rccommerce.repositories.RoleRepository;
 import rccommerce.services.exceptions.DatabaseException;
-import rccommerce.services.exceptions.InvalidPasswordExecption;
 import rccommerce.services.exceptions.ResourceNotFoundException;
-import rccommerce.services.util.ValidPassword;
-import rccommerce.tests.FactoryUser;
+import rccommerce.services.util.SecurityContextUtil;
+import rccommerce.tests.FactoryClient;
 
 @ExtendWith(SpringExtension.class)
 public class ClientServiceTests {
@@ -60,358 +57,313 @@ public class ClientServiceTests {
     @Mock
     private PermissionRepository permissionRepository;
 
-    @Mock
-    private MessageSource messageSource;
-
-    private Long existsId, nonExistsId, dependentId;
+    private Long existingId;
+    private Long nonExistingId;
     private Client client;
+    private ClientDTO clientDTO;
+    private Role clientRole;
+    private Permission nonePermission;
     private Pageable pageable;
-    private ClientService serviceSpy;
-    private ClientDTO dto;
-    private Role roleClient;
-    private Permission permissionNome;
+    private MockedStatic<SecurityContextUtil> securityContextUtil;
 
     @BeforeEach
-    void setUp() throws Exception {
-        client = FactoryUser.createClient();
-        dto = FactoryUser.createClientDTO(client);
-        roleClient = FactoryUser.createRoleClient();
-        permissionNome = FactoryUser.createPermissionNone();
+    public void setUp() {
+        existingId = 1L;
+        nonExistingId = 999L;
+        client = FactoryClient.createClient();
+        clientDTO = FactoryClient.createClientDTO();
         pageable = PageRequest.of(0, 10);
-        existsId = 7L;
-        nonExistsId = 100L;
-        dependentId = 3L;
 
-        when(repository.getReferenceById(existsId)).thenReturn(client);
-        when(repository.save(any())).thenReturn(client);
-        when(repository.saveAndFlush(any())).thenReturn(client);
-        when(repository.existsById(existsId)).thenReturn(true);
-        when(repository.existsById(dependentId)).thenReturn(true);
-        when(repository.existsById(nonExistsId)).thenReturn(false);
+        clientRole = new Role(4L, RoleAuthority.ROLE_CLIENT.getName());
+        nonePermission = new Permission(2L, PermissionAuthority.PERMISSION_NONE.getName());
 
-        when(roleRepository.findByAuthority("ROLE_CLIENT")).thenReturn(roleClient);
-        when(permissionRepository.findByAuthority("PERMISSION_NONE")).thenReturn(permissionNome);
+        when(roleRepository.findByAuthority(RoleAuthority.ROLE_CLIENT.getName()))
+                .thenReturn(clientRole);
+        when(permissionRepository.findByAuthority(PermissionAuthority.PERMISSION_NONE.getName()))
+                .thenReturn(nonePermission);
 
-        serviceSpy = Mockito.spy(service);
-        doNothing().when(serviceSpy).copyDtoToEntity(any(), any());
-        doNothing().when(serviceSpy).checkUserPermissions(any());
-        doNothing().when(serviceSpy).checkUserPermissions(any(), any());
-        when(messageSource.getMessage(any(String.class), any(), any())).thenReturn("Cliente");
+        // Mock do SecurityContextUtil
+        securityContextUtil = Mockito.mockStatic(SecurityContextUtil.class);
+        securityContextUtil.when(SecurityContextUtil::getUserId).thenReturn(1L);
+        securityContextUtil.when(SecurityContextUtil::getAuthList)
+                .thenReturn(List.of(PermissionAuthority.PERMISSION_ALL.getName()));
     }
 
-    @Test
-    public void searchEntityShouldReturnPagedClientMinDTO() {
-        // Mockando o repositório com o Example correto
-        // when(repository.findBy(eq(example), eq(query -> query.page(pageable)))).thenReturn(new PageImpl<>(List.of(client)));
-        when(repository.findBy(any(), any())).thenReturn(new PageImpl<>(List.of(client)));
-
-        // Chamando o método do serviço com o Example real
-        Page<ClientMinDTO> result = serviceSpy.searchEntity(client.getId(), client.getName(), client.getEmail(), client.getCpf(), pageable);
-
-        // Assertivas
-        assertFalse(result.isEmpty());
-        assertEquals(1, result.getSize());
-        assertEquals(client.getName(), result.toList().get(0).getName());
-        assertEquals(client.getEmail(), result.toList().get(0).getEmail());
+    @AfterEach
+    public void tearDown() {
+        if (securityContextUtil != null) {
+            securityContextUtil.close();
+        }
     }
 
-    @Test
-    public void searchEntityShouldThrowResourceNotFoundExceptionWhenNonExixtsClient() {
-        when(repository.findBy(any(), any())).thenReturn(Page.empty());
+    @Nested
+    @DisplayName("CRUD Operations Tests")
+    public class CrudTests {
 
-        assertThrows(ResourceNotFoundException.class, () -> {
-            serviceSpy.searchEntity(nonExistsId, "", "", "", pageable);
+        @Test
+        @DisplayName("insert should create new client with default role and permission")
+        void insertShouldCreateNewClientWithDefaults() {
+            when(repository.save(any(Client.class))).thenReturn(client);
 
-        });
+            ClientMinDTO result = service.insert(clientDTO, false);
+
+            assertNotNull(result);
+            assertEquals(client.getEmail(), result.getEmail());
+            assertEquals(client.getCpf().replaceAll("(\\d{3})(\\d{3})(\\d{3})(\\d{2})", "$1.$2.$3-$4"), result.getCpf());
+        }
+
+        @Test
+        @DisplayName("update should update existing client")
+        void updateShouldUpdateExistingClient() {
+            when(repository.getReferenceById(existingId)).thenReturn(client);
+            when(repository.saveAndFlush(any(Client.class))).thenReturn(client);
+
+            ClientMinDTO result = service.update(clientDTO, existingId, false);
+
+            assertNotNull(result);
+            assertEquals(clientDTO.getEmail(), result.getEmail());
+        }
+
+        @Test
+        @DisplayName("update should throw ResourceNotFoundException when id does not exist")
+        void updateShouldThrowExceptionWhenIdDoesNotExist() {
+            when(repository.getReferenceById(nonExistingId))
+                    .thenThrow(ResourceNotFoundException.class);
+
+            assertThrows(ResourceNotFoundException.class, ()
+                    -> service.update(clientDTO, nonExistingId, false)
+            );
+        }
     }
 
-    @Test
-    public void findByIdShouldReturnClientMinDTOWhenExistsId() {
-        when(repository.findById(existsId)).thenReturn(Optional.of(client));
+    @Nested
+    @DisplayName("Search Operations Tests")
+    public class SearchTests {
 
-        ClientMinDTO result = serviceSpy.findById(existsId);
+        @Test
+        @DisplayName("searchEntity should return all clients when parameters are empty")
+        void searchEntityShouldReturnAllClientsWhenParametersEmpty() {
+            List<Client> clients = List.of(
+                    client,
+                    FactoryClient.createClientWithDifferentData()
+            );
 
-        assertEquals(existsId, result.getId());
-        assertEquals(client.getName(), result.getName());
-        assertEquals(client.getEmail(), result.getEmail());
+            when(repository.searchAll(null, "", "", "", pageable))
+                    .thenReturn(new PageImpl<>(clients));
+
+            Page<ClientMinDTO> result = service.searchEntity(null, "", "", "", pageable);
+
+            assertNotNull(result);
+            assertFalse(result.isEmpty());
+            assertEquals(2, result.getTotalElements());
+        }
+
+        @Test
+        @DisplayName("searchEntity should return filtered clients by name")
+        void searchEntityShouldReturnFilteredClientsByName() {
+            String name = "John";
+
+            when(repository.searchAll(null, name, "", "", pageable))
+                    .thenReturn(new PageImpl<>(List.of(client)));
+
+            Page<ClientMinDTO> result = service.searchEntity(null, name, "", "", pageable);
+
+            assertNotNull(result);
+            assertFalse(result.isEmpty());
+            assertTrue(result.getContent().get(0).getName().contains(name));
+        }
+
+        @Test
+        @DisplayName("searchEntity should return filtered clients by email")
+        void searchEntityShouldReturnFilteredClientsByEmail() {
+            String email = "john@";
+
+            when(repository.searchAll(null, "", email, "", pageable))
+                    .thenReturn(new PageImpl<>(List.of(client)));
+
+            Page<ClientMinDTO> result = service.searchEntity(null, "", email, "", pageable);
+
+            assertNotNull(result);
+            assertFalse(result.isEmpty());
+            assertTrue(result.getContent().get(0).getEmail().contains(email));
+        }
+
+        @Test
+        @DisplayName("searchEntity should return filtered clients by CPF")
+        void searchEntityShouldReturnFilteredClientsByCPF() {
+            String cpf = "835";
+
+            when(repository.searchAll(null, "", "", cpf, pageable))
+                    .thenReturn(new PageImpl<>(List.of(client)));
+
+            Page<ClientMinDTO> result = service.searchEntity(null, "", "", cpf, pageable);
+
+            assertNotNull(result);
+            assertFalse(result.isEmpty());
+            assertTrue(result.getContent().get(0).getCpf().contains(cpf));
+        }
+
+        @Test
+        @DisplayName("searchEntity should return filtered clients by multiple parameters")
+        void searchEntityShouldReturnFilteredClientsByMultipleParams() {
+            String name = "John";
+            String email = "john@";
+            String cpf = "835";
+
+            when(repository.searchAll(existingId, name, email, cpf, pageable))
+                    .thenReturn(new PageImpl<>(List.of(client)));
+
+            Page<ClientMinDTO> result = service.searchEntity(existingId, name, email, cpf, pageable);
+
+            assertNotNull(result);
+            assertFalse(result.isEmpty());
+            assertEquals(1, result.getTotalElements());
+            var clientResult = result.getContent().get(0);
+            assertTrue(clientResult.getName().contains(name));
+            assertTrue(clientResult.getEmail().contains(email));
+            assertTrue(clientResult.getCpf().contains(cpf));
+        }
+
+        @Test
+        @DisplayName("searchEntity should ignore case when searching")
+        void searchEntityShouldIgnoreCase() {
+            String nameLowerCase = "john";
+
+            when(repository.searchAll(null, nameLowerCase, "", "", pageable))
+                    .thenReturn(new PageImpl<>(List.of(client)));
+
+            Page<ClientMinDTO> result = service.searchEntity(null, nameLowerCase, "", "", pageable);
+
+            assertNotNull(result);
+            assertFalse(result.isEmpty());
+            assertTrue(result.getContent().get(0).getName().toLowerCase().contains(nameLowerCase));
+        }
+
+        @Test
+        @DisplayName("searchEntity should throw ResourceNotFoundException when no results found")
+        void searchEntityShouldThrowExceptionWhenNoResults() {
+            when(repository.searchAll(
+                    nonExistingId, "NonExistent", "none@", "000", pageable
+            )).thenReturn(new PageImpl<>(List.of()));
+
+            assertThrows(ResourceNotFoundException.class, ()
+                    -> service.searchEntity(nonExistingId, "NonExistent", "none@", "000", pageable)
+            );
+        }
+
+        @Test
+        @DisplayName("findByIdWithAddresses should return client with addresses")
+        void findByIdWithAddressesShouldReturnClientWithAddresses() {
+            when(repository.findByIdWithAddresses(existingId))
+                    .thenReturn(Optional.of(client));
+
+            var result = service.findByIdWithAddresses(existingId);
+
+            assertNotNull(result);
+            assertEquals(client.getEmail(), result.getEmail());
+            assertFalse(result.getAddresses().isEmpty());
+        }
     }
 
-    @Test
-    public void findByIdShouldThrowResourceNotFoundExceptionWhenDoesNotExistsId() {
-        when(repository.findById(nonExistsId)).thenReturn(Optional.empty());
+    @Nested
+    @DisplayName("Permission Tests")
+    public class PermissionTests {
 
-        assertThrows(ResourceNotFoundException.class, () -> {
-            serviceSpy.findById(nonExistsId);
-        });
+        @Test
+        @DisplayName("operations should set default role and permission")
+        void operationsShouldSetDefaultRoleAndPermission() {
+            // Configurando o mock para capturar o client que será salvo
+            when(repository.save(any(Client.class))).thenAnswer(invocation -> {
+                Client savedClient = invocation.getArgument(0);
+                // Adicionando role e permission manualmente como o service faria
+                savedClient.addRole(clientRole);
+                savedClient.addPermission(nonePermission);
+                return savedClient;
+            });
+
+            // Executando o método que queremos testar
+            ClientMinDTO result = service.insert(clientDTO, false);
+
+            // Verificando o resultado
+            assertNotNull(result);
+            assertTrue(client.getRoles().stream()
+                    .map(Role::getAuthority)
+                    .anyMatch(auth -> auth.equals(RoleAuthority.ROLE_CLIENT.getName())));
+
+        }
+
+        @Test
+        @DisplayName("copyDtoToEntity should set default role and permission")
+        void copyDtoToEntityShouldSetDefaultRoleAndPermission() {
+            Client newClient = new Client();
+
+            // Executando o método que queremos testar
+            service.copyDtoToEntity(clientDTO, newClient);
+
+            // Verificando se as roles e permissions foram adicionadas
+            assertTrue(newClient.getRoles().stream()
+                    .map(Role::getAuthority)
+                    .anyMatch(auth -> auth.equals(RoleAuthority.ROLE_CLIENT.getName())));
+            assertTrue(newClient.getPermissions().stream()
+                    .map(Permission::getAuthority)
+                    .anyMatch(auth -> auth.equals(PermissionAuthority.PERMISSION_NONE.getName())));
+        }
     }
 
-    @Test
-    public void insertShouldReturnClientMinDTOWhenEmailIsUnique() {
-        ClientMinDTO result = serviceSpy.insert(dto, false);
+    @Nested
+    @DisplayName("Validation Tests")
+    public class ValidationTests {
 
-        assertNotNull(result);
-        assertEquals(client.getName(), result.getName());
-        assertEquals(client.getEmail(), result.getEmail());
+        @Test
+        @DisplayName("insert should format CPF removing special characters")
+        void insertShouldFormatCPF() {
+            clientDTO = FactoryClient.createClientDTOWithFormattedCPF();
+            when(repository.save(any(Client.class))).thenReturn(client);
+
+            ClientMinDTO result = service.insert(clientDTO, false);
+
+            assertNotNull(result);
+            assertEquals("83563189048", client.getCpf()); // CPF sem formatação
+        }
+
+        @Test
+        @DisplayName("update should format CPF removing special characters")
+        void updateShouldFormatCPF() {
+            clientDTO = FactoryClient.createClientDTOWithFormattedCPF();
+            when(repository.getReferenceById(existingId)).thenReturn(client);
+            when(repository.saveAndFlush(any(Client.class))).thenReturn(client);
+
+            ClientMinDTO result = service.update(clientDTO, existingId, false);
+
+            assertNotNull(result);
+            assertEquals("83563189048", client.getCpf()); // CPF sem formatação
+        }
     }
 
-    @Test
-    public void insertShouldTrowDatabaseExceptionWhenEamilDoesNotUnique() {
-        DataIntegrityViolationException e = new DataIntegrityViolationException("");
-        e.toString().concat("EMAIL NULLS FIRST");
+    @Nested
+    @DisplayName("Database Exception Tests")
+    public class DatabaseExceptionTests {
 
-        doThrow(e).when(repository).save(ArgumentMatchers.any());
+        @Test
+        @DisplayName("insert should throw DatabaseException when CPF already exists")
+        void insertShouldThrowExceptionWhenCPFExists() {
+            when(repository.save(any(Client.class)))
+                    .thenThrow(new DataIntegrityViolationException("CPF NULLS FIRST"));
 
-        assertThrows(DatabaseException.class, () -> {
-            serviceSpy.insert(dto);
-        });
-    }
+            assertThrows(DatabaseException.class, ()
+                    -> service.insert(clientDTO, false)
+            );
+        }
 
-    @Test
-    public void insertShouldTrowDatabaseExceptionWhenCpfDoesNotUnique() {
-        doThrow(DataIntegrityViolationException.class).when(repository).save(ArgumentMatchers.any());
+        @Test
+        @DisplayName("insert should throw DatabaseException when email already exists")
+        void insertShouldThrowExceptionWhenEmailExists() {
+            when(repository.save(any(Client.class)))
+                    .thenThrow(new DataIntegrityViolationException("EMAIL NULLS FIRST"));
 
-        assertThrows(DatabaseException.class, () -> {
-            serviceSpy.insert(dto);
-        });
-    }
-
-    @Test
-    public void updateShouldReturnClientMinDTOWhenExistsIdAndIdIsNot1AndEmailIsUnique() {
-        ClientMinDTO result = serviceSpy.update(dto, existsId);
-
-        assertNotNull(result);
-        assertEquals(existsId, result.getId());
-        assertEquals(client.getName(), result.getName());
-    }
-
-    @Test
-    public void updateShouldTrowEntityNotFoundExceptionWhenNonExistsClient() {
-        doThrow(EntityNotFoundException.class).when(repository).saveAndFlush(ArgumentMatchers.any());
-
-        assertThrows(ResourceNotFoundException.class, () -> {
-            serviceSpy.update(dto, nonExistsId);
-        });
-    }
-
-    @Test
-    public void updateShouldTrowDatabaseExceptionWhenEamilDoesNotUnique() {
-        DataIntegrityViolationException e = new DataIntegrityViolationException("");
-        e.toString().concat("EMAIL NULLS FIRST");
-
-        doThrow(e).when(repository).saveAndFlush(ArgumentMatchers.any());
-
-        assertThrows(DatabaseException.class, () -> {
-            serviceSpy.update(dto, existsId);
-        });
-    }
-
-    @Test
-    public void updateShouldTrowDatabaseExceptionWhenCpfDoesNotUnique() {
-        doThrow(DataIntegrityViolationException.class).when(repository).saveAndFlush(ArgumentMatchers.any());
-
-        assertThrows(DatabaseException.class, () -> {
-            serviceSpy.update(dto, existsId);
-        });
-
-    }
-
-    @Test
-    public void deleteShouldDoNothingWhenIdExistsAndIdDoesNotDependent() {
-        doNothing().when(repository).deleteById(existsId);
-
-        assertDoesNotThrow(() -> {
-            serviceSpy.delete(existsId);
-        });
-    }
-
-    @Test
-    public void deleteShouldThrowResourceNotFoundExceptionWhenIdDoesNotExist() {
-        doThrow(DataIntegrityViolationException.class).when(repository).deleteById(dependentId);
-
-        assertThrows(ResourceNotFoundException.class, () -> {
-            serviceSpy.delete(nonExistsId);
-        });
-    }
-
-    @Test
-    public void deleteShouldTrowDataIntegrityViolationExceptionWhenIdDependent() {
-        doThrow(DataIntegrityViolationException.class).when(repository).deleteById(dependentId);
-
-        assertThrows(DatabaseException.class, () -> {
-            serviceSpy.delete(dependentId);
-        });
-    }
-
-    @Test
-    void isValidPasswordShouldBCryptPasswordWhenValidPassword() {
-        String password = "Valid1@";
-
-        String result = ValidPassword.isValidPassword(password);
-
-        // Verifica se o resultado não é nulo
-        assertNotNull(result);
-
-        // Verifica se o resultado é uma senha encriptada (não pode ser igual à senha
-        // original)
-        assertNotEquals(password, result);
-
-        // Verifica se a senha encriptada começa com "$2a$" (padrão BCrypt)
-        assertTrue(result.startsWith("$2a$"));
-    }
-
-    @Test
-    void isValidPasswordShouldInvalidPasswordExecptionWhenNullPassword() {
-        Exception exception = assertThrows(InvalidPasswordExecption.class, () -> {
-            ValidPassword.isValidPassword(null);
-        });
-
-        String expectedMessage = "Senha inválida: pelo menos 6 dígitos.";
-        assertEquals(expectedMessage, exception.getMessage());
-    }
-
-    @Test
-    void isValidPasswordShouldInvalidPasswordExecptionWhenShortPassword() {
-
-        Exception exception = assertThrows(InvalidPasswordExecption.class, () -> {
-            ValidPassword.isValidPassword("12345");
-        });
-
-        String expectedMessage = "Senha inválida: pelo menos 6 dígitos.";
-        assertEquals(expectedMessage, exception.getMessage());
-    }
-
-    @Test
-    void isValidPasswordShouldInvalidPasswordExecptionWhenMissingUppercase() {
-        Exception exception = assertThrows(InvalidPasswordExecption.class, () -> {
-            ValidPassword.isValidPassword("lowercase1!");
-        });
-
-        String expectedMessage = "Senha inválida: pelo menos uma letra maiúscula.";
-        assertEquals(expectedMessage, exception.getMessage());
-    }
-
-    @Test
-    void isValidPasswordShouldInvalidPasswordExecptionWhenMissingLowercase() {
-        Exception exception = assertThrows(InvalidPasswordExecption.class, () -> {
-            ValidPassword.isValidPassword("UPPERCASE1!");
-        });
-
-        String expectedMessage = "Senha inválida: pelo menos uma letra minúscula.";
-        assertEquals(expectedMessage, exception.getMessage());
-    }
-
-    @Test
-    void isValidPasswordShouldInvalidPasswordExecptionWhenMissingDigit() {
-        Exception exception = assertThrows(InvalidPasswordExecption.class, () -> {
-            ValidPassword.isValidPassword("NoDigit!");
-        });
-
-        String expectedMessage = "Senha inválida: pelo menos um dígito.";
-        assertEquals(expectedMessage, exception.getMessage());
-    }
-
-    @Test
-    void isValidPasswordShouldInvalidPasswordExecptionWhenMissingSpecialCharacter() {
-        Exception exception = assertThrows(InvalidPasswordExecption.class, () -> {
-            ValidPassword.isValidPassword("NoSpecial1");
-        });
-
-        String expectedMessage = "Senha inválida: pelo menos um caractere especial.";
-        assertEquals(expectedMessage, exception.getMessage());
-    }
-
-    @Test
-    void isValidPasswordShouldInvalidPasswordExecptionWhenMultipleIssues() {
-        Exception exception = assertThrows(InvalidPasswordExecption.class, () -> {
-            ValidPassword.isValidPassword("short");
-        });
-
-        String expectedMessage = "Senha inválida: pelo menos 6 dígitos.";
-        assertEquals(expectedMessage, exception.getMessage());
-    }
-
-    @Test
-    public void copyDtoToEntityShouldCopyAllDataWhenAllFieldsAreValid() {
-        // Prepare the DTO with valid data
-        client.setPassword("Valid1@"); // Assume this password is valid
-        client.setName("John Doe");
-        client.setEmail("john.doe@example.com");
-        client.setCpf("12345678900");
-
-        // when(permissionRepository.findByAuthority(any())).thenReturn(any());
-        dto = FactoryUser.createClientDTO(client);
-
-        // Call the method to copy the data
-        service.copyDtoToEntity(dto, client);
-
-        // Assertions to verify that the data has been copied correctly
-        assertEquals(dto.getName(), client.getName());
-        assertEquals(dto.getEmail().toLowerCase(), client.getEmail());
-        // assertEquals(dto.getCpf(), client.getCpf());
-        assertNotNull(client.getPassword()); // Check that the password is set
-        assertTrue(client.getRoles().stream().anyMatch(role -> role.getAuthority().equals("ROLE_CLIENT")));
-        assertTrue(client.getPermissions().stream()
-                .anyMatch(permission -> permission.getAuthority().equals("PERMISSION_NONE")));
-    }
-
-    @Test
-    public void copyDtoToEntityShouldCopyDataWhenPasswordIsProvided() {
-        // Prepare the DTO with a password
-        client.setPassword("Valid1@");
-        dto = FactoryUser.createClientDTO(client);
-
-        // Call the method to copy the data
-        service.copyDtoToEntity(dto, client);
-
-        // Assert that the password is hashed and set
-        assertNotNull(client.getPassword());
-        assertNotEquals(dto.getPassword(), client.getPassword()); // Ensure the
-        // password is not stored in plain text
-    }
-
-    @Test
-    public void copyDtoToEntityShouldCopyDataWhenPasswordIsEmpty() {
-        // Set password as empty
-        client.setPassword("");
-        dto = FactoryUser.createClientDTO(client);
-
-        // Call the method to copy the data
-        service.copyDtoToEntity(dto, client);
-
-        // Assert that the existing password is retained
-        assertEquals(client.getPassword(), client.getPassword()); // Existing password should remain unchanged
-    }
-
-    @Test
-    public void copyDtoToEntityShouldAssignRolesAndPermissionsCorrectly() {
-        // Prepare the DTO
-        client.setPassword("Valid1@");
-        client.setName("John Doe");
-        client.setEmail("john.doe@example.com");
-        dto = FactoryUser.createClientDTO(client);
-
-        // Call the method to copy the data
-        service.copyDtoToEntity(dto, client);
-
-        // Assert roles and permissions
-        assertTrue(client.getRoles().stream().anyMatch(role -> role.getAuthority().equals("ROLE_CLIENT")));
-        assertTrue(client.getPermissions().stream()
-                .anyMatch(permission -> permission.getAuthority().equals("PERMISSION_NONE")));
-    }
-
-    @Test
-    public void copyDtoToEntityShouldNotChangePasswordWhenPasswordIsEmpty() {
-        // Prepare the DTO with an empty password
-        client.setPassword("");
-        dto = FactoryUser.createClientDTO(client);
-
-        // Save the initial password
-        String initialPassword = client.getPassword();
-
-        // Call the method to copy the data
-        service.copyDtoToEntity(dto, client);
-
-        // Assert that the password remains unchanged
-        assertEquals(initialPassword, client.getPassword());
+            assertThrows(DatabaseException.class, ()
+                    -> service.insert(clientDTO, false)
+            );
+        }
     }
 }

@@ -45,6 +45,7 @@ public class Payment implements Convertible<PaymentDTO, PaymentMinDTO> {
     private Long id;
 
     @OneToOne
+    @JoinColumn(name = "order_id", nullable = false)
     private Order order;
 
     @Column(columnDefinition = "TIMESTAMP WITHOUT TIME ZONE")
