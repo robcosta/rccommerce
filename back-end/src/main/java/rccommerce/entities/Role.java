@@ -31,10 +31,6 @@ public class Role implements GrantedAuthority {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-<<<<<<< HEAD
-    @EqualsAndHashCode.Include
-=======
->>>>>>> 1a2da95 (Feat: reimplantes Use with new structure)
     @Enumerated(EnumType.STRING)
     private RoleAuthority authority; // Ex: ROLE_SELLER, ROLE_OPERATOR
 
