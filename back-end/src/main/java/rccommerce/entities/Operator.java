@@ -33,6 +33,16 @@ public class Operator extends User implements Convertible2<Operator, OperatorDTO
         this.commission = commission;
     }
 
+    public static Operator createOperator(Long id, String name, String email, String password, BigDecimal commission) {
+        Operator operator = new Operator();
+        operator.setId(id);
+        operator.setName(name);
+        operator.setEmail(email);
+        operator.setPassword(password);
+        operator.setCommission(commission);
+        return operator;
+    }
+
     @Override
     public OperatorDTO convertDTO() {
         return new OperatorDTO(this);

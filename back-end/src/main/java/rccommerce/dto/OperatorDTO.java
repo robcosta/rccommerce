@@ -4,8 +4,14 @@ import java.math.BigDecimal;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import rccommerce.entities.Operator;
 
+@AllArgsConstructor
+@NoArgsConstructor
+@Getter
 public class OperatorDTO extends UserDTO {
 
     @NotNull(message = "Campo requerido")
@@ -20,9 +26,5 @@ public class OperatorDTO extends UserDTO {
     public OperatorDTO(Operator entity) {
         super(entity);
         commission = entity.getCommission();
-    }
-
-    public BigDecimal getCommission() {
-        return commission;
     }
 }
