@@ -27,11 +27,11 @@ import rccommerce.entities.enums.RoleAuthority;
 @Table(name = "tb_role")
 public class Role implements GrantedAuthority {
 
-    @EqualsAndHashCode.Include
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @EqualsAndHashCode.Include
     @Enumerated(EnumType.STRING)
     private RoleAuthority authority; // Ex: ROLE_SELLER, ROLE_OPERATOR
 

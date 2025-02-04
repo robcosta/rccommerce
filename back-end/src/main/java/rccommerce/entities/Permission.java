@@ -28,11 +28,11 @@ import rccommerce.entities.enums.PermissionAuthority;
 @Table(name = "tb_permission")
 public class Permission implements GrantedAuthority {
 
-    @EqualsAndHashCode.Include
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @EqualsAndHashCode.Include
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private PermissionAuthority authority; // Ex: PERMISSION_CREATE, PERMISSION_DELETE
