@@ -12,26 +12,47 @@ import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.persistence.EntityNotFoundException;
 import rccommerce.entities.enums.PermissionAuthority;
+import rccommerce.entities.interfaces.TranslatableEntity;
 import rccommerce.services.exceptions.DatabaseException;
 import rccommerce.services.exceptions.ForbiddenException;
 import rccommerce.services.exceptions.ResourceNotFoundException;
 import rccommerce.services.util.SecurityContextUtil;
 
-public interface GenericService<T extends Convertible<DTO, MINDTO>, DTO, MINDTO, ID> {
+/**
+ * Interface genérica que fornece operações CRUD básicas e controle de
+ * permissões.
+ *
+ * @param <ENTITY> Tipo da entidade que deve implementar Convertible e
+ * TranslatableEntity
+ * @param <DTO> Tipo do DTO completo da entidade
+ * @param <MINDTO> Tipo do DTO resumido da entidade
+ * @param <ID> Tipo do identificador da entidade
+ */
+public interface GenericService<ENTITY extends Convertible2<ENTITY, DTO, MINDTO> & TranslatableEntity, DTO, MINDTO, ID> {
 
-    JpaRepository<T, ID> getRepository();
+    /**
+     * @return Repositório JPA associado à entidade
+     */
+    JpaRepository<ENTITY, ID> getRepository();
 
-    void copyDtoToEntity(DTO dto, T entity);
+    /**
+     * @return Nova instância da entidade
+     */
+    ENTITY createEntity();
 
-    T createEntity();
-
-    String getTranslatedEntityName();
-
+    /**
+     * Busca paginada de todas as entidades. Requer permissão PERMISSION_READER.
+     *
+     * @param pageable configuração de paginação
+     * @return página contendo DTOs resumidos das entidades
+     * @throws ForbiddenException se usuário não tem permissão
+     * @throws ResourceNotFoundException se nenhum registro for encontrado
+     */
     @Transactional(readOnly = true)
     default Page<MINDTO> findAll(Pageable pageable) {
         checkUserPermissions(PermissionAuthority.PERMISSION_READER);
 
-        Page<T> result = getRepository().findAll(pageable);
+        Page<ENTITY> result = getRepository().findAll(pageable);
         if (result.getContent().isEmpty()) {
             handleResourceNotFound();
         }
@@ -49,7 +70,7 @@ public interface GenericService<T extends Convertible<DTO, MINDTO>, DTO, MINDTO,
             checkUserPermissions(PermissionAuthority.PERMISSION_READER, (Long) id);
         }
 
-        T result = getRepository().findById(id).orElseThrow(() -> {
+        ENTITY result = getRepository().findById(id).orElseThrow(() -> {
             handleResourceNotFound();
             return null;
         });
@@ -58,17 +79,17 @@ public interface GenericService<T extends Convertible<DTO, MINDTO>, DTO, MINDTO,
     }
 
     @Transactional(readOnly = true)
-    default Page<MINDTO> findBy(Example<T> example, Pageable pageable) {
+    default Page<MINDTO> findBy(Example<ENTITY> example, Pageable pageable) {
         return findBy(example, true, pageable);
     }
 
     @Transactional(readOnly = true)
-    default Page<MINDTO> findBy(Example<T> example, boolean checkpermisson, Pageable pageable) {
+    default Page<MINDTO> findBy(Example<ENTITY> example, boolean checkpermisson, Pageable pageable) {
         if (checkpermisson) {
             checkUserPermissions(PermissionAuthority.PERMISSION_READER);
         }
 
-        Page<T> result = getRepository().findBy(example, query -> query.page(pageable));
+        Page<ENTITY> result = getRepository().findBy(example, query -> query.page(pageable));
 
         if (result.getContent().isEmpty()) {
             handleResourceNotFound();
@@ -76,6 +97,14 @@ public interface GenericService<T extends Convertible<DTO, MINDTO>, DTO, MINDTO,
         return result.map(x -> x.convertMinDTO());
     }
 
+    /**
+     * Insere uma nova entidade. Requer permissão PERMISSION_CREATE.
+     *
+     * @param dto dados da entidade a ser criada
+     * @return DTO resumido da entidade criada
+     * @throws ForbiddenException se usuário não tem permissão
+     * @throws DatabaseException se houver violação de integridade
+     */
     @Transactional
     default MINDTO insert(DTO dto) {
         return insert(dto, true);
@@ -87,10 +116,10 @@ public interface GenericService<T extends Convertible<DTO, MINDTO>, DTO, MINDTO,
             checkUserPermissions(PermissionAuthority.PERMISSION_CREATE);
         }
 
-        T entity = createEntity();
-        copyDtoToEntity(dto, entity);
+        ENTITY entity = createEntity();
+
         try {
-            entity = getRepository().save(entity);
+            entity = getRepository().save(entity.convertEntity(dto));
             return entity.convertMinDTO();
         } catch (DataIntegrityViolationException e) {
             handleDataIntegrityViolation(e);
@@ -98,6 +127,16 @@ public interface GenericService<T extends Convertible<DTO, MINDTO>, DTO, MINDTO,
         }
     }
 
+    /**
+     * Atualiza uma entidade existente. Requer permissão PERMISSION_UPDATE.
+     *
+     * @param dto dados atualizados da entidade
+     * @param id identificador da entidade
+     * @return DTO resumido da entidade atualizada
+     * @throws ForbiddenException se usuário não tem permissão
+     * @throws ResourceNotFoundException se entidade não for encontrada
+     * @throws DatabaseException se houver violação de integridade
+     */
     @Transactional
     default MINDTO update(DTO dto, ID id) {
         return update(dto, id, true);
@@ -110,9 +149,8 @@ public interface GenericService<T extends Convertible<DTO, MINDTO>, DTO, MINDTO,
         }
 
         try {
-            T entity = getRepository().getReferenceById(id);
-            copyDtoToEntity(dto, entity);
-            entity = getRepository().saveAndFlush(entity);
+            ENTITY entity = getRepository().getReferenceById(id);
+            entity = getRepository().saveAndFlush(entity.convertEntity(dto));
             return entity.convertMinDTO();
         } catch (EntityNotFoundException e) {
             handleResourceNotFound();
@@ -123,6 +161,14 @@ public interface GenericService<T extends Convertible<DTO, MINDTO>, DTO, MINDTO,
         }
     }
 
+    /**
+     * Remove uma entidade. Requer permissão PERMISSION_DELETE.
+     *
+     * @param id identificador da entidade
+     * @throws ForbiddenException se usuário não tem permissão
+     * @throws ResourceNotFoundException se entidade não for encontrada
+     * @throws DatabaseException se houver dependências que impeçam a exclusão
+     */
     @Transactional(propagation = Propagation.SUPPORTS)
     default void delete(ID id) {
         checkUserPermissions(PermissionAuthority.PERMISSION_DELETE, (Long) id);
@@ -139,6 +185,7 @@ public interface GenericService<T extends Convertible<DTO, MINDTO>, DTO, MINDTO,
 
     // Métodos auxiliares para lançar a exceção
     default void handleDataIntegrityViolation(DataIntegrityViolationException e) {
+        ENTITY entity = createEntity();
         String errorMessage = e.getMessage().toUpperCase();
         if (errorMessage.contains("EMAIL NULLS FIRST")) {
             throw new DatabaseException("Email informado já existe");
@@ -153,23 +200,57 @@ public interface GenericService<T extends Convertible<DTO, MINDTO>, DTO, MINDTO,
             throw new DatabaseException("CNPJ informado já existe");
         }
         if (errorMessage.contains("DEPENDENT_ID")) {
-            throw new DatabaseException("Entidade com dependência de outra(s) entidade(s), operação proibida.");
+            throw new DatabaseException("Não é possível excluir este(a) "
+                    + entity.getTranslatedEntityName().toLowerCase()
+                    + " pois existem registros vinculados a ele(a).");
         }
 
-        throw new DatabaseException(getTranslatedEntityName() + " causando erro de integridade, operação proibida.");
+        throw new DatabaseException("Não é possível excluir este(a) "
+                + entity.getTranslatedEntityName().toLowerCase()
+                + " pois existem dados dependentes no sistema.");
     }
 
     default void handleResourceNotFound() {
+        ENTITY entity = createEntity();
         throw new ResourceNotFoundException(
-                getTranslatedEntityName() + " não encontrado(a) para os critérios especificados.");
+                entity.getTranslatedEntityName() + " não encontrado(a) para os critérios especificados.");
     }
 
-    // Método auxiliar que verifica a permissão do usuário para acesso aos métodos do service.
-    default void checkUserPermissions(PermissionAuthority authority, Long id) {
+    /**
+     * Verifica se é uma operação do usuário em seus próprios dados
+     */
+    default boolean isSelfOperation(Long resourceId) {
+        Long userId = SecurityContextUtil.getUserId();
+        return userId != null && userId.equals(resourceId);
+    }
+
+    /**
+     * Verifica se o usuário possui a permissão necessária ou se está operando
+     * seus próprios dados.
+     *
+     * @param authority permissão requerida
+     * @param resourceId ID do recurso sendo acessado
+     * @throws ForbiddenException se usuário não tem permissão necessária
+     */
+    default void checkUserPermissions(PermissionAuthority authority, Long resourceId) {
+        // Se for uma auto-operação (usuário operando seus próprios dados)
+        if (isSelfOperation(resourceId)) {
+            return; // Permite a operação
+        }
+
+        // Caso contrário, verifica permissões normalmente
         checkUserPermissions(authority);
     }
 
+    /**
+     * Verifica se o usuário possui a permissão necessária para executar a
+     * operação.
+     *
+     * @param authority permissão requerida
+     * @throws ForbiddenException se usuário não tem a permissão necessária
+     */
     default void checkUserPermissions(PermissionAuthority authority) {
+
         List<String> authList = SecurityContextUtil.getAuthList(); // Obtém a lista de permissões do usuário
 
         // Permissão geral que concede todas as permissões (PERMISSION_ALL)
