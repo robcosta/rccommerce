@@ -9,6 +9,7 @@ import java.util.Set;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -29,6 +30,9 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import rccommerce.dto.UserDTO;
+import rccommerce.entities.enums.PermissionAuthority;
+import rccommerce.entities.enums.RoleAuthority;
 import rccommerce.services.util.AccentUtils;
 
 @Builder
@@ -56,12 +60,12 @@ public class User implements UserDetails {
     private String email;
     private String password;
 
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinTable(name = "tb_user_role", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
     @Builder.Default
     private Set<Role> roles = new HashSet<>();
 
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinTable(name = "tb_user_permission", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "permission_id"))
     @Builder.Default
     private Set<Permission> permissions = new HashSet<>();
@@ -158,5 +162,22 @@ public class User implements UserDetails {
     @Override
     public boolean isEnabled() {
         return true;
+    }
+
+    public User copyDtoToEntity(UserDTO dto) {
+        this.setName(dto.getName());
+        this.setEmail(dto.getEmail());
+        if (!dto.getPassword().isEmpty()) {
+            this.password = dto.getPassword();
+        }
+        this.roles.clear();
+        dto.getRoles()
+                .forEach(role -> this.addRole(Role.builder()
+                .authority(RoleAuthority.fromValue(role)).build()));
+        this.permissions.clear();
+        dto.getPermissions()
+                .forEach(permission -> this.addPermission(Permission.builder()
+                .authority(PermissionAuthority.fromValue(permission)).build()));
+        return this;
     }
 }

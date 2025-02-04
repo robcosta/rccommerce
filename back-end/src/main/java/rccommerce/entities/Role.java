@@ -3,6 +3,8 @@ package rccommerce.entities;
 import org.springframework.security.core.GrantedAuthority;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -30,9 +32,21 @@ public class Role implements GrantedAuthority {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String authority; // Ex: ROLE_SELLER, ROLE_OPERATOR
+    @Enumerated(EnumType.STRING)
+    private RoleAuthority authority; // Ex: ROLE_SELLER, ROLE_OPERATOR
 
     public void setAuthority(RoleAuthority authority) {
-        this.authority = authority.getName();
+        this.authority = authority;
+    }
+
+    @Override
+    public String getAuthority() {
+        return authority != null ? authority.toString() : null;
+    }
+
+    public static Role from(String authority) {
+        return Role.builder()
+                .authority(RoleAuthority.fromValue(authority))
+                .build();
     }
 }
