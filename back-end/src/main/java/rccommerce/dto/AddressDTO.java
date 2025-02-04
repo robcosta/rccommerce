@@ -7,14 +7,12 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import rccommerce.entities.Address;
 
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
-@Setter
 public class AddressDTO {
 
     @NotBlank(message = "O nome da rua é obrigatório")

@@ -25,7 +25,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import rccommerce.dto.ProductDTO;
 import rccommerce.dto.ProductMinDTO;
-import rccommerce.services.interfaces.Convertible;
+import rccommerce.entities.interfaces.TranslatableEntity;
+import rccommerce.services.interfaces.Convertible2;
 import rccommerce.services.util.AccentUtils;
 
 @Builder
@@ -40,7 +41,7 @@ import rccommerce.services.util.AccentUtils;
     @Index(name = "idx_product_reference", columnList = "reference"),
     @Index(name = "idx_product_suplier_id", columnList = "suplier_id")
 })
-public class Product implements Convertible<ProductDTO, ProductMinDTO> {
+public class Product implements Convertible2<Product, ProductDTO, ProductMinDTO>, TranslatableEntity {
 
     @EqualsAndHashCode.Include
     @Id
@@ -92,7 +93,7 @@ public class Product implements Convertible<ProductDTO, ProductMinDTO> {
         this.id = id;
     }
 
-    @SuppressWarnings("OverridableMethodCallInConstructor")
+    // @SuppressWarnings("OverridableMethodCallInConstructor")
     public Product(Long id, String name, String description, String unit, BigDecimal price, String imgUrl, BigDecimal quantity,
             String reference, Suplier suplier) {
         this.id = id;
@@ -131,5 +132,38 @@ public class Product implements Convertible<ProductDTO, ProductMinDTO> {
     @Override
     public ProductMinDTO convertMinDTO() {
         return new ProductMinDTO(this);
+    }
+
+    @Override
+    public String getTranslatedEntityName() {
+        return "Produto";
+    }
+
+    public static Product from(ProductDTO dto) {
+        return new Product().convertEntity(dto);
+    }
+
+    @Override
+    public Product convertEntity(ProductDTO dto) {
+        this.setName(dto.getName());
+        this.setDescription(dto.getDescription());
+        this.setUnit(dto.getUnit());
+        this.setPrice(dto.getPrice());
+        this.setImgUrl(dto.getImgUrl());
+        this.setQuantity(dto.getQuantity());
+        this.setReference(dto.getReference());
+
+        // this.getCategories().clear();
+        // dto.getCategories().forEach(productCategoryDTO -> this.addCategory(ProductCategory.from(productCategoryDTO)));
+
+        // if (dto.getSuplier() == null) {
+        //     this.setSuplier(Suplier.builder()
+        //             .id(1L)
+        //             .name("Diversos")
+        //             .build());
+        //     return this;
+        // }
+        // this.setSuplier(Suplier.from(dto.getSuplier()));
+        return this;
     }
 }

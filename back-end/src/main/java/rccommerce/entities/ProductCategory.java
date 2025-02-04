@@ -81,8 +81,13 @@ public class ProductCategory implements Convertible2<ProductCategory, ProductCat
         return "Categoria de Productos";
     }
 
+    public static ProductCategory from(ProductCategoryDTO dto) {
+        return new ProductCategory().convertEntity(dto);
+    }
+
     @Override
     public ProductCategory convertEntity(ProductCategoryDTO dto) {
+        this.id = dto.getId();
         this.setName(dto.getName());
         return this;
     }

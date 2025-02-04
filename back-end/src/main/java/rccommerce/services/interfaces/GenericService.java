@@ -199,6 +199,9 @@ public interface GenericService<ENTITY extends Convertible2<ENTITY, DTO, MINDTO>
         if (errorMessage.contains("CNPJ NULLS FIRST")) {
             throw new DatabaseException("CNPJ informado já existe");
         }
+        if (errorMessage.contains("REFERENCE NULLS FIRST")) {
+            throw new DatabaseException("Código de barras informado já existe");
+        }
         if (errorMessage.contains("DEPENDENT_ID")) {
             throw new DatabaseException("Não é possível excluir este(a) "
                     + entity.getTranslatedEntityName().toLowerCase()

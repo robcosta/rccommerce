@@ -8,14 +8,16 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import rccommerce.entities.Product;
-import rccommerce.entities.ProductCategory;
 import rccommerce.util.BigDecimalTwoDecimalSerializer;
 
 @AllArgsConstructor
+@NoArgsConstructor
 @Getter
 public class ProductDTO {
 
@@ -35,9 +37,12 @@ public class ProductDTO {
     @Positive(message = "Informe o preço do produto")
     private BigDecimal price;
     private String imgUrl;
+
+    @JsonSerialize(using = BigDecimalTwoDecimalSerializer.class)
+    @PositiveOrZero(message = "Informe a quantidade do produto, ou 0 se não houver estoque")
     private BigDecimal quantity;
     private String reference;
-    private SuplierMinDTO suplier;
+    private SuplierDTO suplier;
 
     @Size(min = 1, message = "Indique pelo menos uma categoria válida")
     private List<ProductCategoryDTO> categories = new ArrayList<>();
@@ -51,9 +56,7 @@ public class ProductDTO {
         imgUrl = entity.getImgUrl();
         quantity = entity.getQuantity();
         reference = entity.getReference();
-        suplier = new SuplierMinDTO(entity.getSuplier());
-        for (ProductCategory category : entity.getCategories()) {
-            categories.add(new ProductCategoryDTO(category));
-        }
+        suplier = new SuplierDTO(entity.getSuplier());
+        entity.getCategories().forEach(category -> categories.add(new ProductCategoryDTO(category)));
     }
 }

@@ -21,7 +21,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import rccommerce.dto.SuplierDTO;
 import rccommerce.dto.SuplierMinDTO;
-import rccommerce.services.interfaces.Convertible;
+import rccommerce.entities.interfaces.TranslatableEntity;
+import rccommerce.services.interfaces.Convertible2;
 import rccommerce.services.util.AccentUtils;
 
 @Builder
@@ -34,7 +35,7 @@ import rccommerce.services.util.AccentUtils;
 @Table(name = "tb_suplier", indexes = {
     @Index(name = "idx_suplier_name_unaccented", columnList = "nameUnaccented")
 })
-public class Suplier implements Convertible<SuplierDTO, SuplierMinDTO> {
+public class Suplier implements Convertible2<Suplier, SuplierDTO, SuplierMinDTO>, TranslatableEntity {
 
     @EqualsAndHashCode.Include
     @Id
@@ -100,5 +101,25 @@ public class Suplier implements Convertible<SuplierDTO, SuplierMinDTO> {
     @Override
     public SuplierMinDTO convertMinDTO() {
         return new SuplierMinDTO(this);
+    }
+
+    @Override
+    public String getTranslatedEntityName() {
+        return "Fornecedor";
+    }
+
+    public static Suplier from(SuplierDTO dto) {
+        return new Suplier().convertEntity(dto);
+    }
+
+    @Override
+    public Suplier convertEntity(SuplierDTO dto) {
+        this.id = dto.getId();
+        this.setName(dto.getName());
+        this.setCnpj(dto.getCnpj());
+
+        this.getAddresses().clear();
+        dto.getAddresses().forEach(addressDTO -> this.addAddresses(Address.from(addressDTO)));
+        return this;
     }
 }
