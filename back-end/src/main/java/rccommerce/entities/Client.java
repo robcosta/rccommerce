@@ -17,7 +17,11 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import rccommerce.dto.ClientDTO;
 import rccommerce.dto.ClientMinDTO;
-import rccommerce.services.interfaces.Convertible;
+import rccommerce.entities.enums.PermissionAuthority;
+import rccommerce.entities.enums.RoleAuthority;
+import rccommerce.entities.interfaces.TranslatableEntity;
+import rccommerce.services.interfaces.Convertible2;
+import rccommerce.services.util.ValidPassword;
 
 @Builder(builderMethodName = "clientBuilder")
 @AllArgsConstructor
@@ -27,7 +31,7 @@ import rccommerce.services.interfaces.Convertible;
 @Entity
 @Table(name = "tb_client", indexes = {
     @Index(name = "idx_client_cpf", columnList = "cpf")})
-public class Client extends User implements Convertible<ClientDTO, ClientMinDTO> {
+public class Client extends User implements Convertible2<Client, ClientDTO, ClientMinDTO>, TranslatableEntity {
 
     @Column(unique = true)
     private String cpf;
@@ -43,7 +47,8 @@ public class Client extends User implements Convertible<ClientDTO, ClientMinDTO>
     public Client(Long id, String name, String email, String password, String cpf) {
         super(id, name, email, password);
         this.cpf = cpf;
-        super.getRoles().add(new Role(4L, "ROLE_CLIENT"));
+        addRole(Role.from(RoleAuthority.ROLE_CLIENT.getName()));
+        addPermission(Permission.from(PermissionAuthority.PERMISSION_NONE.getName()));
         this.addresses = new ArrayList<>();
     }
 
@@ -69,5 +74,27 @@ public class Client extends User implements Convertible<ClientDTO, ClientMinDTO>
     @Override
     public ClientMinDTO convertMinDTO() {
         return new ClientMinDTO(this);
+    }
+
+    @Override
+    public Client convertEntity(ClientDTO dto) {
+        this.setName(dto.getName());
+        this.setEmail(dto.getEmail());
+        if (!dto.getPassword().isEmpty()) {
+            this.setPassword(ValidPassword.isValidPassword(dto.getPassword()));
+        }
+        this.setCpf(dto.getCpf());
+        this.getRoles().clear();
+        this.addRole(Role.from(RoleAuthority.ROLE_CLIENT.getName()));
+        this.getPermissions().clear();
+        this.addPermission(Permission.from(PermissionAuthority.PERMISSION_NONE.getName()));
+        this.getAddresses().clear();
+        dto.getAddresses().forEach(addressDTO -> this.addAddresses(Address.from(addressDTO)));
+        return this;
+    }
+
+    @Override
+    public String getTranslatedEntityName() {
+        return "Cliente";
     }
 }

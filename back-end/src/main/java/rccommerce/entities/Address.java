@@ -17,6 +17,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import rccommerce.dto.AddressDTO;
+import rccommerce.dto.AddressMinDTO;
+import rccommerce.services.interfaces.Convertible2;
 import rccommerce.util.StringCapitalize;
 
 @Builder
@@ -27,7 +29,7 @@ import rccommerce.util.StringCapitalize;
 @NoArgsConstructor
 @Getter
 @Setter
-public class Address {
+public class Address implements Convertible2<Address, AddressDTO, AddressMinDTO> {
 
     @EqualsAndHashCode.Include
     @Id
@@ -91,15 +93,29 @@ public class Address {
         this.zipCode = zipCode != null ? zipCode.replaceAll("[^0-9]", "") : null;
     }
 
-    public static Address createAddress(AddressDTO dto) {
-        Address address = new Address();
-        address.setStreet(dto.getStreet());
-        address.setNumber(dto.getNumber());
-        address.setComplement(dto.getComplement());
-        address.setDistrict(dto.getDistrict());
-        address.setCity(dto.getCity());
-        address.setState(dto.getState());
-        address.setZipCode(dto.getZipCode());
-        return address;
+    @Override
+    public AddressDTO convertDTO() {
+        return new AddressDTO(this);
+    }
+
+    @Override
+    public AddressMinDTO convertMinDTO() {
+        return new AddressMinDTO(this);
+    }
+
+    public static Address from(AddressDTO dto) {
+        return new Address().convertEntity(dto);
+    }
+
+    @Override
+    public Address convertEntity(AddressDTO dto) {
+        this.setStreet(dto.getStreet());
+        this.setNumber(dto.getNumber());
+        this.setComplement(dto.getComplement());
+        this.setDistrict(dto.getDistrict());
+        this.setCity(dto.getCity());
+        this.setState(dto.getState());
+        this.setZipCode(dto.getZipCode());
+        return this;
     }
 }
