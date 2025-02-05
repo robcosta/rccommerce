@@ -19,7 +19,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import rccommerce.dto.ProductCategoryDTO;
 import rccommerce.dto.ProductCategoryMinDTO;
-import rccommerce.services.interfaces.Convertible;
+import rccommerce.entities.interfaces.TranslatableEntity;
+import rccommerce.services.interfaces.Convertible2;
 import rccommerce.services.util.AccentUtils;
 
 @Builder
@@ -32,7 +33,7 @@ import rccommerce.services.util.AccentUtils;
 @Table(name = "tb_product_category", indexes = {
     @Index(name = "idx_category_name_unaccented", columnList = "nameUnaccented")
 })
-public class ProductCategory implements Convertible<ProductCategoryDTO, ProductCategoryMinDTO> {
+public class ProductCategory implements Convertible2<ProductCategory, ProductCategoryDTO, ProductCategoryMinDTO>, TranslatableEntity {
 
     @EqualsAndHashCode.Include
     @Id
@@ -57,7 +58,7 @@ public class ProductCategory implements Convertible<ProductCategoryDTO, ProductC
     }
 
     public void setName(String name) {
-        this.name = name.toUpperCase();
+        this.name = name.toUpperCase().trim();
         setNameUnaccented(this.name);
     }
 
@@ -73,5 +74,16 @@ public class ProductCategory implements Convertible<ProductCategoryDTO, ProductC
     @Override
     public ProductCategoryMinDTO convertMinDTO() {
         return new ProductCategoryMinDTO(this);
+    }
+
+    @Override
+    public String getTranslatedEntityName() {
+        return "Categoria de Productos";
+    }
+
+    @Override
+    public ProductCategory convertEntity(ProductCategoryDTO dto) {
+        this.setName(dto.getName());
+        return this;
     }
 }
