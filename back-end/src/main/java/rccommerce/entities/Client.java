@@ -47,8 +47,6 @@ public class Client extends User implements Convertible2<Client, ClientDTO, Clie
     public Client(Long id, String name, String email, String password, String cpf) {
         super(id, name, email, password);
         this.cpf = cpf;
-        addRole(Role.from(RoleAuthority.ROLE_CLIENT.getName()));
-        addPermission(Permission.from(PermissionAuthority.PERMISSION_NONE.getName()));
         this.addresses = new ArrayList<>();
     }
 

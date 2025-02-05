@@ -34,6 +34,7 @@ import rccommerce.dto.UserDTO;
 import rccommerce.entities.enums.PermissionAuthority;
 import rccommerce.entities.enums.RoleAuthority;
 import rccommerce.services.util.AccentUtils;
+import rccommerce.util.StringCapitalize;
 
 @Builder
 @NoArgsConstructor
@@ -93,7 +94,7 @@ public class User implements UserDetails {
     }
 
     public void setName(String name) {
-        this.name = name;
+        this.name = StringCapitalize.words(name.trim());
         setNameUnaccented(this.name);
     }
 
@@ -105,10 +106,6 @@ public class User implements UserDetails {
         this.email = AccentUtils.removeAccents(email.toLowerCase());
     }
 
-    // @Override
-    // public String getPassword() {
-    //     return password;
-    // }
     public void addRole(Role role) {
         roles.add(role);
     }
