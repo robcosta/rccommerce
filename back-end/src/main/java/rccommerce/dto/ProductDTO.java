@@ -21,26 +21,29 @@ public class ProductDTO {
 
     private Long id;
 
-    @NotBlank(message = "Campo requerido")
-    @Size(min = 3, max = 80, message = "Nome precisa ter de 3 a 80 caracteres.")
+    @NotBlank(message = "O nome do produto é obrigatório")
+    @Size(min = 3, max = 80, message = "O nome deve ter entre 3 e 80 caracteres")
     private String name;
 
     private String description;
 
-    @NotBlank(message = "Campo requerido")
-    @Size(min = 2, max = 2, message = "Unidade com 2 caracteres.")
+    @NotBlank(message = "A unidade de medida é obrigatória")
+    @Size(min = 2, max = 2, message = "A unidade deve ter exatamente 2 caracteres")
     private String unit;
 
     @JsonSerialize(using = BigDecimalTwoDecimalSerializer.class)
-    @Positive(message = "Informe o preço do produto")
+    @Positive(message = "O preço deve ser maior que zero")
     private BigDecimal price;
     private String imgUrl;
     private BigDecimal quantity;
     private String reference;
     private SuplierMinDTO suplier;
 
-    @Size(min = 1, message = "Indique pelo menos uma categoria válida")
+    @Size(min = 1, message = "Selecione pelo menos uma categoria")
     private List<ProductCategoryDTO> categories = new ArrayList<>();
+
+    private TaxDTO inputTax;
+    private TaxDTO outputTax;
 
     public ProductDTO(Product entity) {
         id = entity.getId();
@@ -55,5 +58,7 @@ public class ProductDTO {
         for (ProductCategory category : entity.getCategories()) {
             categories.add(new ProductCategoryDTO(category));
         }
+        inputTax = entity.getInputTax() != null ? new TaxDTO(entity.getInputTax()) : null;
+        outputTax = entity.getOutputTax() != null ? new TaxDTO(entity.getOutputTax()) : null;
     }
 }
