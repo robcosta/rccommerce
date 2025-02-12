@@ -17,7 +17,7 @@ public class FactoryProduct {
                 .id(26L)
                 .name("Xiomi Poco X6 Pro 6G")
                 .description("\"Lorem ipsum dolor sit amet")
-                .unit("UN")
+                .un("UN")
                 .price(new BigDecimal(2000.0))
                 .imgUrl("https://raw.githubusercontent.com/devsuperior/dscatalog-resources/master/backend/img/2-big.jpg")
                 .quantity(new BigDecimal(3.0))
