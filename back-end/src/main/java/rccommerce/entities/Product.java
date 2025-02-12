@@ -53,7 +53,7 @@ public class Product implements Convertible<ProductDTO, ProductMinDTO> {
 
     @Column(columnDefinition = "TEXT")
     private String description;
-    private String unit;
+    private String un;
 
     @Column(precision = 15, scale = 2)
     private BigDecimal price;
@@ -98,7 +98,7 @@ public class Product implements Convertible<ProductDTO, ProductMinDTO> {
         this.id = id;
         this.setName(name);
         this.description = description;
-        this.unit = unit;
+        this.un = unit;
         this.price = price;
         this.imgUrl = imgUrl;
         this.quantity = quantity;

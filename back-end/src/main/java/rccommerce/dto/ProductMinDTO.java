@@ -41,7 +41,7 @@ public class ProductMinDTO {
     public ProductMinDTO(Product entity) {
         id = entity.getId();
         name = entity.getName();
-        unit = entity.getUnit();
+        unit = entity.getUn();
         price = entity.getPrice();
         imgUrl = entity.getImgUrl();
         qttStock = entity.getQuantity();

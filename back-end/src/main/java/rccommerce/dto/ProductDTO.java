@@ -46,7 +46,7 @@ public class ProductDTO {
         id = entity.getId();
         name = entity.getName();
         description = entity.getDescription();
-        unit = entity.getUnit();
+        unit = entity.getUn();
         price = entity.getPrice();
         imgUrl = entity.getImgUrl();
         quantity = entity.getQuantity();

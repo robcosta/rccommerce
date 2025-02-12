@@ -90,7 +90,7 @@ public class ProductService implements GenericService<Product, ProductDTO, Produ
     public void copyDtoToEntity(ProductDTO dto, Product entity) {
         entity.setName(dto.getName());
         entity.setDescription(dto.getDescription());
-        entity.setUnit(dto.getUnit());
+        entity.setUn(dto.getUnit());
         entity.setPrice(dto.getPrice());
         entity.setImgUrl(dto.getImgUrl());
         entity.setQuantity(new BigDecimal(0.00));
@@ -110,9 +110,7 @@ public class ProductService implements GenericService<Product, ProductDTO, Produ
 
         Suplier result = suplierRepository.findById(dto.getSuplier().getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Fornecedor não encontrado"));
-        if (result == null) {
-            throw new InvalidArgumentExecption("Fornecedor inexistente");
-        }
+
         entity.setSuplier(result);
     }
 
