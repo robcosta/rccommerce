@@ -15,11 +15,14 @@ import org.springframework.transaction.annotation.Transactional;
 import jakarta.persistence.EntityNotFoundException;
 import rccommerce.dto.ProductCategoryDTO;
 import rccommerce.dto.ProductDTO;
+import rccommerce.dto.TaxDTO;
+import rccommerce.dto.fulldto.ProductFullDTO;
 import rccommerce.dto.mindto.ProductMinDTO;
 import rccommerce.entities.Product;
 import rccommerce.entities.ProductCategory;
 import rccommerce.entities.ProductStock;
 import rccommerce.entities.Suplier;
+import rccommerce.entities.Tax;
 import rccommerce.repositories.CategoryRepository;
 import rccommerce.repositories.ProductRepository;
 import rccommerce.repositories.StockRepository;
@@ -47,6 +50,13 @@ public class ProductService implements GenericService<Product, ProductDTO, Produ
 
     @Autowired
     private MessageSource messageSource;
+
+    @Transactional(readOnly = true)
+    public ProductFullDTO findByIdFull(Long id) {
+        Product result = repository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Produto não encontrado: " + id));
+        return new ProductFullDTO(result); 
+    }
 
     @Transactional(readOnly = true)
     public Page<ProductMinDTO> searchEntity(String id, String name, String reference, String suplierId, String categoryId, Pageable pageable) {
@@ -88,6 +98,7 @@ public class ProductService implements GenericService<Product, ProductDTO, Produ
 
     @Override
     public void copyDtoToEntity(ProductDTO dto, Product entity) {
+        // Dados básicos do produto
         entity.setName(dto.getName());
         entity.setDescription(dto.getDescription());
         entity.setUn(dto.getUnit());
@@ -96,6 +107,7 @@ public class ProductService implements GenericService<Product, ProductDTO, Produ
         entity.setQuantity(new BigDecimal(0.00));
         entity.setReference(getReference(dto, entity));
 
+        // Categorias
         entity.getCategories().clear();
         for (ProductCategoryDTO category : dto.getCategories()) {
             ProductCategory result = categoryRepository.findById(category.getId())
@@ -103,15 +115,72 @@ public class ProductService implements GenericService<Product, ProductDTO, Produ
             entity.addCategory(result);
         }
 
+        // Fornecedor
         if (dto.getSuplier() == null) {
             entity.setSuplier(suplierRepository.findById(1L).get());
-            return;
+        } else {
+            Suplier result = suplierRepository.findById(dto.getSuplier().getId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Fornecedor não encontrado"));
+            entity.setSuplier(result);
         }
 
-        Suplier result = suplierRepository.findById(dto.getSuplier().getId())
-                .orElseThrow(() -> new ResourceNotFoundException("Fornecedor não encontrado"));
+        // Impostos de entrada
+        if (dto.getInputTax() != null) {
+            Tax inputTax = entity.getInputTax();
+            if (inputTax == null) {
+                inputTax = new Tax();
+            }
+            copyTaxDtoToEntity(dto.getInputTax(), inputTax);
+            entity.setInputTax(inputTax);
+        }
 
-        entity.setSuplier(result);
+        // Impostos de saída
+        if (dto.getOutputTax() != null) {
+            Tax outputTax = entity.getOutputTax();
+            if (outputTax == null) {
+                outputTax = new Tax();
+            }
+            copyTaxDtoToEntity(dto.getOutputTax(), outputTax);
+            entity.setOutputTax(outputTax);
+        }
+    }
+
+    private void copyTaxDtoToEntity(TaxDTO dto, Tax entity) {
+        // CSTs e CSOSN
+        entity.setCstIcms(dto.getCstIcms());
+        entity.setCstPis(dto.getCstPis());
+        entity.setCstCofins(dto.getCstCofins());
+        entity.setCstIpi(dto.getCstIpi());
+        entity.setCsosn(dto.getCsosn());
+        
+        // Alíquotas
+        entity.setIcms(dto.getIcms());
+        entity.setIpi(dto.getIpi());
+        entity.setPis(dto.getPis());
+        entity.setCofins(dto.getCofins());
+        entity.setIcmsSt(dto.getIcmsSt());
+        
+        // Bases de cálculo
+        entity.setPisBase(dto.getPisBase());
+        entity.setCofinsBase(dto.getCofinsBase());
+        entity.setIcmsBase(dto.getIcmsBase());
+        entity.setIcmsStBase(dto.getIcmsStBase());
+        entity.setIpiBase(dto.getIpiBase());
+        
+        // Códigos fiscais e classificações
+        entity.setNcm(dto.getNcm());
+        entity.setCest(dto.getCest());
+        entity.setCfop(dto.getCfop());
+        entity.setTipi(dto.getTipi());
+        
+        // Outros campos fiscais
+        entity.setIcmsOrigem(dto.getIcmsOrigem());
+        entity.setMva(dto.getMva());
+        entity.setTipoCalculoIcms(dto.getTipoCalculoIcms());
+        entity.setEnquadramentoIpi(dto.getEnquadramentoIpi());
+        entity.setReducaoBase(dto.getReducaoBase());
+        entity.setDiferimento(dto.getDiferimento());
+        entity.setEan(dto.getEan());
     }
 
     private String getReference(ProductDTO dto, Product entity) {

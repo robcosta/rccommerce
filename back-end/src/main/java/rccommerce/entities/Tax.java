@@ -5,18 +5,18 @@ import java.math.BigDecimal;
 import jakarta.persistence.Column;
 import jakarta.persistence.MappedSuperclass;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.experimental.SuperBuilder;
 
-@SuperBuilder
+@Builder
 @MappedSuperclass
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public abstract class Tax {
+public class Tax {
 
     @Column(length = 3)
     private String cstIcms;        // Código da Situação Tributária do ICMS

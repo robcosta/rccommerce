@@ -22,6 +22,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import jakarta.validation.Valid;
 import rccommerce.controllers.validators.ValidId;
 import rccommerce.dto.ProductDTO;
+import rccommerce.dto.fulldto.ProductFullDTO;
 import rccommerce.dto.mindto.ProductMinDTO;
 import rccommerce.services.ProductService;
 
@@ -51,6 +52,13 @@ public class ProductController {
     @GetMapping(value = "/{id}")
     public ResponseEntity<ProductMinDTO> findById(@ValidId @PathVariable String id) {
         ProductMinDTO dto = service.findById(Long.valueOf(id), false);
+        return ResponseEntity.ok(dto);
+    }
+
+    // @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_OPERATOR')")
+    @GetMapping(value = "/full/{id}")
+    public ResponseEntity<ProductFullDTO> findByIdFull(@ValidId @PathVariable String id) {
+        ProductFullDTO dto = service.findByIdFull(Long.valueOf(id));
         return ResponseEntity.ok(dto);
     }
 
