@@ -7,7 +7,7 @@ import java.util.List;
 import rccommerce.dto.ClientDTO;
 import rccommerce.dto.OperatorDTO;
 import rccommerce.dto.UserDTO;
-import rccommerce.dto.UserMinDTO;
+import rccommerce.dto.mindto.UserMinDTO;
 import rccommerce.entities.Address;
 import rccommerce.entities.Client;
 import rccommerce.entities.Operator;

@@ -1,4 +1,4 @@
-package rccommerce.dto;
+package rccommerce.dto.mindto;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -8,23 +8,23 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import rccommerce.entities.Client;
 
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 @Getter
-public class ClientFullDTO extends UserMinDTO {
+public class ClientMinDTO extends UserMinDTO {
 
     private String cpf;
-    private List<AddressDTO> addresses = new ArrayList<>();
+    private List<AddressMinDTO> addresses = new ArrayList<>();
 
-    public ClientFullDTO(Long id, String name, String email, String cpf) {
+    public ClientMinDTO(Long id, String name, String email, String cpf) {
         super(id, name, email);
         this.cpf = cpf;
     }
 
-    public ClientFullDTO(Client entity) {
+    public ClientMinDTO(Client entity) {
         super(entity);
         cpf = entity.getCpf();
-        entity.getAddresses().forEach(address -> this.addresses.add(new AddressDTO(address)));
+        entity.getAddresses().forEach(address -> this.addresses.add(new AddressMinDTO(address)));
     }
 
     public String getCpf() {

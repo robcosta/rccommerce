@@ -20,7 +20,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import rccommerce.dto.ProductStockDTO;
-import rccommerce.dto.ProductStockMinDTO;
+import rccommerce.dto.mindto.ProductStockMinDTO;
 import rccommerce.entities.enums.StockMovement;
 import rccommerce.services.interfaces.Convertible;
 

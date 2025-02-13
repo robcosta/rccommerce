@@ -10,7 +10,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import rccommerce.dto.OperatorDTO;
-import rccommerce.dto.OperatorMinDTO;
+import rccommerce.dto.mindto.OperatorMinDTO;
 import rccommerce.services.interfaces.Convertible;
 
 @Builder(builderMethodName = "operatorBuilder")

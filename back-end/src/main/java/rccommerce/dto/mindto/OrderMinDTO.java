@@ -1,4 +1,4 @@
-package rccommerce.dto;
+package rccommerce.dto.mindto;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -10,6 +10,9 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import rccommerce.dto.ClientOrderDTO;
+import rccommerce.dto.OrderItemDTO;
+import rccommerce.dto.UserOrderDTO;
 import rccommerce.entities.Order;
 import rccommerce.entities.OrderItem;
 import rccommerce.entities.enums.OrderStatus;

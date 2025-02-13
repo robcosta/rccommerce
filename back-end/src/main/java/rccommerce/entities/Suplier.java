@@ -20,7 +20,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import rccommerce.dto.SuplierDTO;
-import rccommerce.dto.SuplierMinDTO;
+import rccommerce.dto.mindto.SuplierMinDTO;
 import rccommerce.services.interfaces.Convertible;
 import rccommerce.services.util.AccentUtils;
 

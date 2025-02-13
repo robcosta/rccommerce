@@ -17,7 +17,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import rccommerce.dto.UserMinDTO;
+import rccommerce.dto.mindto.UserMinDTO;
 import rccommerce.entities.User;
 import rccommerce.repositories.UserRepository;
 import rccommerce.services.exceptions.ResourceNotFoundException;

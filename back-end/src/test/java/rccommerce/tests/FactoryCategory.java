@@ -1,7 +1,7 @@
 package rccommerce.tests;
 
 import rccommerce.dto.ProductCategoryDTO;
-import rccommerce.dto.ProductCategoryMinDTO;
+import rccommerce.dto.mindto.ProductCategoryMinDTO;
 import rccommerce.entities.ProductCategory;
 
 public class FactoryCategory {

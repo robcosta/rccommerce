@@ -20,7 +20,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import jakarta.validation.Valid;
 import rccommerce.controllers.validators.ValidId;
 import rccommerce.dto.OrderDTO;
-import rccommerce.dto.OrderMinDTO;
+import rccommerce.dto.mindto.OrderMinDTO;
 import rccommerce.services.OrderService;
 
 @Validated

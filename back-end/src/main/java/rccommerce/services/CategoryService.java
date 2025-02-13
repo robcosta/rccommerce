@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import rccommerce.dto.ProductCategoryDTO;
-import rccommerce.dto.ProductCategoryMinDTO;
+import rccommerce.dto.mindto.ProductCategoryMinDTO;
 import rccommerce.entities.ProductCategory;
 import rccommerce.repositories.CategoryRepository;
 import rccommerce.services.interfaces.GenericService;

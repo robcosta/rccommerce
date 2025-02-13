@@ -30,7 +30,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import rccommerce.dto.OrderDTO;
-import rccommerce.dto.OrderMinDTO;
+import rccommerce.dto.mindto.OrderMinDTO;
 import rccommerce.entities.enums.OrderStatus;
 import rccommerce.services.interfaces.Convertible;
 import rccommerce.util.BigDecimalTwoDecimalSerializer;

@@ -16,7 +16,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import rccommerce.dto.ClientDTO;
-import rccommerce.dto.ClientMinDTO;
+import rccommerce.dto.mindto.ClientMinDTO;
 import rccommerce.services.interfaces.Convertible;
 
 @Builder(builderMethodName = "clientBuilder")

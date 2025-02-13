@@ -1,4 +1,4 @@
-package rccommerce.dto;
+package rccommerce.dto.mindto;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -6,6 +6,8 @@ import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import rccommerce.dto.ProductDTO;
+import rccommerce.dto.UserDTO;
 import rccommerce.entities.ProductStock;
 
 @NoArgsConstructor

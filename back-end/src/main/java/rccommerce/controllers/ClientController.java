@@ -22,8 +22,8 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import jakarta.validation.Valid;
 import rccommerce.controllers.validators.ValidId;
 import rccommerce.dto.ClientDTO;
-import rccommerce.dto.ClientFullDTO;
-import rccommerce.dto.ClientMinDTO;
+import rccommerce.dto.fulldto.ClientFullDTO;
+import rccommerce.dto.mindto.ClientMinDTO;
 import rccommerce.services.ClientService;
 
 @Validated

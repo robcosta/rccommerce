@@ -25,7 +25,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import rccommerce.dto.CashRegisterDTO;
-import rccommerce.dto.CashRegisterMinDTO;
+import rccommerce.dto.mindto.CashRegisterMinDTO;
 import rccommerce.entities.enums.MovementType;
 import rccommerce.services.exceptions.InvalidArgumentExecption;
 import rccommerce.services.interfaces.Convertible;

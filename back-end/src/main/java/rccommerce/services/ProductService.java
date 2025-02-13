@@ -15,7 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import jakarta.persistence.EntityNotFoundException;
 import rccommerce.dto.ProductCategoryDTO;
 import rccommerce.dto.ProductDTO;
-import rccommerce.dto.ProductMinDTO;
+import rccommerce.dto.mindto.ProductMinDTO;
 import rccommerce.entities.Product;
 import rccommerce.entities.ProductCategory;
 import rccommerce.entities.ProductStock;

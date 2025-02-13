@@ -28,7 +28,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import rccommerce.dto.ClientDTO;
-import rccommerce.dto.ClientMinDTO;
+import rccommerce.dto.mindto.ClientMinDTO;
 import rccommerce.entities.Client;
 import rccommerce.entities.Permission;
 import rccommerce.entities.Role;

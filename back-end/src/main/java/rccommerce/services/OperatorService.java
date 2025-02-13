@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import rccommerce.dto.OperatorDTO;
-import rccommerce.dto.OperatorMinDTO;
+import rccommerce.dto.mindto.OperatorMinDTO;
 import rccommerce.entities.Operator;
 import rccommerce.entities.Permission;
 import rccommerce.entities.Role;

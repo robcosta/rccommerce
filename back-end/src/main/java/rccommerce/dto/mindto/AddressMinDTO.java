@@ -1,4 +1,4 @@
-package rccommerce.dto;
+package rccommerce.dto.mindto;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;

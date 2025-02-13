@@ -1,4 +1,4 @@
-package rccommerce.dto;
+package rccommerce.dto.mindto;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -8,21 +8,21 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import rccommerce.entities.Suplier;
 
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 @Getter
-public class SuplierFullDTO {
+public class SuplierMinDTO {
 
     private Long id;
     private String name;
     private String cnpj;
-    private List<AddressDTO> addresses = new ArrayList<>();
+    private List<AddressMinDTO> addresses = new ArrayList<>();
 
-    public SuplierFullDTO(Suplier entity) {
+    public SuplierMinDTO(Suplier entity) {
         id = entity.getId();
         name = entity.getName();
         cnpj = entity.getCnpj();
-        entity.getAddresses().forEach(address -> this.addresses.add(new AddressDTO(address)));
+        entity.getAddresses().forEach(address -> this.addresses.add(new AddressMinDTO(address)));
     }
 
     public String getCnpj() {

@@ -1,4 +1,4 @@
-package rccommerce.dto;
+package rccommerce.dto.mindto;
 
 import java.math.BigDecimal;
 import java.util.EnumMap;

@@ -19,9 +19,9 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import jakarta.validation.Valid;
 import rccommerce.controllers.validators.ValidId;
-import rccommerce.dto.CashClosingMinDTO;
 import rccommerce.dto.CashRegisterDTO;
-import rccommerce.dto.CashRegisterMinDTO;
+import rccommerce.dto.mindto.CashClosingMinDTO;
+import rccommerce.dto.mindto.CashRegisterMinDTO;
 import rccommerce.services.CashRegisterService;
 import rccommerce.util.CustomPage;
 

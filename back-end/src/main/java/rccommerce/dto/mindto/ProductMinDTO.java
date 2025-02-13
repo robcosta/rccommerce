@@ -1,4 +1,4 @@
-package rccommerce.dto;
+package rccommerce.dto.mindto;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -7,6 +7,7 @@ import java.util.List;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import lombok.Getter;
+import rccommerce.dto.ProductCategoryDTO;
 import rccommerce.entities.Product;
 import rccommerce.entities.ProductCategory;
 import rccommerce.util.BigDecimalTwoDecimalSerializer;

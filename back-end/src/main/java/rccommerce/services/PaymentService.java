@@ -16,7 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import rccommerce.dto.CashMovementDTO;
 import rccommerce.dto.MovementDetailDTO;
 import rccommerce.dto.PaymentDTO;
-import rccommerce.dto.PaymentMinDTO;
+import rccommerce.dto.mindto.PaymentMinDTO;
 import rccommerce.entities.CashMovement;
 import rccommerce.entities.CashRegister;
 import rccommerce.entities.MovementDetail;

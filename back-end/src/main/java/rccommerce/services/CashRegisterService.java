@@ -17,12 +17,12 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import rccommerce.dto.CashClosingMinDTO;
 import rccommerce.dto.CashMovementDTO;
 import rccommerce.dto.CashRegisterDTO;
-import rccommerce.dto.CashRegisterMinDTO;
-import rccommerce.dto.CashReportMinDTO;
 import rccommerce.dto.MovementDetailDTO;
+import rccommerce.dto.mindto.CashClosingMinDTO;
+import rccommerce.dto.mindto.CashRegisterMinDTO;
+import rccommerce.dto.mindto.CashReportMinDTO;
 import rccommerce.entities.CashMovement;
 import rccommerce.entities.CashRegister;
 import rccommerce.entities.MovementDetail;

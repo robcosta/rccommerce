@@ -24,7 +24,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import rccommerce.dto.PaymentDTO;
-import rccommerce.dto.PaymentMinDTO;
+import rccommerce.dto.mindto.PaymentMinDTO;
 import rccommerce.services.interfaces.Convertible;
 import rccommerce.util.BigDecimalTwoDecimalSerializer;
 

@@ -5,7 +5,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import rccommerce.dto.ProductDTO;
-import rccommerce.dto.ProductMinDTO;
+import rccommerce.dto.mindto.ProductMinDTO;
 import rccommerce.entities.Product;
 import rccommerce.entities.ProductCategory;
 import rccommerce.entities.Suplier;

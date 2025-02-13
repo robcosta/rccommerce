@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import rccommerce.dto.ProductStockDTO;
-import rccommerce.dto.ProductStockMinDTO;
+import rccommerce.dto.mindto.ProductStockMinDTO;
 import rccommerce.entities.Product;
 import rccommerce.entities.ProductStock;
 import rccommerce.entities.User;

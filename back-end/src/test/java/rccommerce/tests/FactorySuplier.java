@@ -1,7 +1,7 @@
 package rccommerce.tests;
 
 import rccommerce.dto.SuplierDTO;
-import rccommerce.dto.SuplierMinDTO;
+import rccommerce.dto.mindto.SuplierMinDTO;
 import rccommerce.entities.Suplier;
 
 public class FactorySuplier {

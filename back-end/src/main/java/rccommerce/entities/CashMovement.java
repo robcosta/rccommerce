@@ -28,7 +28,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import rccommerce.dto.CashMovementDTO;
-import rccommerce.dto.CashMovementMinDTO;
+import rccommerce.dto.mindto.CashMovementMinDTO;
 import rccommerce.entities.enums.CashMovementType;
 import rccommerce.services.interfaces.Convertible;
 import rccommerce.util.BigDecimalTwoDecimalSerializer;

@@ -12,8 +12,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import rccommerce.dto.AddressDTO;
 import rccommerce.dto.SuplierDTO;
-import rccommerce.dto.SuplierFullDTO;
-import rccommerce.dto.SuplierMinDTO;
+import rccommerce.dto.fulldto.SuplierFullDTO;
+import rccommerce.dto.mindto.SuplierMinDTO;
 import rccommerce.entities.Address;
 import rccommerce.entities.Suplier;
 import rccommerce.repositories.SuplierRepository;

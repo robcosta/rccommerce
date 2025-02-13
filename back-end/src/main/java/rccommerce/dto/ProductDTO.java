@@ -11,6 +11,7 @@ import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import rccommerce.dto.mindto.SuplierMinDTO;
 import rccommerce.entities.Product;
 import rccommerce.entities.ProductCategory;
 import rccommerce.util.BigDecimalTwoDecimalSerializer;

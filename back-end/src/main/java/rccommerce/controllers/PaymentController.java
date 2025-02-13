@@ -15,7 +15,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import jakarta.validation.Valid;
 import rccommerce.dto.PaymentDTO;
-import rccommerce.dto.PaymentMinDTO;
+import rccommerce.dto.mindto.PaymentMinDTO;
 import rccommerce.services.PaymentService;
 
 @RestController

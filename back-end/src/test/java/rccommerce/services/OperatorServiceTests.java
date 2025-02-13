@@ -25,8 +25,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import rccommerce.dto.OperatorDTO;
-import rccommerce.dto.OperatorMinDTO;
-import rccommerce.dto.UserMinDTO;
+import rccommerce.dto.mindto.OperatorMinDTO;
+import rccommerce.dto.mindto.UserMinDTO;
 import rccommerce.entities.Operator;
 import rccommerce.repositories.OperatorRepository;
 import rccommerce.services.exceptions.DatabaseException;

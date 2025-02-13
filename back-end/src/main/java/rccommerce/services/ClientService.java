@@ -12,8 +12,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import rccommerce.dto.AddressDTO;
 import rccommerce.dto.ClientDTO;
-import rccommerce.dto.ClientFullDTO;
-import rccommerce.dto.ClientMinDTO;
+import rccommerce.dto.fulldto.ClientFullDTO;
+import rccommerce.dto.mindto.ClientMinDTO;
 import rccommerce.entities.Address;
 import rccommerce.entities.Client;
 import rccommerce.entities.enums.PermissionAuthority;
