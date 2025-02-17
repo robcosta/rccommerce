@@ -1,6 +1,7 @@
 package rccommerce.dto;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
@@ -10,17 +11,19 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import rccommerce.entities.Tax;
+import rccommerce.entities.TaxConfiguration;
+import rccommerce.entities.enums.TaxType;
 import rccommerce.util.BigDecimalTwoDecimalSerializer;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class TaxDTO {
+public class TaxConfigurationDTO {
     private Long id;
+    private TaxType type;
     
-    @Size(min = 3, max = 3, message = "CST do ICMS deve ter 3 caracteres")
+     @Size(min = 3, max = 3, message = "CST do ICMS deve ter 3 caracteres")
     private String cstIcms;
     
     @Size(min = 3, max = 3, message = "CSOSN deve ter 3 caracteres")
@@ -98,32 +101,39 @@ public class TaxDTO {
     @JsonSerialize(using = BigDecimalTwoDecimalSerializer.class)
     private BigDecimal diferimento;
 
-    public TaxDTO(Tax tax) {        
-        this.cstIcms = tax.getCstIcms();
-        this.csosn = tax.getCsosn();
-        this.icms = tax.getIcms();
-        this.ipi = tax.getIpi();
-        this.pis = tax.getPis();
-        this.cofins = tax.getCofins();
-        this.ncm = tax.getNcm();
-        this.cest = tax.getCest();
-        this.cfop = tax.getCfop();
-        this.icmsOrigem = tax.getIcmsOrigem();
-        this.icmsSt = tax.getIcmsSt();
-        this.ean = tax.getEan();
-        this.cstPis = tax.getCstPis();
-        this.cstCofins = tax.getCstCofins();
-        this.cstIpi = tax.getCstIpi();
-        this.pisBase = tax.getPisBase();
-        this.cofinsBase = tax.getCofinsBase();
-        this.icmsBase = tax.getIcmsBase();
-        this.icmsStBase = tax.getIcmsStBase();
-        this.ipiBase = tax.getIpiBase();
-        this.mva = tax.getMva();
-        this.tipoCalculoIcms = tax.getTipoCalculoIcms();
-        this.tipi = tax.getTipi();
-        this.enquadramentoIpi = tax.getEnquadramentoIpi();
-        this.reducaoBase = tax.getReducaoBase();
-        this.diferimento = tax.getDiferimento();
+    private Instant createdAt;
+    private Instant updatedAt;
+    private Long createdBy;
+
+    public TaxConfigurationDTO(TaxConfiguration entity) {
+        this.id = entity.getId();
+        this.type = entity.getType();
+        this.cstIcms = entity.getCstIcms();
+        this.cest = entity.getCest();
+        this.cfop = entity.getCfop();
+        this.icmsOrigem = entity.getIcmsOrigem();
+        this.icms = entity.getIcms();
+        this.icmsSt = entity.getIcmsSt();
+        this.ean = entity.getEan();
+        this.cstPis = entity.getCstPis();
+        this.cstCofins = entity.getCstCofins();
+        this.cstIpi = entity.getCstIpi();
+        this.pis = entity.getPis();
+        this.cofins = entity.getCofins();
+        this.pisBase = entity.getPisBase();
+        this.cofinsBase = entity.getCofinsBase();
+        this.icmsBase = entity.getIcmsBase();
+        this.icmsStBase = entity.getIcmsStBase();
+        this.ipi = entity.getIpi();
+        this.ipiBase = entity.getIpiBase();
+        this.mva = entity.getMva();
+        this.tipoCalculoIcms = entity.getTipoCalculoIcms();
+        this.tipi = entity.getTipi();
+        this.enquadramentoIpi = entity.getEnquadramentoIpi();
+        this.reducaoBase = entity.getReducaoBase();
+        this.diferimento = entity.getDiferimento();        
+        this.createdAt = entity.getCreatedAt();
+        this.updatedAt = entity.getUpdatedAt();
+        this.createdBy = entity.getCreatedBy();
     }
 }

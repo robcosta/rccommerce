@@ -4,9 +4,11 @@ import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 
 import rccommerce.entities.Product;
@@ -14,23 +16,26 @@ import rccommerce.entities.Product;
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Long> {
 
-    // @Query("SELECT obj FROM Product obj "
-    // 		+ "JOIN FETCH obj.categories "
-    // 		+ "WHERE UPPER(obj.name) LIKE UPPER(CONCAT('%', :name,'%')) "
-    // 		+ "AND UPPER(obj.reference) LIKE UPPER(CONCAT('%', :reference,'%'))")
-    // public Page<Product> searchAll(String name, String reference, Pageable pageable);
+    @Override
+    @EntityGraph(attributePaths = {"suplier", "categories", "suplier.addresses"})
+    @NonNull
+    Optional<Product> findById(@NonNull Long id);
+
+    @EntityGraph(attributePaths = {"suplier", "categories", "suplier.addresses"})
     Optional<Product> findByReference(String codeBarra);
 
+    // @EntityGraph(attributePaths = {"suplier", "categories", "suplier.addresses"})
     @Query("""
-        SELECT p 
+        SELECT DISTINCT p 
         FROM Product p
-        JOIN FETCH p.suplier s            
-        JOIN FETCH p.categories c            
+        JOIN FETCH p.suplier s
+        LEFT JOIN FETCH s.addresses a
+        JOIN FETCH p.categories c
         WHERE (:id IS NULL OR p.id = :id)
         AND (:name IS NULL OR UPPER(p.nameUnaccented) LIKE UPPER(CONCAT('%', :name,'%')))
         AND (:reference IS NULL OR UPPER(p.reference) LIKE UPPER(CONCAT('%', :reference,'%')))
         AND (:suplierId IS NULL OR s.id = :suplierId)
-        AND (:categoryId IS NULL OR c.id = :categoryId)        
+        AND (:categoryId IS NULL OR c.id = :categoryId)
         """)
     Page<Product> findProduct(
             @Param("id") Long id,

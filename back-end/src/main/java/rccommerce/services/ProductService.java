@@ -1,6 +1,8 @@
 package rccommerce.services;
 
 import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Locale;
 
@@ -13,16 +15,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.persistence.EntityNotFoundException;
-import rccommerce.dto.ProductCategoryDTO;
 import rccommerce.dto.ProductDTO;
-import rccommerce.dto.TaxDTO;
+import rccommerce.dto.TaxConfigurationDTO;
 import rccommerce.dto.fulldto.ProductFullDTO;
 import rccommerce.dto.mindto.ProductMinDTO;
 import rccommerce.entities.Product;
 import rccommerce.entities.ProductCategory;
 import rccommerce.entities.ProductStock;
 import rccommerce.entities.Suplier;
-import rccommerce.entities.Tax;
+import rccommerce.entities.TaxConfiguration;
+import rccommerce.entities.enums.TaxType;
 import rccommerce.repositories.CategoryRepository;
 import rccommerce.repositories.ProductRepository;
 import rccommerce.repositories.StockRepository;
@@ -32,6 +34,7 @@ import rccommerce.services.exceptions.ResourceNotFoundException;
 import rccommerce.services.interfaces.GenericService;
 import rccommerce.services.util.AccentUtils;
 import rccommerce.services.util.ConvertString;
+import rccommerce.services.util.SecurityContextUtil;
 
 @Service
 public class ProductService implements GenericService<Product, ProductDTO, ProductMinDTO, Long> {
@@ -98,54 +101,92 @@ public class ProductService implements GenericService<Product, ProductDTO, Produ
 
     @Override
     public void copyDtoToEntity(ProductDTO dto, Product entity) {
-        // Dados básicos do produto
+        copyBasicInfo(dto, entity);
+        copyCategories(dto, entity);
+        copySuplier(dto, entity);
+        copyTaxes(dto, entity);
+        updateAuditInfo(entity);
+    }
+
+    private void copyBasicInfo(ProductDTO dto, Product entity) {
         entity.setName(dto.getName());
         entity.setDescription(dto.getDescription());
         entity.setUn(dto.getUnit());
         entity.setPrice(dto.getPrice());
         entity.setImgUrl(dto.getImgUrl());
-        entity.setQuantity(new BigDecimal(0.00));
+        entity.setQuantity(BigDecimal.ZERO);
         entity.setReference(getReference(dto, entity));
+    }
 
-        // Categorias
+    private void copyCategories(ProductDTO dto, Product entity) {
         entity.getCategories().clear();
-        for (ProductCategoryDTO category : dto.getCategories()) {
-            ProductCategory result = categoryRepository.findById(category.getId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Categoria não encontrada"));
-            entity.addCategory(result);
-        }
+        dto.getCategories().forEach(categoryDTO -> {
+            ProductCategory category = categoryRepository.findById(categoryDTO.getId())
+                    .orElseThrow(() -> new ResourceNotFoundException(
+                            String.format("Categoria %d não encontrada", categoryDTO.getId())));
+            entity.addCategory(category);
+        });
+    }
 
-        // Fornecedor
+    private void copySuplier(ProductDTO dto, Product entity) {
         if (dto.getSuplier() == null) {
-            entity.setSuplier(suplierRepository.findById(1L).get());
-        } else {
-            Suplier result = suplierRepository.findById(dto.getSuplier().getId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Fornecedor não encontrado"));
-            entity.setSuplier(result);
+            entity.setSuplier(getDefaultSuplier());
+            return;
         }
 
-        // Impostos de entrada
+        Suplier suplier = suplierRepository.findById(dto.getSuplier().getId())
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        String.format("Fornecedor %d não encontrado", dto.getSuplier().getId())));
+        entity.setSuplier(suplier);
+    }
+
+    private Suplier getDefaultSuplier() {
+        return suplierRepository.findById(1L)
+                .orElseThrow(() -> new ResourceNotFoundException("Fornecedor padrão não encontrado"));
+    }
+
+    private void copyTaxes(ProductDTO dto, Product entity) {
+        copyInputTax(dto, entity);
+        copyOutputTax(dto, entity);
+    }
+
+    private void copyInputTax(ProductDTO dto, Product entity) {
         if (dto.getInputTax() != null) {
-            Tax inputTax = entity.getInputTax();
-            if (inputTax == null) {
-                inputTax = new Tax();
-            }
+            TaxConfiguration inputTax = getOrCreateTax(entity.getInputTax(), TaxType.INPUT);
             copyTaxDtoToEntity(dto.getInputTax(), inputTax);
             entity.setInputTax(inputTax);
         }
+    }
 
-        // Impostos de saída
+    private void copyOutputTax(ProductDTO dto, Product entity) {
         if (dto.getOutputTax() != null) {
-            Tax outputTax = entity.getOutputTax();
-            if (outputTax == null) {
-                outputTax = new Tax();
-            }
+            TaxConfiguration outputTax = getOrCreateTax(entity.getOutputTax(), TaxType.OUTPUT);
             copyTaxDtoToEntity(dto.getOutputTax(), outputTax);
             entity.setOutputTax(outputTax);
         }
     }
 
-    private void copyTaxDtoToEntity(TaxDTO dto, Tax entity) {
+    private TaxConfiguration getOrCreateTax(TaxConfiguration tax, TaxType type) {
+        if (tax == null) {
+            return TaxConfiguration.builder()
+                    .type(type)
+                    .createdAt(Instant.now().truncatedTo(ChronoUnit.SECONDS))
+                    .createdBy(SecurityContextUtil.getUserId())
+                    .build();
+        }
+        tax.setUpdatedAt(Instant.now().truncatedTo(ChronoUnit.SECONDS));
+        return tax;
+    }
+
+    private void updateAuditInfo(Product entity) {
+        if (entity.getId() == null) {
+            entity.setCreatedAt(Instant.now().truncatedTo(ChronoUnit.SECONDS));
+            entity.setCreatedBy(SecurityContextUtil.getUserId());
+        }
+        entity.setUpdatedAt(Instant.now().truncatedTo(ChronoUnit.SECONDS));
+    }
+
+    private void copyTaxDtoToEntity(TaxConfigurationDTO dto, TaxConfiguration entity) {
         // CSTs e CSOSN
         entity.setCstIcms(dto.getCstIcms());
         entity.setCstPis(dto.getCstPis());

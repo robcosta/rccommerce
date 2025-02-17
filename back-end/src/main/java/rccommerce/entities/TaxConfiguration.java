@@ -1,22 +1,39 @@
 package rccommerce.entities;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 
 import jakarta.persistence.Column;
-import jakarta.persistence.MappedSuperclass;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import rccommerce.entities.enums.TaxType;
 
-@Builder
-@MappedSuperclass
+@Entity
+@Table(name = "tb_tax_configuration")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Tax {
+@Builder
+public class TaxConfiguration {
+    
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "tax_type")
+    private TaxType type;
 
     @Column(length = 3)
     private String cstIcms;        // Código da Situação Tributária do ICMS
@@ -95,4 +112,13 @@ public class Tax {
 
     @Column(precision = 5, scale = 2)
     private BigDecimal diferimento;  // Percentual de diferimento
+
+    @Column(name = "created_at", columnDefinition = "TIMESTAMP WITHOUT TIME ZONE")
+    private Instant createdAt;
+    
+    @Column(name = "updated_at", columnDefinition = "TIMESTAMP WITHOUT TIME ZONE")
+    private Instant updatedAt;
+    
+    @Column(name = "created_by")
+    private Long createdBy;
 }

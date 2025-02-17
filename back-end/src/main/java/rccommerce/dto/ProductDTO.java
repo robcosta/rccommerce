@@ -6,6 +6,7 @@ import java.util.List;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
@@ -35,6 +36,7 @@ public class ProductDTO {
     @JsonSerialize(using = BigDecimalTwoDecimalSerializer.class)
     @Positive(message = "O preço deve ser maior que zero")
     private BigDecimal price;
+    
     private String imgUrl;
     private BigDecimal quantity;
     private String reference;
@@ -43,23 +45,33 @@ public class ProductDTO {
     @Size(min = 1, message = "Selecione pelo menos uma categoria")
     private List<ProductCategoryDTO> categories = new ArrayList<>();
 
-    private TaxDTO inputTax;
-    private TaxDTO outputTax;
+    @Valid
+    private TaxConfigurationDTO inputTax;
+
+    @Valid
+    private TaxConfigurationDTO outputTax;
 
     public ProductDTO(Product entity) {
-        id = entity.getId();
-        name = entity.getName();
-        description = entity.getDescription();
-        unit = entity.getUn();
-        price = entity.getPrice();
-        imgUrl = entity.getImgUrl();
-        quantity = entity.getQuantity();
-        reference = entity.getReference();
-        suplier = new SuplierMinDTO(entity.getSuplier());
+        this.id = entity.getId();
+        this.name = entity.getName();
+        this.description = entity.getDescription();
+        this.unit = entity.getUn();
+        this.price = entity.getPrice();
+        this.imgUrl = entity.getImgUrl();
+        this.quantity = entity.getQuantity();
+        this.reference = entity.getReference();
+        this.suplier = new SuplierMinDTO(entity.getSuplier());
+        
         for (ProductCategory category : entity.getCategories()) {
             categories.add(new ProductCategoryDTO(category));
         }
-        inputTax = entity.getInputTax() != null ? new TaxDTO(entity.getInputTax()) : null;
-        outputTax = entity.getOutputTax() != null ? new TaxDTO(entity.getOutputTax()) : null;
+
+        if (entity.getInputTax() != null) {
+            this.inputTax = new TaxConfigurationDTO(entity.getInputTax());
+        }
+
+        if (entity.getOutputTax() != null) {
+            this.outputTax = new TaxConfigurationDTO(entity.getOutputTax());
+        }
     }
 }
