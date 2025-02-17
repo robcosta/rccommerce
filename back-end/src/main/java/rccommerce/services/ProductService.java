@@ -77,12 +77,12 @@ public class ProductService implements GenericService<Product, ProductDTO, Produ
     }
 
     @Transactional(readOnly = true)
-    public ProductDTO findByReference(String codBarra) {
+    public ProductMinDTO findByReference(String codBarra) {
         codBarra = ("0000000000000" + codBarra).formatted().substring(codBarra.length());
 
         Product result = repository.findByReference(codBarra)
                 .orElseThrow(() -> new ResourceNotFoundException("Produto não encontrado."));
-        return new ProductDTO(result);
+        return new ProductMinDTO(result);
     }
 
     @Transactional

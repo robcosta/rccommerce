@@ -18,13 +18,14 @@ public class ProductMinDTO {
     private Long id;
     private String name;
     private String unit;
+    private String description;
 
     @JsonSerialize(using = BigDecimalTwoDecimalSerializer.class)
     private BigDecimal price;
     private String imgUrl;
-    private BigDecimal qttStock;
+    // private BigDecimal qttStock;
     private String reference;
-    private SuplierMinDTO suplier;
+    // private SuplierMinDTO suplier;
 
     private List<ProductCategoryDTO> categories = new ArrayList<>();
 
@@ -36,7 +37,7 @@ public class ProductMinDTO {
         this.price = price;
         this.imgUrl = imgUrl;
         this.reference = reference;
-        this.suplier = suplier;
+        // this.suplier = suplier;
     }
 
     public ProductMinDTO(Product entity) {
@@ -45,9 +46,10 @@ public class ProductMinDTO {
         unit = entity.getUn();
         price = entity.getPrice();
         imgUrl = entity.getImgUrl();
-        qttStock = entity.getQuantity();
+        description = entity.getDescription();
+        // qttStock = entity.getQuantity();
         reference = entity.getReference();
-        suplier = new SuplierMinDTO(entity.getSuplier());
+        // suplier = new SuplierMinDTO(entity.getSuplier());
         for (ProductCategory category : entity.getCategories()) {
             categories.add(new ProductCategoryDTO(category));
         }

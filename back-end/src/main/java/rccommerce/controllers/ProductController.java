@@ -55,7 +55,7 @@ public class ProductController {
         return ResponseEntity.ok(dto);
     }
 
-    // @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_OPERATOR')")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_OPERATOR', 'ROLE_SELLER')")
     @GetMapping(value = "/full/{id}")
     public ResponseEntity<ProductFullDTO> findByIdFull(@ValidId @PathVariable String id) {
         ProductFullDTO dto = service.findByIdFull(Long.valueOf(id));
@@ -63,8 +63,8 @@ public class ProductController {
     }
 
     @GetMapping(value = "/cod/{codBarra}")
-    public ResponseEntity<ProductDTO> findByReference(@PathVariable String codBarra) {
-        ProductDTO dto = service.findByReference(codBarra);
+    public ResponseEntity<ProductMinDTO> findByReference(@PathVariable String codBarra) {
+        ProductMinDTO dto = service.findByReference(codBarra);
         return ResponseEntity.ok(dto);
     }
 
